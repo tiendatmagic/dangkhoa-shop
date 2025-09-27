@@ -1,0 +1,118 @@
+<div
+  class="rounded-lg w-full overflow-auto border-[#ececec] dark:border-[#46525f] border-[1px] glass-effect not-bg-glass shadow-md relative max-w-screen-4xl p-3">
+  <div class="py-5 pt-3 lg:px-3">
+
+
+
+    <ng-container *ngIf="!orderData && isLoading">
+      <div class="min-h-40">
+        <p class="text-xl font-medium text-center">Please wait...</p>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="orderData && !orderData['items'].length && !isLoading">
+      <div class="min-h-40">
+        <p class="text-xl font-medium text-center">Not found</p>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="orderData && orderData['items'].length &&!isLoading">
+      <div class="flex flex-col gap-3 md:flex-row lg:gap-6">
+        <div class="w-full md:w-1/2">
+          <div class="mb-3 text-2xl">
+            <div class="flex justify-between">
+              <div class="inline-flex items-center gap-2 mb-3">
+                <p class="font-medium">Order Detail</p>
+                <p class="w-8 sm:w-12 h-[1px] sm:h-[2px] bg-gray-700"></p>
+              </div>
+            </div>
+          </div>
+
+          <ul role="list" class="divide-y divide-gray-200">
+            <li *ngFor="let order of orderData['items']" class="flex py-3">
+              <div class="flex-shrink-0 w-20 overflow-hidden border border-gray-200 rounded-md">
+                <img src="{{ order.image[0] }}" routerLink="/product/{{ order.product_id }}" alt=""
+                  class="object-cover object-center w-full h-full" />
+              </div>
+
+              <div class="flex flex-1 ml-4">
+                <div class="flex flex-col flex-1">
+                  <div>
+                    <div class="flex justify-between text-base font-medium text-gray-900">
+                      <div>
+                        <a routerLink="/product/{{ order.product_id }}">{{ order.name }}</a>
+                        <p>${{ order.price | number:'1.0-2' }}</p>
+                        <div class="flex flex-col items-start justify-center gap-3 mt-2">
+                          <p class="px-2 border rounded-md sm:px-3 sm:py-1 bg-slate-50">
+                            {{ order.size}}
+                          </p>
+                        </div>
+                      </div>
+
+                      <p>X{{ order.quantity }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </li>
+          </ul>
+          <p>
+            <span class="text-xl font-medium">Total:</span>
+            <span class="text-xl font-medium">
+              ${{ orderData.total + deliveryFee}}
+            </span>
+          </p>
+        </div>
+
+        <div class="w-full md:w-1/2">
+          <div class="leading-6" *ngIf="orderData">
+            <div class="mb-3 text-2xl">
+              <div class="flex justify-between">
+                <div class="inline-flex items-center gap-2 mb-3">
+                  <p class="font-medium">Information</p>
+                  <p class="w-8 sm:w-12 h-[1px] sm:h-[2px] bg-gray-700"></p>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 leading-6 rounded-lg bg-gray-50">
+              <p> <span class="font-medium">Order number:</span> <span class="text-violet-700"> {{ orderData.order.id
+                  }}</span></p>
+              <p> <span class="font-medium">Name:</span><span class="text-violet-700"> {{ orderData.order.name }}</span>
+              </p>
+              <p> <span class="font-medium">Email:</span><span class="text-violet-700"> {{ orderData.order.email
+                  }}</span>
+              </p>
+              <p> <span class="font-medium">Address:</span><span class="text-violet-700"> {{ orderData.order.address
+                  }}</span>
+              </p>
+              <p> <span class="font-medium">Phone:</span><span class="text-violet-700"> {{ orderData.order.phone
+                  }}</span>
+              </p>
+              <p> <span class="font-medium">Note:</span><span class="text-violet-700"> {{ orderData.order.note }}</span>
+              </p>
+              <p> <span class="font-medium">Date:</span><span class="text-violet-700"> {{ orderData.order.created_at |
+                  date
+                  :
+                  "dd/MM/yyyy HH:mm:ss" }}</span>
+              </p>
+              <p> <span class="font-medium">Total:</span><span class="text-violet-700"> ${{ orderData.total +
+                  deliveryFee}}</span> </p>
+              <p> <span class="font-medium">Payment method:</span><span class="capitalize text-violet-700"> {{
+                  orderData.order.payment == 'usdt' ? 'USDT - Crypto' : orderData.order.payment}}</span> </p>
+            </div>
+
+            <ng-container *ngIf="orderData.order.payment == 'usdt'">
+              <button class="w-full mt-3 btn-outline-primary" matRipple matRippleColor="#ffffff80"
+                (click)="viewOnBSCScan(orderData.order.txhash)">View
+                on BSCScan</button>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+
+
+  </div>
+</div>
