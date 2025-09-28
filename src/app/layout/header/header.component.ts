@@ -42,8 +42,7 @@ export class HeaderComponent implements OnInit {
       this.isLogin = value;
     });
     this.auth.isAdmin$.subscribe((value) => {
-      this.isAdmin = value;
-      console.log(this.isAdmin);
+      this.isAdmin = Number(value);
     });
   }
 

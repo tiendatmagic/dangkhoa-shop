@@ -1,15 +1,15 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.2
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost
--- Generation Time: Aug 31, 2025 at 03:38 AM
--- Server version: 10.6.20-MariaDB-cll-lve-log
--- PHP Version: 8.2.21
+-- Host: localhost:3306
+-- Generation Time: Sep 28, 2025 at 06:15 AM
+-- Server version: 8.4.3
+-- PHP Version: 8.1.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
-SET time_zone = "+07:00";
+SET time_zone = "+00:00";
 
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
@@ -18,7 +18,7 @@ SET time_zone = "+07:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `xomdoxythosting_tdatshop`
+-- Database: `dangkhoa-shop`
 --
 
 -- --------------------------------------------------------
@@ -28,13 +28,13 @@ SET time_zone = "+07:00";
 --
 
 CREATE TABLE `failed_jobs` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `uuid` varchar(255) NOT NULL,
-  `connection` text NOT NULL,
-  `queue` text NOT NULL,
-  `payload` longtext NOT NULL,
-  `exception` longtext NOT NULL,
-  `failed_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `id` bigint UNSIGNED NOT NULL,
+  `uuid` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `connection` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `queue` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `payload` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `exception` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `failed_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -44,9 +44,9 @@ CREATE TABLE `failed_jobs` (
 --
 
 CREATE TABLE `migrations` (
-  `id` int(10) UNSIGNED NOT NULL,
-  `migration` varchar(255) NOT NULL,
-  `batch` int(11) NOT NULL
+  `id` int UNSIGNED NOT NULL,
+  `migration` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `batch` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -66,16 +66,17 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 --
 
 CREATE TABLE `orders` (
-  `id` char(36) NOT NULL,
-  `user_id` char(36) NOT NULL,
-  `payment` varchar(10) NOT NULL,
-  `txhash` varchar(70) DEFAULT NULL,
-  `status` varchar(10) NOT NULL,
-  `name` varchar(255) DEFAULT NULL,
-  `email` varchar(255) DEFAULT NULL,
-  `phone` varchar(15) DEFAULT NULL,
-  `address` varchar(255) DEFAULT NULL,
-  `note` int(11) DEFAULT NULL,
+  `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `order_code` char(8) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `user_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `payment` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `txhash` varchar(70) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `phone` varchar(15) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `note` int DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -84,25 +85,27 @@ CREATE TABLE `orders` (
 -- Dumping data for table `orders`
 --
 
-INSERT INTO `orders` (`id`, `user_id`, `payment`, `txhash`, `status`, `name`, `email`, `phone`, `address`, `note`, `created_at`, `updated_at`) VALUES
-('11dc5771-deaf-4bd6-909c-570d9fa9e2de', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-29 20:13:56', '2025-08-29 20:13:56'),
-('1c2a0cc3-6c20-44d9-bf2d-4212df0d5aca', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-28 15:47:13', '2025-08-28 15:47:13'),
-('1e769b46-9ca5-4cc1-9b29-40779e0a8181', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'usdt', '0x44ed52b93ca583894f66848d9b0f72dbf637459325a8dff6da9f796a9194bb62', 'pending', NULL, NULL, NULL, NULL, NULL, '2025-08-28 14:27:44', '2025-08-28 14:27:44'),
-('1f8b4b0b-596d-4b21-82c2-362f4526b61c', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-28 15:45:01', '2025-08-28 15:45:01'),
-('3314c387-5199-492d-b82d-fac64688058e', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-28 16:13:09', '2025-08-28 16:13:09'),
-('367b5a7f-2248-4239-84a7-c7e3166f2ae9', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'usdt', '0xcb7441269f92426d999c56c539772b2bdd68df49675ae298b7f4eb5ba3ca8eb4', 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-28 14:31:52', '2025-08-28 14:31:52'),
-('55af48a4-a5a8-4f16-944c-d68b3b98ee0e', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'usdt', '0xf8b161a09a1857beea6f41e63cb4ae6160efa89ca9f4d0ef8f0c5277d74adb3c', 'pending', NULL, NULL, NULL, NULL, NULL, '2025-08-28 05:53:00', '2025-08-28 05:53:00'),
-('6234f4b9-6882-4ae1-bd1a-d1d95985c0a8', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-29 19:23:10', '2025-08-29 19:23:10'),
-('8bd0d101-5f38-4e31-8f49-80afa379c935', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'usdt', '0xcf77c0ea1d4916d4bad6a3d54d8c786e1d3724d7b295b6ecfa3ae73dac9d2c70', 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-29 00:18:34', '2025-08-29 00:18:34'),
-('9102ebb2-8d4b-43a3-853b-bcd6dd08f786', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Magic', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-30 07:02:51', '2025-08-30 07:02:51'),
-('99a5ec1d-8b76-4cda-bffd-618b7ec812c0', 'e0f8acd1-b5a9-4516-a12c-739e4728b0fe', 'cash', NULL, 'pending', 'User63361', 'tiendatmagic9@yopmail.com', '123456789876', '123', NULL, '2025-08-29 08:35:51', '2025-08-29 08:35:51'),
-('a956e297-cdbf-40e0-969c-e9203ca16729', 'e0f8acd1-b5a9-4516-a12c-739e4728b0fe', 'usdt', '0xa223d6de37ed85d994c633e643bb29813dfd027f0f3a7cb0a5c629cd79d731e4', 'pending', 'User63361', 'tiendatmagic9@yopmail.com', '123456789876', '123', NULL, '2025-08-29 01:01:50', '2025-08-29 01:01:50'),
-('ad87d71a-d68d-4237-9613-f7b588c8e4d7', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'usdt', '0xea21a2438d45aadac03c535bd33fd85e1a2baa52da7ac7f368d17441a17b6d2b', 'pending', NULL, NULL, NULL, NULL, NULL, '2025-08-27 20:21:38', '2025-08-27 20:21:38'),
-('ba11f4c3-f663-45f6-9546-96e95cdd27a9', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', NULL, NULL, NULL, NULL, NULL, '2025-08-28 14:26:19', '2025-08-28 14:26:19'),
-('bffecfe5-0f8a-42cb-abd3-0d7315e9b516', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Magic', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-30 09:41:59', '2025-08-30 09:41:59'),
-('da6550ff-7e2c-4816-9024-fa42900318de', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Magic', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-29 20:47:11', '2025-08-29 20:47:11'),
-('ecac91f9-1693-47c5-82e3-7cc315239670', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-29 20:45:09', '2025-08-29 20:45:09'),
-('f7f75064-82e4-4666-9bdd-44ce8cea0f53', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-29 19:28:12', '2025-08-29 19:28:12');
+INSERT INTO `orders` (`id`, `order_code`, `user_id`, `payment`, `txhash`, `status`, `name`, `email`, `phone`, `address`, `note`, `created_at`, `updated_at`) VALUES
+('11dc5771-deaf-4bd6-909c-570d9fa9e2de', '03768232', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-29 13:13:56', '2025-08-29 13:13:56'),
+('1c2a0cc3-6c20-44d9-bf2d-4212df0d5aca', '30990376', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-28 08:47:13', '2025-08-28 08:47:13'),
+('1e769b46-9ca5-4cc1-9b29-40779e0a8181', '43647188', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'usdt', '0x44ed52b93ca583894f66848d9b0f72dbf637459325a8dff6da9f796a9194bb62', 'pending', NULL, NULL, NULL, NULL, NULL, '2025-08-28 07:27:44', '2025-08-28 07:27:44'),
+('1f8b4b0b-596d-4b21-82c2-362f4526b61c', '25264813', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-28 08:45:01', '2025-08-28 08:45:01'),
+('3314c387-5199-492d-b82d-fac64688058e', '95382504', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-28 09:13:09', '2025-08-28 09:13:09'),
+('367b5a7f-2248-4239-84a7-c7e3166f2ae9', '01118087', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'usdt', '0xcb7441269f92426d999c56c539772b2bdd68df49675ae298b7f4eb5ba3ca8eb4', 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-28 07:31:52', '2025-08-28 07:31:52'),
+('55af48a4-a5a8-4f16-944c-d68b3b98ee0e', '19442921', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'usdt', '0xf8b161a09a1857beea6f41e63cb4ae6160efa89ca9f4d0ef8f0c5277d74adb3c', 'pending', NULL, NULL, NULL, NULL, NULL, '2025-08-27 22:53:00', '2025-08-27 22:53:00'),
+('6234f4b9-6882-4ae1-bd1a-d1d95985c0a8', '93860348', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-29 12:23:10', '2025-08-29 12:23:10'),
+('8bd0d101-5f38-4e31-8f49-80afa379c935', '10972985', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'usdt', '0xcf77c0ea1d4916d4bad6a3d54d8c786e1d3724d7b295b6ecfa3ae73dac9d2c70', 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-28 17:18:34', '2025-08-28 17:18:34'),
+('9102ebb2-8d4b-43a3-853b-bcd6dd08f786', '73283878', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Magic', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-30 00:02:51', '2025-08-30 00:02:51'),
+('99a5ec1d-8b76-4cda-bffd-618b7ec812c0', '33500440', 'e0f8acd1-b5a9-4516-a12c-739e4728b0fe', 'cash', NULL, 'pending', 'User63361', 'tiendatmagic9@yopmail.com', '123456789876', '123', NULL, '2025-08-29 01:35:51', '2025-08-29 01:35:51'),
+('9a863c8c-886e-4a6b-8fce-13445db1e462', '47650567', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-09-27 21:59:47', '2025-09-27 21:59:47'),
+('a956e297-cdbf-40e0-969c-e9203ca16729', '37751520', 'e0f8acd1-b5a9-4516-a12c-739e4728b0fe', 'usdt', '0xa223d6de37ed85d994c633e643bb29813dfd027f0f3a7cb0a5c629cd79d731e4', 'pending', 'User63361', 'tiendatmagic9@yopmail.com', '123456789876', '123', NULL, '2025-08-28 18:01:50', '2025-08-28 18:01:50'),
+('ad87d71a-d68d-4237-9613-f7b588c8e4d7', '45805900', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'usdt', '0xea21a2438d45aadac03c535bd33fd85e1a2baa52da7ac7f368d17441a17b6d2b', 'pending', NULL, NULL, NULL, NULL, NULL, '2025-08-27 13:21:38', '2025-08-27 13:21:38'),
+('ba11f4c3-f663-45f6-9546-96e95cdd27a9', '15774942', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', NULL, NULL, NULL, NULL, NULL, '2025-08-28 07:26:19', '2025-08-28 07:26:19'),
+('bffecfe5-0f8a-42cb-abd3-0d7315e9b516', '41457015', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Magic', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-30 02:41:59', '2025-08-30 02:41:59'),
+('da6550ff-7e2c-4816-9024-fa42900318de', '59960253', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'processing', 'Đạt Magic', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-29 13:47:11', '2025-09-27 22:52:21'),
+('ecac91f9-1693-47c5-82e3-7cc315239670', '75430221', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-29 13:45:09', '2025-08-29 13:45:09'),
+('f7f75064-82e4-4666-9bdd-44ce8cea0f53', '97270352', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-29 12:28:12', '2025-08-29 12:28:12'),
+('fbf8d35c-848f-4376-ae3a-6c2d3b9044ba', '60061102', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-09-27 21:59:26', '2025-09-27 21:59:26');
 
 -- --------------------------------------------------------
 
@@ -111,12 +114,12 @@ INSERT INTO `orders` (`id`, `user_id`, `payment`, `txhash`, `status`, `name`, `e
 --
 
 CREATE TABLE `order_items` (
-  `id` char(36) NOT NULL,
-  `order_id` char(36) NOT NULL,
-  `product_id` char(36) NOT NULL,
-  `size` varchar(5) NOT NULL,
-  `quantity` bigint(20) NOT NULL,
-  `price` bigint(20) NOT NULL,
+  `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `order_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `product_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `size` varchar(5) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `quantity` bigint NOT NULL,
+  `price` bigint NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -126,37 +129,39 @@ CREATE TABLE `order_items` (
 --
 
 INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `size`, `quantity`, `price`, `created_at`, `updated_at`) VALUES
-('0958b234-0938-40dd-a737-31070b45cb21', 'a956e297-cdbf-40e0-969c-e9203ca16729', '1', 'XL', 1, 1, '2025-08-29 01:01:50', '2025-08-29 01:01:50'),
-('1217e822-5fdc-4dac-8879-70b892919d0b', '9102ebb2-8d4b-43a3-853b-bcd6dd08f786', '2', 'L', 1, 50, '2025-08-30 07:02:51', '2025-08-30 07:02:51'),
-('1e19815c-25ab-4039-930e-3f8726f5a05e', '1f8b4b0b-596d-4b21-82c2-362f4526b61c', '1', 'XXL', 1, 1, '2025-08-28 15:45:01', '2025-08-28 15:45:01'),
-('23342310-4a33-4c7d-96e0-5cdea6d357f9', 'bffecfe5-0f8a-42cb-abd3-0d7315e9b516', '1', 'XXL', 1, 1, '2025-08-30 09:41:59', '2025-08-30 09:41:59'),
-('2621c16b-6ce0-450c-882f-2a34ade9d959', '1c2a0cc3-6c20-44d9-bf2d-4212df0d5aca', '2', 'L', 1, 50, '2025-08-28 15:47:13', '2025-08-28 15:47:13'),
-('3242d060-9955-45e1-b90a-3cff29e8c459', 'bffecfe5-0f8a-42cb-abd3-0d7315e9b516', '3', 'XXL', 1, 30, '2025-08-30 09:41:59', '2025-08-30 09:41:59'),
-('3e945dfe-176e-4c32-8048-c2d51c83b64c', '9102ebb2-8d4b-43a3-853b-bcd6dd08f786', '1', 'XXL', 1, 1, '2025-08-30 07:02:51', '2025-08-30 07:02:51'),
-('4e92c626-3243-4dac-8e15-79d3b111d340', '1f8b4b0b-596d-4b21-82c2-362f4526b61c', '1', 'XXL', 1, 1, '2025-08-28 15:45:01', '2025-08-28 15:45:01'),
-('538e1461-9954-4e7f-a5df-e98daafeb873', '1e769b46-9ca5-4cc1-9b29-40779e0a8181', '1', 'XXL', 1, 1, '2025-08-28 14:27:44', '2025-08-28 14:27:44'),
-('54aa8227-826f-4800-8b5d-ff800d97ca05', '1c2a0cc3-6c20-44d9-bf2d-4212df0d5aca', '1', 'XXL', 1, 1, '2025-08-28 15:47:13', '2025-08-28 15:47:13'),
-('554a759b-fea3-49bd-afb0-b196ed571d8a', '3314c387-5199-492d-b82d-fac64688058e', '1', 'XXL', 1, 1, '2025-08-28 16:13:09', '2025-08-28 16:13:09'),
-('5e7f164e-4404-4d44-a851-f57e63a99cd7', '367b5a7f-2248-4239-84a7-c7e3166f2ae9', '1', 'XXL', 1, 1, '2025-08-28 14:31:52', '2025-08-28 14:31:52'),
-('60056de0-3430-4bde-a667-60e7f8f76a87', 'ba11f4c3-f663-45f6-9546-96e95cdd27a9', '1', 'XXL', 1, 1, '2025-08-28 14:26:19', '2025-08-28 14:26:19'),
-('6576f0ea-ff63-49e4-b719-099ac5d9922d', 'bffecfe5-0f8a-42cb-abd3-0d7315e9b516', '3', 'XXL', 1, 30, '2025-08-30 09:41:59', '2025-08-30 09:41:59'),
-('6fe1e29a-611d-4eec-a99a-917d3a57421d', '11dc5771-deaf-4bd6-909c-570d9fa9e2de', '2', 'S', 1, 50, '2025-08-29 20:13:56', '2025-08-29 20:13:56'),
-('7009e2d6-6777-463f-8d34-f4c6fb9c7e32', 'a956e297-cdbf-40e0-969c-e9203ca16729', '1', 'XXL', 1, 1, '2025-08-29 01:01:50', '2025-08-29 01:01:50'),
-('71a37dcb-ae3f-4c7f-a8d8-d2c2520e18e4', '11dc5771-deaf-4bd6-909c-570d9fa9e2de', '3', 'M', 1, 30, '2025-08-29 20:13:56', '2025-08-29 20:13:56'),
-('74de514b-5605-463b-bb30-ff2b503657ea', 'da6550ff-7e2c-4816-9024-fa42900318de', '2', 'L', 1, 50, '2025-08-29 20:47:11', '2025-08-29 20:47:11'),
-('7deaa6cd-0858-404a-865d-26ae22d06aa9', 'f7f75064-82e4-4666-9bdd-44ce8cea0f53', '1', 'XXL', 1, 1, '2025-08-29 19:28:12', '2025-08-29 19:28:12'),
-('8d126d04-02aa-4372-8a7d-76b630563de1', 'ad87d71a-d68d-4237-9613-f7b588c8e4d7', '1', 'XXL', 1, 1, '2025-08-27 20:21:39', '2025-08-27 20:21:39'),
-('92900640-bfe5-4108-bcae-2330ccb1494f', 'ecac91f9-1693-47c5-82e3-7cc315239670', '1', 'S', 1, 1, '2025-08-29 20:45:09', '2025-08-29 20:45:09'),
-('99428a96-8f40-4e75-a171-f24ca0f71813', '55af48a4-a5a8-4f16-944c-d68b3b98ee0e', '1', 'XXL', 1, 1, '2025-08-28 05:53:00', '2025-08-28 05:53:00'),
-('9a307475-f5f3-4a51-8665-b0ddc037a8f5', '99a5ec1d-8b76-4cda-bffd-618b7ec812c0', '2', 'L', 1, 50, '2025-08-29 08:35:51', '2025-08-29 08:35:51'),
-('9d647f66-47ef-4cce-897b-1ec168871179', 'bffecfe5-0f8a-42cb-abd3-0d7315e9b516', '1', 'XXL', 1, 1, '2025-08-30 09:41:59', '2025-08-30 09:41:59'),
-('a6df2a54-4d00-4799-9127-d813c1b19db6', 'bffecfe5-0f8a-42cb-abd3-0d7315e9b516', '3', 'XXL', 1, 30, '2025-08-30 09:41:59', '2025-08-30 09:41:59'),
-('ab0a7d1b-a1a6-4826-8c6b-805fa1bf9999', '6234f4b9-6882-4ae1-bd1a-d1d95985c0a8', '2', 'L', 1, 50, '2025-08-29 19:23:10', '2025-08-29 19:23:10'),
-('c33ab377-79de-427f-9414-75cdd921d745', '3314c387-5199-492d-b82d-fac64688058e', '3', 'L', 3, 30, '2025-08-28 16:13:09', '2025-08-28 16:13:09'),
-('c928e2bc-b573-41b8-a6d8-15b1caca00d3', '11dc5771-deaf-4bd6-909c-570d9fa9e2de', '4', 'L', 1, 25, '2025-08-29 20:13:56', '2025-08-29 20:13:56'),
-('dda2b3c1-933d-4d10-bed0-fb63163da98d', '1f8b4b0b-596d-4b21-82c2-362f4526b61c', '2', 'L', 1, 50, '2025-08-28 15:45:01', '2025-08-28 15:45:01'),
-('ef3b376f-6d3b-4ce7-8fb1-64dbbf59d2b8', '8bd0d101-5f38-4e31-8f49-80afa379c935', '1', 'XXL', 1, 1, '2025-08-29 00:18:34', '2025-08-29 00:18:34'),
-('f8fb256c-fe69-4ff9-b864-ff40ece35426', '11dc5771-deaf-4bd6-909c-570d9fa9e2de', '4', 'M', 1, 25, '2025-08-29 20:13:56', '2025-08-29 20:13:56');
+('0958b234-0938-40dd-a737-31070b45cb21', 'a956e297-cdbf-40e0-969c-e9203ca16729', '1', 'XL', 1, 1, '2025-08-28 18:01:50', '2025-08-28 18:01:50'),
+('1217e822-5fdc-4dac-8879-70b892919d0b', '9102ebb2-8d4b-43a3-853b-bcd6dd08f786', '2', 'L', 1, 50, '2025-08-30 00:02:51', '2025-08-30 00:02:51'),
+('1e19815c-25ab-4039-930e-3f8726f5a05e', '1f8b4b0b-596d-4b21-82c2-362f4526b61c', '1', 'XXL', 1, 1, '2025-08-28 08:45:01', '2025-08-28 08:45:01'),
+('23342310-4a33-4c7d-96e0-5cdea6d357f9', 'bffecfe5-0f8a-42cb-abd3-0d7315e9b516', '1', 'XXL', 1, 1, '2025-08-30 02:41:59', '2025-08-30 02:41:59'),
+('2621c16b-6ce0-450c-882f-2a34ade9d959', '1c2a0cc3-6c20-44d9-bf2d-4212df0d5aca', '2', 'L', 1, 50, '2025-08-28 08:47:13', '2025-08-28 08:47:13'),
+('3242d060-9955-45e1-b90a-3cff29e8c459', 'bffecfe5-0f8a-42cb-abd3-0d7315e9b516', '3', 'XXL', 1, 30, '2025-08-30 02:41:59', '2025-08-30 02:41:59'),
+('3e945dfe-176e-4c32-8048-c2d51c83b64c', '9102ebb2-8d4b-43a3-853b-bcd6dd08f786', '1', 'XXL', 1, 1, '2025-08-30 00:02:51', '2025-08-30 00:02:51'),
+('4e92c626-3243-4dac-8e15-79d3b111d340', '1f8b4b0b-596d-4b21-82c2-362f4526b61c', '1', 'XXL', 1, 1, '2025-08-28 08:45:01', '2025-08-28 08:45:01'),
+('538e1461-9954-4e7f-a5df-e98daafeb873', '1e769b46-9ca5-4cc1-9b29-40779e0a8181', '1', 'XXL', 1, 1, '2025-08-28 07:27:44', '2025-08-28 07:27:44'),
+('54aa8227-826f-4800-8b5d-ff800d97ca05', '1c2a0cc3-6c20-44d9-bf2d-4212df0d5aca', '1', 'XXL', 1, 1, '2025-08-28 08:47:13', '2025-08-28 08:47:13'),
+('554a759b-fea3-49bd-afb0-b196ed571d8a', '3314c387-5199-492d-b82d-fac64688058e', '1', 'XXL', 1, 1, '2025-08-28 09:13:09', '2025-08-28 09:13:09'),
+('5e7f164e-4404-4d44-a851-f57e63a99cd7', '367b5a7f-2248-4239-84a7-c7e3166f2ae9', '1', 'XXL', 1, 1, '2025-08-28 07:31:52', '2025-08-28 07:31:52'),
+('60056de0-3430-4bde-a667-60e7f8f76a87', 'ba11f4c3-f663-45f6-9546-96e95cdd27a9', '1', 'XXL', 1, 1, '2025-08-28 07:26:19', '2025-08-28 07:26:19'),
+('6576f0ea-ff63-49e4-b719-099ac5d9922d', 'bffecfe5-0f8a-42cb-abd3-0d7315e9b516', '3', 'XXL', 1, 30, '2025-08-30 02:41:59', '2025-08-30 02:41:59'),
+('689f1e91-b2ee-4113-9812-f49cf032d537', 'fbf8d35c-848f-4376-ae3a-6c2d3b9044ba', '1', 'XXL', 1, 5, '2025-09-27 21:59:26', '2025-09-27 21:59:26'),
+('6fe1e29a-611d-4eec-a99a-917d3a57421d', '11dc5771-deaf-4bd6-909c-570d9fa9e2de', '2', 'S', 1, 50, '2025-08-29 13:13:56', '2025-08-29 13:13:56'),
+('7009e2d6-6777-463f-8d34-f4c6fb9c7e32', 'a956e297-cdbf-40e0-969c-e9203ca16729', '1', 'XXL', 1, 1, '2025-08-28 18:01:50', '2025-08-28 18:01:50'),
+('70d39032-7b13-4200-bd89-71f54c56d5be', '9a863c8c-886e-4a6b-8fce-13445db1e462', '2', 'L', 1, 50, '2025-09-27 21:59:47', '2025-09-27 21:59:47'),
+('71a37dcb-ae3f-4c7f-a8d8-d2c2520e18e4', '11dc5771-deaf-4bd6-909c-570d9fa9e2de', '3', 'M', 1, 30, '2025-08-29 13:13:56', '2025-08-29 13:13:56'),
+('74de514b-5605-463b-bb30-ff2b503657ea', 'da6550ff-7e2c-4816-9024-fa42900318de', '2', 'L', 1, 50, '2025-08-29 13:47:11', '2025-08-29 13:47:11'),
+('7deaa6cd-0858-404a-865d-26ae22d06aa9', 'f7f75064-82e4-4666-9bdd-44ce8cea0f53', '1', 'XXL', 1, 1, '2025-08-29 12:28:12', '2025-08-29 12:28:12'),
+('8d126d04-02aa-4372-8a7d-76b630563de1', 'ad87d71a-d68d-4237-9613-f7b588c8e4d7', '1', 'XXL', 1, 1, '2025-08-27 13:21:39', '2025-08-27 13:21:39'),
+('92900640-bfe5-4108-bcae-2330ccb1494f', 'ecac91f9-1693-47c5-82e3-7cc315239670', '1', 'S', 1, 1, '2025-08-29 13:45:09', '2025-08-29 13:45:09'),
+('99428a96-8f40-4e75-a171-f24ca0f71813', '55af48a4-a5a8-4f16-944c-d68b3b98ee0e', '1', 'XXL', 1, 1, '2025-08-27 22:53:00', '2025-08-27 22:53:00'),
+('9a307475-f5f3-4a51-8665-b0ddc037a8f5', '99a5ec1d-8b76-4cda-bffd-618b7ec812c0', '2', 'L', 1, 50, '2025-08-29 01:35:51', '2025-08-29 01:35:51'),
+('9d647f66-47ef-4cce-897b-1ec168871179', 'bffecfe5-0f8a-42cb-abd3-0d7315e9b516', '1', 'XXL', 1, 1, '2025-08-30 02:41:59', '2025-08-30 02:41:59'),
+('a6df2a54-4d00-4799-9127-d813c1b19db6', 'bffecfe5-0f8a-42cb-abd3-0d7315e9b516', '3', 'XXL', 1, 30, '2025-08-30 02:41:59', '2025-08-30 02:41:59'),
+('ab0a7d1b-a1a6-4826-8c6b-805fa1bf9999', '6234f4b9-6882-4ae1-bd1a-d1d95985c0a8', '2', 'L', 1, 50, '2025-08-29 12:23:10', '2025-08-29 12:23:10'),
+('c33ab377-79de-427f-9414-75cdd921d745', '3314c387-5199-492d-b82d-fac64688058e', '3', 'L', 3, 30, '2025-08-28 09:13:09', '2025-08-28 09:13:09'),
+('c928e2bc-b573-41b8-a6d8-15b1caca00d3', '11dc5771-deaf-4bd6-909c-570d9fa9e2de', '4', 'L', 1, 25, '2025-08-29 13:13:56', '2025-08-29 13:13:56'),
+('dda2b3c1-933d-4d10-bed0-fb63163da98d', '1f8b4b0b-596d-4b21-82c2-362f4526b61c', '2', 'L', 1, 50, '2025-08-28 08:45:01', '2025-08-28 08:45:01'),
+('ef3b376f-6d3b-4ce7-8fb1-64dbbf59d2b8', '8bd0d101-5f38-4e31-8f49-80afa379c935', '1', 'XXL', 1, 1, '2025-08-28 17:18:34', '2025-08-28 17:18:34'),
+('f8fb256c-fe69-4ff9-b864-ff40ece35426', '11dc5771-deaf-4bd6-909c-570d9fa9e2de', '4', 'M', 1, 25, '2025-08-29 13:13:56', '2025-08-29 13:13:56');
 
 -- --------------------------------------------------------
 
@@ -165,8 +170,8 @@ INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `size`, `quantity`, `
 --
 
 CREATE TABLE `password_resets` (
-  `email` varchar(255) NOT NULL,
-  `token` varchar(255) NOT NULL,
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -177,12 +182,12 @@ CREATE TABLE `password_resets` (
 --
 
 CREATE TABLE `personal_access_tokens` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `tokenable_type` varchar(255) NOT NULL,
-  `tokenable_id` bigint(20) UNSIGNED NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `token` varchar(64) NOT NULL,
-  `abilities` text DEFAULT NULL,
+  `id` bigint UNSIGNED NOT NULL,
+  `tokenable_type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tokenable_id` bigint UNSIGNED NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `abilities` text COLLATE utf8mb4_unicode_ci,
   `last_used_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -195,16 +200,16 @@ CREATE TABLE `personal_access_tokens` (
 --
 
 CREATE TABLE `products` (
-  `id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL,
+  `id` int NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `price` decimal(10,2) NOT NULL,
-  `image` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`image`)),
-  `size` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`size`)),
-  `category` varchar(50) NOT NULL,
-  `is_best_seller` tinyint(1) NOT NULL DEFAULT 0,
+  `image` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `size` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `category` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `is_best_seller` tinyint(1) NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ;
 
 --
 -- Dumping data for table `products`
@@ -228,17 +233,17 @@ INSERT INTO `products` (`id`, `name`, `price`, `image`, `size`, `category`, `is_
 --
 
 CREATE TABLE `users` (
-  `id` char(36) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `full_name` varchar(255) DEFAULT NULL,
-  `phone` varchar(15) DEFAULT NULL,
-  `address` varchar(255) DEFAULT NULL,
-  `email` varchar(255) NOT NULL,
+  `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `full_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `phone` varchar(15) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `email_verified_at` timestamp NULL DEFAULT NULL,
-  `password` varchar(255) NOT NULL,
-  `amount` decimal(20,5) NOT NULL DEFAULT 0.00000,
-  `is_admin` tinyint(1) NOT NULL DEFAULT 0,
-  `remember_token` varchar(100) DEFAULT NULL,
+  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `amount` decimal(20,5) NOT NULL DEFAULT '0.00000',
+  `is_admin` tinyint(1) NOT NULL DEFAULT '0',
+  `remember_token` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -248,9 +253,9 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `full_name`, `phone`, `address`, `email`, `email_verified_at`, `password`, `amount`, `is_admin`, `remember_token`, `created_at`, `updated_at`) VALUES
-('8e8fea86-fe33-4910-8d28-6ef614286d25', 'User82210', 'Đạt Mg', '1234567890', 'Nha Trang', 'tiendatmagic8@yopmail.com', NULL, '$2y$12$I/UGVtopHukSw7BHdk1AbOgK/70SfTarknv1bGLRb/vcZhzoO3iby', 0.00000, 0, NULL, '2025-08-24 03:00:57', '2025-08-30 20:25:44'),
-('e0f8acd1-b5a9-4516-a12c-739e4728b0fe', 'User73407', 'User63361', '123456789876', '123', 'tiendatmagic9@yopmail.com', NULL, '$2y$12$kDcqueX0nC0GmKvezB4xnePsAL0UFq5ejyfjOIyhg4wKW5TKF2OVm', 0.00000, 0, NULL, '2025-08-29 00:43:15', '2025-08-29 18:56:37'),
-('f1d8cd64-8f3e-4760-9d6b-9da5d1064ef7', 'User70153', 'User96908', NULL, NULL, 'viet99cm@gmail.com', NULL, '$2y$12$sgObxy73pAFJRgVE887f3OMSPrSkGSWUtwDzwckrUuRYZ4GJ.A2Z2', 0.00000, 0, NULL, '2025-08-29 20:55:43', '2025-08-29 20:55:43');
+('8e8fea86-fe33-4910-8d28-6ef614286d25', 'User82210', 'Đạt Mg', '1234567890', 'Nha Trang', 'tiendatmagic8@yopmail.com', NULL, '$2y$12$I/UGVtopHukSw7BHdk1AbOgK/70SfTarknv1bGLRb/vcZhzoO3iby', 0.00000, 1, NULL, '2025-08-23 20:00:57', '2025-09-27 22:15:50'),
+('e0f8acd1-b5a9-4516-a12c-739e4728b0fe', 'User73407', 'User63361', '123456789876', '123', 'tiendatmagic9@yopmail.com', NULL, '$2y$12$kDcqueX0nC0GmKvezB4xnePsAL0UFq5ejyfjOIyhg4wKW5TKF2OVm', 0.00000, 0, NULL, '2025-08-28 17:43:15', '2025-08-29 11:56:37'),
+('f1d8cd64-8f3e-4760-9d6b-9da5d1064ef7', 'User70153', 'User96908', NULL, NULL, 'viet99cm@gmail.com', NULL, '$2y$12$sgObxy73pAFJRgVE887f3OMSPrSkGSWUtwDzwckrUuRYZ4GJ.A2Z2', 0.00000, 0, NULL, '2025-08-29 13:55:43', '2025-08-29 13:55:43');
 
 --
 -- Indexes for dumped tables
@@ -316,19 +321,19 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `failed_jobs`
 --
 ALTER TABLE `failed_jobs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `personal_access_tokens`
 --
 ALTER TABLE `personal_access_tokens`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
