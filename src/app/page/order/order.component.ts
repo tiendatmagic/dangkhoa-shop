@@ -14,16 +14,22 @@ export class OrderComponent {
   deliveryFee: number = 0;
   orderData: any;
   isLoading: boolean = false;
-
+  per_page: number = 10;
+  page: number = 1;
+  totalOrders: number = 0;
   constructor(private route: ActivatedRoute, private router: Router, private dataService: DataService, private http: HttpClient, private auth: AuthService) {
     this.deliveryFee = this.dataService.deliveryFee;
   }
 
   ngOnInit() {
     this.isLoading = true;
-    this.auth.getMyOrder().subscribe(
+    this.auth.getMyOrder({
+      page: 1
+    }).subscribe(
       (res: any) => {
-        this.orderData = res;
+        this.orderData = res.data;
+        this.totalOrders = res.total;
+        console.log(this.totalOrders);
         this.isLoading = false;
       },
       (error: any) => {
@@ -33,7 +39,21 @@ export class OrderComponent {
     )
   }
 
-  viewOrder() {
-
+  viewMore() {
+    this.isLoading = true;
+    this.auth.getAllOrder({
+      per_page: this.per_page += 10,
+    }).subscribe(
+      (res: any) => {
+        this.orderData = res.data;
+        this.totalOrders = res.total;
+        console.log(this.totalOrders);
+        this.isLoading = false;
+      },
+      (error: any) => {
+        console.error(error);
+        this.isLoading = false;
+      }
+    )
   }
 }

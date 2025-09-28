@@ -418,8 +418,12 @@ class AuthController extends BaseController
 
     public function getMyOrder(Request $request)
     {
+        $page = $request->input('page', 1);
+        $perPage = $request->input('per_page', 10);
         $orders = Orders::where('user_id', $request->user()->id)
             ->orderBy('created_at', 'desc')
+            ->skip(0)
+            ->take($perPage)
             ->get();
 
         foreach ($orders as $order) {
@@ -440,7 +444,14 @@ class AuthController extends BaseController
             $order->total = $total;
         }
 
-        return response()->json($orders);
+        $getOrders = [
+            'data' => $orders,
+            'total' => Orders::count(),
+            'page' => $page,
+            'per_page' => $perPage,
+        ];
+
+        return response()->json($getOrders);
     }
 
     public function getOrderDetail(Request $request)
