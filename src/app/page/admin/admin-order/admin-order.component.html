@@ -87,7 +87,10 @@
         </div>
       </ng-container>
 
-      <div class="flex justify-center mt-5">
+      <div
+        class="flex justify-center mt-5"
+        *ngIf="orderData.length >= 10 && orderData.length < totalOrders"
+      >
         <button class="btn-primary" (click)="viewMore()">View More</button>
       </div>
     </ng-container>

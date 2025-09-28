@@ -15,6 +15,7 @@ export class AdminOrderComponent {
   isLoading: boolean = false;
   per_page: number = 10;
   page: number = 1;
+  totalOrders: number = 0;
   constructor(private route: ActivatedRoute, private router: Router, private dataService: DataService, private http: HttpClient, private auth: AuthService) {
     this.deliveryFee = this.dataService.deliveryFee;
   }
@@ -25,7 +26,9 @@ export class AdminOrderComponent {
       page: 1
     }).subscribe(
       (res: any) => {
-        this.orderData = res;
+        this.orderData = res.data;
+        this.totalOrders = res.total;
+        console.log(this.totalOrders);
         this.isLoading = false;
       },
       (error: any) => {
@@ -41,7 +44,9 @@ export class AdminOrderComponent {
       per_page: this.per_page += 10,
     }).subscribe(
       (res: any) => {
-        this.orderData = res;
+        this.orderData = res.data;
+        this.totalOrders = res.total;
+        console.log(this.totalOrders);
         this.isLoading = false;
       },
       (error: any) => {

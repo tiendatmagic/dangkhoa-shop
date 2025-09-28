@@ -47,7 +47,7 @@ class AdminController extends BaseController
         $page = $request->input('page', 1);
         $perPage = $request->input('per_page', 10);
         $orders = Orders::orderBy('created_at', 'desc')
-            ->skip($page)
+            ->skip(0)
             ->take($perPage)
             ->get();
 
@@ -69,7 +69,14 @@ class AdminController extends BaseController
             $order->total = $total;
         }
 
-        return response()->json($orders);
+        $getOrders = [
+            'data' => $orders,
+            'total' => Orders::count(),
+            'page' => $page,
+            'per_page' => $perPage,
+        ];
+
+        return response()->json($getOrders);
     }
 
     public function updateOrderStatus(Request $request)
