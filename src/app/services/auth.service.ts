@@ -11,8 +11,8 @@ import { environment } from '../../environments/environment';
 export class AuthService {
   public urlEnv = environment.production ? environment.apiUrl : environment.apiUrlLocal;
   public imgError: string = '/assets/images/default.jpg';
-  public getToken = localStorage.getItem('dat-shop-token');
-  public getProfile = localStorage.getItem('dat-shop-profile');
+  public getToken = localStorage.getItem('dangkhoa-token');
+  public getProfile = localStorage.getItem('dangkhoa-profile');
   public token2FA: string = '';
   private isAdminSubject = new BehaviorSubject<number>(0);
   public isAdmin$ = this.isAdminSubject.asObservable();
@@ -122,7 +122,7 @@ export class AuthService {
     return this.http.post(`${this.urlEnv}api/auth/me`, data).pipe(
       tap((res: any) => {
         this.isAdmin = res.is_admin || 0;
-        localStorage.setItem('dat-shop-profile', JSON.stringify(res));
+        localStorage.setItem('dangkhoa-profile', JSON.stringify(res));
         this.isLogin = true;
       }),
       takeUntil(this.destroyOnMe$),
@@ -152,7 +152,7 @@ export class AuthService {
         }
         break;
       default:
-        if (localStorage.getItem("dat-shop-token")) {
+        if (localStorage.getItem("dangkhoa-token")) {
 
         }
         break;
@@ -161,7 +161,7 @@ export class AuthService {
   }
 
   refreshAccessToken() {
-    const refreshToken = localStorage.getItem('dat-shop-renew');
+    const refreshToken = localStorage.getItem('dangkhoa-renew');
 
     if (!refreshToken || this.isRefreshing) {
       return;
@@ -178,23 +178,23 @@ export class AuthService {
         this.getToken = response.access_token;
         this.isLogin = true;
         this.isRefreshing = false;
-        localStorage.setItem('dat-shop-token', response.access_token);
-        localStorage.setItem('dat-shop-renew', response.refresh_token);
+        localStorage.setItem('dangkhoa-token', response.access_token);
+        localStorage.setItem('dangkhoa-renew', response.refresh_token);
         this.onLoad = true;
       }),
       catchError((error) => {
         const allowedPaths = ['login', 'register', 'forgot-password', 'reset-password', 'verify-2fa'];
         const currentUrl = this.location.path();
 
-        if (localStorage.getItem("dat-shop-token")) {
+        if (localStorage.getItem("dangkhoa-token")) {
           if (!allowedPaths.some(path => currentUrl.includes(path))) {
           }
         }
         this.isLogin = false;
         this.getToken = '';
-        localStorage.removeItem("dat-shop-profile");
-        localStorage.removeItem("dat-shop-renew");
-        localStorage.removeItem("dat-shop-token");
+        localStorage.removeItem("dangkhoa-profile");
+        localStorage.removeItem("dangkhoa-renew");
+        localStorage.removeItem("dangkhoa-token");
         this.router.navigate(['/login']);
         return throwError(error);
       }),
@@ -205,7 +205,7 @@ export class AuthService {
   }
 
   onLogout() {
-    const refreshToken = localStorage.getItem('dat-shop-renew');
+    const refreshToken = localStorage.getItem('dangkhoa-renew');
     return this.http.post(`${this.urlEnv}api/auth/logout`, { refresh_token: refreshToken }).pipe(
       catchError((error: any) => this.handleError(error))
     );

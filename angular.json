@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "dat_shop": {
+    "dangkhoa_shop": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -24,7 +24,7 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "outputPath": "dist/dat_shop",
+            "outputPath": "dist/dangkhoa_shop",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -74,10 +74,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "dat_shop:build:production"
+              "buildTarget": "dangkhoa_shop:build:production"
             },
             "development": {
-              "buildTarget": "dat_shop:build:development"
+              "buildTarget": "dangkhoa_shop:build:development"
             }
           },
           "defaultConfiguration": "development"

@@ -38,7 +38,7 @@ export class RegisterComponent {
   }
 
   ngOnInit() {
-    var getToken = localStorage.getItem('dat-shop-renew');
+    var getToken = localStorage.getItem('dangkhoa-renew');
     if (getToken) {
       this.router.navigate(['/']);
     }
@@ -53,8 +53,8 @@ export class RegisterComponent {
       this.registerForm.disable();
 
       this.auth.onRegister(data).subscribe((res: any) => {
-        localStorage.setItem('dat-shop-token', res.access_token);
-        localStorage.setItem('dat-shop-renew', res.refresh_token);
+        localStorage.setItem('dangkhoa-token', res.access_token);
+        localStorage.setItem('dangkhoa-renew', res.refresh_token);
         this.auth.getToken = res.access_token;
         this.router.navigate(['/home']);
         this.auth.isLogin = true;

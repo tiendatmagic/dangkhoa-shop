@@ -12,13 +12,13 @@ import { NavigationEnd, Router } from '@angular/router';
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  title = 'dat_shop';
+  title = 'dangkhoa_shop';
   cartItems: any[] = [];
 
   constructor(public translate: TranslateService, private router: Router, private dataService: DataService, private auth: AuthService) {
     this.auth.onLoad$.subscribe((value) => {
       if (value) {
-        var token = localStorage.getItem('dat-shop-token');
+        var token = localStorage.getItem('dangkhoa-token');
         if (token) {
 
           this.auth.onMe({}).subscribe((res: any) => {
@@ -26,8 +26,8 @@ export class AppComponent {
           },
             (error: any) => {
               if (error.status == 0 && error.statusText == 'Unknown Error') {
-                localStorage.removeItem("dat-shop-renew");
-                localStorage.removeItem("dat-shop-token");
+                localStorage.removeItem("dangkhoa-renew");
+                localStorage.removeItem("dangkhoa-token");
               }
             }
           );
@@ -39,7 +39,7 @@ export class AppComponent {
     });
   }
   ngOnInit(): void {
-    var token = localStorage.getItem('dat-shop-token');
+    var token = localStorage.getItem('dangkhoa-token');
     const accessPaths = ['my', 'account', 'dashboard', 'admin', 'deposit', 'withdraw', 'event', 'wallet', 'profile', 'order', 'checkout', 'order-detail'];
 
     this.router.events.subscribe((event: any) => {

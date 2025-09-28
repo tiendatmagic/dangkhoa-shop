@@ -10,7 +10,7 @@ export class HttpInterceptorService implements HttpInterceptor {
 
   constructor(private auth: AuthService) { }
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    var tokenReNew = localStorage.getItem('dat-shop-renew');
+    var tokenReNew = localStorage.getItem('dangkhoa-renew');
     let token = req.clone({
       setHeaders: {
         Authorization: `Bearer ${this.auth.getToken}`,

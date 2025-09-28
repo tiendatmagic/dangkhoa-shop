@@ -27,6 +27,7 @@ export class HeaderComponent implements OnInit {
   lang: string = 'vi';
   isLogin: boolean = false;
   cartCount: number = 0;
+  isAdmin: number = 0;
 
   constructor(public web3Service: Web3Service, private router: Router, private snackBar: MatSnackBar, public translate: TranslateService, private dataService: DataService, private auth: AuthService) {
     this.web3Service.chainId$.subscribe((networkId: any) => {
@@ -40,10 +41,14 @@ export class HeaderComponent implements OnInit {
     this.auth.isLogin$.subscribe((value) => {
       this.isLogin = value;
     });
+    this.auth.isAdmin$.subscribe((value) => {
+      this.isAdmin = value;
+      console.log(this.isAdmin);
+    });
   }
 
   ngOnInit(): void {
-    if (localStorage.getItem('dat-shop-token')) {
+    if (localStorage.getItem('dangkhoa-token')) {
       this.isLogin = true;
     }
 
@@ -86,25 +91,25 @@ export class HeaderComponent implements OnInit {
 
   onLogout() {
     this.auth.onLogout().subscribe((res: any) => {
-      localStorage.removeItem("dat-shop-renew");
-      localStorage.removeItem("dat-shop-token");
-      localStorage.removeItem("dat-shop-profile");
+      localStorage.removeItem("dangkhoa-renew");
+      localStorage.removeItem("dangkhoa-token");
+      localStorage.removeItem("dangkhoa-profile");
       this.auth.getToken = '';
       this.auth.isLogin = false;
       this.auth.onLoad = true;
       this.auth.isLogin = false;
       this.auth.getProfile = null;
+      this.auth.isAdmin = 0;
 
     },
       (error: any) => {
         this.auth.getToken = '';
         this.auth.isLogin = false;
-        localStorage.removeItem("dat-shop-renew");
-        localStorage.removeItem("dat-shop-token");
-        localStorage.removeItem("dat-shop-profile");
-
+        this.auth.isAdmin = 0;
+        localStorage.removeItem("dangkhoa-renew");
+        localStorage.removeItem("dangkhoa-token");
+        localStorage.removeItem("dangkhoa-profile");
         this.router.navigate(['/login']);
-
       }
     );
   }

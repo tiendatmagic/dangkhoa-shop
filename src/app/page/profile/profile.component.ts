@@ -44,7 +44,7 @@ export class ProfileComponent {
   }
   ngOnInit(): void {
     this.auth.isGetMe = false;
-    this.data = (localStorage.getItem('dat-shop-profile'));
+    this.data = (localStorage.getItem('dangkhoa-profile'));
     this.data = JSON.parse(this.data);
 
     if (!this.data) {
@@ -56,8 +56,8 @@ export class ProfileComponent {
       },
         (error: any) => {
           if (error.status == 0 && error.statusText == 'Unknown Error') {
-            localStorage.removeItem("dat-shop-renew");
-            localStorage.removeItem("dat-shop-token");
+            localStorage.removeItem("dangkhoa-renew");
+            localStorage.removeItem("dangkhoa-token");
           }
         }
       );
@@ -67,7 +67,7 @@ export class ProfileComponent {
       this.profileForm.controls['phone'].setValue(this.data.phone);
       this.profileForm.controls['address'].setValue(this.data.address);
       this.profileForm.controls['email'].setValue(this.data.email);
-      this.profile = (localStorage.getItem('dat-shop-profile'));
+      this.profile = (localStorage.getItem('dangkhoa-profile'));
       this.profile = JSON.parse(this.profile);
     }
   }
@@ -92,7 +92,7 @@ export class ProfileComponent {
     this.auth.profile(data).subscribe((res: any) => {
       if (res && res.success == 'profile_updated') {
         this.dataService.showNotify('Success', 'Update information successfully', 'success', true, true, false);
-        localStorage.setItem('dat-shop-profile', JSON.stringify(res.data));
+        localStorage.setItem('dangkhoa-profile', JSON.stringify(res.data));
         this.isDisabled = false;
       }
       else {
@@ -111,7 +111,7 @@ export class ProfileComponent {
   }
 
   ngDoCheck() {
-    this.profile = (localStorage.getItem('dat-shop-profile'));
+    this.profile = (localStorage.getItem('dangkhoa-profile'));
     this.profile = JSON.parse(this.profile);
   }
 

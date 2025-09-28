@@ -45,7 +45,7 @@ export class PlaceOrderComponent {
   ngOnInit() {
     this.id = this.route.snapshot.paramMap.get('id');
     if (!this.id) {
-      var token = localStorage.getItem('dat-shop-token');
+      var token = localStorage.getItem('dangkhoa-token');
       if (!token) {
         this.snackBar.open('Please login first', 'OK', {
           duration: 3000,
@@ -92,7 +92,7 @@ export class PlaceOrderComponent {
 
 
     try {
-      this.data = JSON.parse(localStorage.getItem('dat-shop-profile') || '');
+      this.data = JSON.parse(localStorage.getItem('dangkhoa-profile') || '');
       this.name = this.data.full_name;
       this.email = this.data.email;
       this.address = this.data.address;

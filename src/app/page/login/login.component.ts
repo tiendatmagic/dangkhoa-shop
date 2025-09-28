@@ -31,7 +31,7 @@ export class LoginComponent {
   }
 
   ngOnInit() {
-    var getToken = localStorage.getItem('dat-shop-renew');
+    var getToken = localStorage.getItem('dangkhoa-renew');
 
     if (getToken) {
       this.router.navigate(['/']);
@@ -51,13 +51,14 @@ export class LoginComponent {
 
 
       this.auth.onLogin(data).subscribe((res: any) => {
-        localStorage.setItem('dat-shop-token', res.access_token);
-        localStorage.setItem('dat-shop-renew', res.refresh_token);
+        localStorage.setItem('dangkhoa-token', res.access_token);
+        localStorage.setItem('dangkhoa-renew', res.refresh_token);
         this.router.navigate(['/home']);
         this.auth.getToken = res.access_token;
         this.auth.isLogin = true;
+        this.auth.isAdmin = res['information'].is_admin;
         this.isLoading = this.auth.isLoading;
-        localStorage.setItem('dat-shop-profile', JSON.stringify(res['information']));
+        localStorage.setItem('dangkhoa-profile', JSON.stringify(res['information']));
         this.loginForm.enable();
       },
 
