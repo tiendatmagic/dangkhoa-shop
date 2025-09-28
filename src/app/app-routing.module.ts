@@ -13,6 +13,7 @@ import { AboutComponent } from './page/about/about.component';
 import { ProfileComponent } from './page/profile/profile.component';
 import { OrderComponent } from './page/order/order.component';
 import { OrderDetailComponent } from './page/order-detail/order-detail.component';
+import { AdminComponent } from './page/admin/admin.component';
 
 const routes: Routes = [
   {
@@ -74,6 +75,10 @@ const routes: Routes = [
   {
     path: 'checkout/:id',
     component: PlaceOrderComponent,
+  },
+  {
+    path: 'admin',
+    component: AdminComponent,
   },
   {
     path: 'product/:id',

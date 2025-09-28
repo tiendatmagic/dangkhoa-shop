@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -39,6 +40,13 @@ Route::group([
     Route::get('get-order', [AuthController::class, 'getOrder']);
     Route::get('get-my-order', [AuthController::class, 'getMyOrder']);
     Route::get('get-order-detail', [AuthController::class, 'getOrderDetail']);
+});
+
+Route::group([
+    'middleware' => ['api', 'admin'],
+    'prefix' => 'order'
+], function ($router) {
+    Route::get('get-all-order', [AdminController::class, 'getAllOrder']);
 });
 
 Route::group(
