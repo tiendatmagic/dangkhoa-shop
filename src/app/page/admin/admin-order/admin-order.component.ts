@@ -39,6 +39,9 @@ export class AdminOrderComponent {
   }
 
   viewMore() {
+
+    if (this.isLoading) return;
+
     this.isLoading = true;
     this.auth.getAllOrder({
       per_page: this.per_page += 10,
