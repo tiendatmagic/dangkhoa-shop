@@ -265,12 +265,25 @@ class AuthController extends BaseController
     public function confirmOrder(Request $request)
     {
         $payment = $request->payment;
+        $usedCodes = Orders::pluck('order_code')->toArray();
+        $usedCodes = array_flip($usedCodes);
+
+        $generateOrderCode = function () use (&$usedCodes) {
+            do {
+                $num = rand(1, 99999999);
+                $order_code = str_pad($num, 8, '0', STR_PAD_LEFT);
+            } while (isset($usedCodes[$order_code]));
+            $usedCodes[$order_code] = true;
+            return $order_code;
+        };
 
         if ($payment == 'cash') {
-
             $orderId = UUID::uuid4();
+            $order_code = $generateOrderCode();
+
             Orders::insert([
                 'id' => $orderId,
+                'order_code' => $order_code,
                 'user_id' => $request->user()->id,
                 'payment' => $payment,
                 'status' => 'pending',
@@ -284,7 +297,6 @@ class AuthController extends BaseController
             ]);
 
             $cart = $request->data['cart'];
-
             foreach ($cart as $item) {
                 OrderItems::insert([
                     'id' => UUID::uuid4(),
@@ -347,16 +359,19 @@ class AuthController extends BaseController
             }
 
             $orderId = UUID::uuid4();
+            $order_code = $generateOrderCode();
+
             Orders::insert([
                 'id'         => $orderId,
+                'order_code' => $order_code,
                 'user_id'    => $request->user()->id,
                 'payment'    => $payment,
                 'status'     => 'pending',
-                'name' => $request->data['name'],
-                'email' => $request->data['email'],
-                'phone' => $request->data['phone'],
-                'address' => $request->data['address'],
-                'note' => $request->data['note'],
+                'name'       => $request->data['name'],
+                'email'      => $request->data['email'],
+                'phone'      => $request->data['phone'],
+                'address'    => $request->data['address'],
+                'note'       => $request->data['note'],
                 'txhash'     => $txHash,
                 'created_at' => now(),
                 'updated_at' => now()
@@ -430,11 +445,16 @@ class AuthController extends BaseController
 
     public function getOrderDetail(Request $request)
     {
-        $order = Orders::find($request->id);
+        $order = Orders::where('user_id', $request->user()->id)
+            ->find($request->id);
 
-        $orderItems = OrderItems::where('order_id', $request->id)
+        $orderItems = OrderItems::where(
+            [
+                ['order_id', $request->id]
+            ]
+        )
             ->join('products', 'products.id', '=', 'order_items.product_id')
-            ->select('order_items.*', 'products.name', 'products.image', 'products.category', 'products.is_best_seller')
+            ->select('order_items.*',  'products.name', 'products.image', 'products.category', 'products.is_best_seller')
             ->get();
 
         foreach ($orderItems as $item) {

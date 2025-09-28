@@ -71,6 +71,7 @@ export class PlaceOrderComponent {
         (res: any) => {
           this.orderData = {
             "id": res.order.id,
+            "order_code": res.order.order_code,
             "name": res.order.full_name || res.order.name,
             "email": res.order.email,
             "phone": res.order.phone,

@@ -47,7 +47,7 @@ class AdminController extends BaseController
         $page = $request->input('page', 1);
         $perPage = $request->input('per_page', 10);
         $orders = Orders::orderBy('created_at', 'desc')
-            ->skip(($page - 1) * $perPage)
+            ->skip($page)
             ->take($perPage)
             ->get();
 

@@ -5,7 +5,7 @@
     <div class="mb-3 text-2xl">
       <div class="flex justify-between">
         <div class="inline-flex items-center gap-2 mb-3">
-          <p class="font-medium">My Order</p>
+          <p class="font-medium">Order</p>
           <p class="w-8 sm:w-12 h-[1px] sm:h-[2px] bg-gray-700"></p>
         </div>
       </div>
@@ -32,7 +32,7 @@
             <a
               class="text-base font-medium break-all hover:underline text-violet-700"
               routerLink="/order-detail/{{ order.id }}"
-              >{{ order.id }}</a
+              >#{{ order.order_code }}</a
             >
 
             <div>
@@ -79,13 +79,16 @@
               routerLink="/order-detail/{{ order.id }}"
               matRipple
               matRippleColor="#ffffff80"
-              (click)="viewOrder()"
             >
               View Order
             </button>
           </div>
         </div>
       </ng-container>
+
+      <div class="flex justify-center mt-5">
+        <button class="btn-primary" (click)="viewMore()">View More</button>
+      </div>
     </ng-container>
   </div>
 </div>
