@@ -59,7 +59,7 @@
                 [ngClass]="
                   order.status == 'canceled'
                     ? 'bg-gray-500'
-                    : order.status == 'pending'
+                    : order.status == 'pending' || order.status == 'processing'
                     ? 'bg-orange-500'
                     : order.status == 'completed'
                     ? 'bg-green-500'

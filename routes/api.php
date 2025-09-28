@@ -47,6 +47,7 @@ Route::group([
     'prefix' => 'order'
 ], function ($router) {
     Route::get('get-all-order', [AdminController::class, 'getAllOrder']);
+    Route::post('update-order-status', [AdminController::class, 'updateOrderStatus']);
 });
 
 Route::group(

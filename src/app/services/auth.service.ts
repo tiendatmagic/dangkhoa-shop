@@ -243,6 +243,11 @@ export class AuthService {
       catchError((error: any) => this.handleError(error))
     );
   }
+  updateOrderStatus(data: any) {
+    return this.http.post(`${this.urlEnv}api/order/update-order-status`, data).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
   getMyOrder() {
     return this.http.get(`${this.urlEnv}api/order/get-my-order`).pipe(
       catchError((error: any) => this.handleError(error))

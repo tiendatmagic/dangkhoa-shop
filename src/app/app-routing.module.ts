@@ -14,6 +14,7 @@ import { ProfileComponent } from './page/profile/profile.component';
 import { OrderComponent } from './page/order/order.component';
 import { OrderDetailComponent } from './page/order-detail/order-detail.component';
 import { AdminComponent } from './page/admin/admin.component';
+import { AdminOrderDetailComponent } from './page/admin/admin-order-detail/admin-order-detail.component';
 
 const routes: Routes = [
   {
@@ -79,6 +80,10 @@ const routes: Routes = [
   {
     path: 'admin',
     component: AdminComponent,
+  },
+  {
+    path: 'admin/order-detail/:id',
+    component: AdminOrderDetailComponent,
   },
   {
     path: 'product/:id',

@@ -71,4 +71,22 @@ class AdminController extends BaseController
 
         return response()->json($orders);
     }
+
+    public function updateOrderStatus(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|exists:orders,id',
+            'status' => 'required|in:pending,processing,completed,canceled',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
+        }
+
+        $order = Orders::find($request->input('id'));
+        $order->status = $request->input('status');
+        $order->save();
+
+        return response()->json(['message' => 'Order status updated successfully', 'order' => $order]);
+    }
 }

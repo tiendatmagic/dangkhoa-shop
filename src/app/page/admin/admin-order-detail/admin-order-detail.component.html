@@ -154,6 +154,24 @@
                   {{ orderData.order.status }}</span
                 >
               </p>
+
+              <div class="mt-5">
+                <div class="w-1/2">
+                  <p class="font-medium">Update status:</p>
+
+                  <select
+                    id="sort"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 mt-1"
+                    (change)="onChangeStatus($event)"
+                  >
+                    <option value="">Select</option>
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                    <option value="completed">Completed</option>
+                    <option value="canceled">Canceled</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
             <ng-container *ngIf="orderData.order.payment == 'usdt'">

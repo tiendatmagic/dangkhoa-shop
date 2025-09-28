@@ -31,7 +31,7 @@
           <div class="md:w-2/6">
             <a
               class="text-base font-medium break-all hover:underline text-violet-700"
-              routerLink="/order-detail/{{ order.id }}"
+              routerLink="/admin/order-detail/{{ order.id }}"
               >#{{ order.order_code }}</a
             >
 
@@ -41,6 +41,7 @@
                 Date: {{ order.created_at | date : "dd/MM/yyyy HH:mm:ss" }}
               </div>
               <div *ngIf="order.name">User: {{ order.name }}</div>
+              <div>Status: {{ order.status }}</div>
             </div>
           </div>
 
@@ -60,7 +61,7 @@
                 [ngClass]="
                   order.status == 'canceled'
                     ? 'bg-gray-500'
-                    : order.status == 'pending'
+                    : order.status == 'pending' || order.status == 'processing'
                     ? 'bg-orange-500'
                     : order.status == 'completed'
                     ? 'bg-green-500'
@@ -76,7 +77,7 @@
           <div class="flex justify-end md:w-1/6">
             <button
               class="mt-3 btn-primary whitespace-nowrap"
-              routerLink="/order-detail/{{ order.id }}"
+              routerLink="/admin/order-detail/{{ order.id }}"
               matRipple
               matRippleColor="#ffffff80"
             >
