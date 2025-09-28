@@ -53,9 +53,11 @@ export class AdminOrderDetailComponent {
     this.auth.updateOrderStatus({ id: this.id, status: value }).subscribe(
       (res: any) => {
         this.orderData.order.status = value;
+        this.dataService.showNotify('Success', 'Update order status to ' + value, 'success', true, true, false);
       },
       (error: any) => {
         console.error(error);
+        this.dataService.showNotify('Error', 'Failed to update order status', 'error', true, true, false);
       }
     )
   }
