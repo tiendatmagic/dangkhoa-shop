@@ -40,6 +40,8 @@
               <div>
                 Date: {{ order.created_at | date : "dd/MM/yyyy HH:mm:ss" }}
               </div>
+              <div *ngIf="order.name">User: {{ order.name }}</div>
+              <div>Status: {{ order.status }}</div>
             </div>
           </div>
 
@@ -67,7 +69,7 @@
                 "
               ></div>
               <span class="capitalize">{{
-                order.payment == "usdt" ? "USDT - Crypto" : order.payment
+                order.payment == "usdt" ? "Metamask - USDT" : order.payment
               }}</span>
             </div>
           </div>
@@ -78,13 +80,19 @@
               routerLink="/order-detail/{{ order.id }}"
               matRipple
               matRippleColor="#ffffff80"
-              (click)="viewOrder()"
             >
               View Order
             </button>
           </div>
         </div>
       </ng-container>
+
+      <div
+        class="flex justify-center mt-5"
+        *ngIf="orderData.length >= 10 && orderData.length < totalOrders"
+      >
+        <button class="btn-primary" (click)="viewMore()">View More</button>
+      </div>
     </ng-container>
   </div>
 </div>
