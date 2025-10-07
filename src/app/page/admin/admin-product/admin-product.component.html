@@ -39,7 +39,8 @@
             <div>
               <div class="flex items-start gap-6 mt-2">
                 <div>
-                  <img src="{{urlEnv}}{{ product.image[0] }}" alt="" class="w-16 rounded-md cursor-pointer sm:w-20"
+                  <img src="{{urlEnv}}{{ product.image[0] }}" alt="" (error)="handleImageError($event)"
+                    class="w-16 rounded-md cursor-pointer sm:w-20"
                     routerLink="/admin/product-detail/{{ product.id }}" />
                 </div>
                 <div>

@@ -58,7 +58,9 @@ export class AdminProductComponent {
     )
   }
 
-
+  handleImageError(event: any) {
+    event.target.src = 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg';
+  }
 
   deleteProduct(id: any) {
     const confirmDelete = window.confirm('Are you sure you want to delete this product? This action cannot be undone.');

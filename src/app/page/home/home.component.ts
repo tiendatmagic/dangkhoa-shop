@@ -55,6 +55,10 @@ export class HomeComponent implements OnInit {
     return this.productList.filter(product => product.is_best_seller == 1);
   }
 
+  handleImageError(event: any) {
+    event.target.src = 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg';
+  }
+
   test() {
     this.web3Service.getBalanceFunc('0x18E215E111aa8877266E9F8CDeDf21f605777777');
   }

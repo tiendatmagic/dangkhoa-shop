@@ -38,7 +38,7 @@
         <a class="overflow-auto text-gray-700 rounded-lg cursor-pointer" routerLink="/product/{{ product.id }}">
           <div class="overflow-hidden">
             <img class="object-cover w-full h-48 transition duration-300 ease-in-out hover:scale-110"
-              alt="{{ product.name }}" [src]="getImageUrl(product.image)" />
+              (error)="handleImageError($event)" alt="{{ product.name }}" [src]="getImageUrl(product.image)" />
           </div>
           <p class="pt-3 pb-1 text-sm">{{ product.name }}</p>
           <p class="text-sm font-medium">${{ product.price }}</p>
@@ -68,7 +68,7 @@
         <a class="overflow-auto text-gray-700 rounded-lg cursor-pointer" routerLink="/product/{{ product.id }}">
           <div class="overflow-hidden">
             <img class="object-cover w-full h-48 transition duration-300 ease-in-out hover:scale-110"
-              alt="{{ product.name }}" [src]="getImageUrl(product.image)" />
+              (error)="handleImageError($event)" alt="{{ product.name }}" [src]="getImageUrl(product.image)" />
           </div>
           <p class="pt-3 pb-1 text-sm">{{ product.name }}</p>
           <p class="text-sm font-medium">${{ product.price }}</p>

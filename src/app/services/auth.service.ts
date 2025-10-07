@@ -309,6 +309,12 @@ export class AuthService {
     );
   }
 
+  getProducts(params: any = {}) {
+    return this.http.get(`${this.urlEnv}api/products`, { params }).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
   getBaseUrl(): string {
     return this.urlEnv.replace(/\/$/, '');;
   }

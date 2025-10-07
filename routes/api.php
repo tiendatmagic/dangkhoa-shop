@@ -70,5 +70,6 @@ Route::group(
     function ($router) {
         Route::post('register', [RegisterController::class, 'register']);
         Route::get('home', [HomeController::class, 'getHomeProducts']);
+        Route::get('products', [HomeController::class, 'getProducts']);
     }
 );

@@ -41,16 +41,13 @@ class HomeController extends BaseController
     public function getHomeProducts(Request $request)
     {
         try {
-            // LATEST COLLECTION: Sản phẩm mới nhất, sort created_at DESC, limit 12 (tùy chỉnh)
             $latestProducts = Products::orderBy('created_at', 'desc')->take(12)->get();
 
-            // BEST SELLERS: Filter is_best_seller = 1, sort created_at DESC, limit 6
             $bestSellerProducts = Products::where('is_best_seller', 1)->orderBy('created_at', 'desc')->take(6)->get();
 
-            // Decode JSON fields để return array (nhưng relative URL giữ nguyên)
             $latestProducts->each(function ($product) {
-                $product->image = json_decode($product->image, true);  // Array relative paths
-                $product->size = json_decode($product->size, true);   // Array sizes
+                $product->image = json_decode($product->image, true);
+                $product->size = json_decode($product->size, true);
             });
 
             $bestSellerProducts->each(function ($product) {
@@ -60,11 +57,65 @@ class HomeController extends BaseController
 
             return response()->json([
                 'message' => 'Home products fetched successfully',
-                'latest_collection' => $latestProducts,  // Array products mới nhất
-                'best_sellers' => $bestSellerProducts   // Array best sellers
+                'latest_collection' => $latestProducts,
+                'best_sellers' => $bestSellerProducts
             ], 200);
         } catch (\Exception $e) {
             Log::error('Get home products error: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to fetch products'], 500);
+        }
+    }
+
+    public function getProducts(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'page' => 'integer|min:1',
+                'per_page' => 'integer|min:1|max:50',
+                'sort' => 'in:relevant,low-high,high-low',
+                'category' => 'string',
+                'min_price' => 'numeric|min:0',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['error' => $validator->errors()], 422);
+            }
+
+            $query = Products::query();
+
+            if ($request->filled('category')) {
+                $categories = explode(',', $request->category);
+                $query->whereIn('category', $categories);
+            }
+
+            if ($request->filled('min_price')) {
+                $query->where('price', '>=', $request->min_price);
+            }
+
+            switch ($request->get('sort', 'relevant')) {
+                case 'low-high':
+                    $query->orderBy('price', 'asc');
+                    break;
+                case 'high-low':
+                    $query->orderBy('price', 'desc');
+                    break;
+                default:
+                    $query->orderBy('created_at', 'desc');
+                    break;
+            }
+
+            $perPage = $request->get('per_page', 12);
+            $products = $query->paginate($perPage);
+
+            $products->through(function ($product) {
+                $product->image = json_decode($product->image ?? '[]', true);
+                $product->size = json_decode($product->size ?? '[]', true);
+                return $product;
+            });
+
+            return response()->json($products, 200);
+        } catch (\Exception $e) {
+            Log::error('Get products error: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to fetch products'], 500);
         }
     }
