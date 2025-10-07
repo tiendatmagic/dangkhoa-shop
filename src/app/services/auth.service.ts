@@ -265,4 +265,57 @@ export class AuthService {
       catchError((error: any) => this.handleError(error))
     );
   }
+  getProductDetail(data: any) {
+    return this.http.get(`${this.urlEnv}api/product/get-product-detail`, { params: data }).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
+  getAllProduct(query: any) {
+    return this.http.get(`${this.urlEnv}api/product/get-all-product`, { params: query }).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
+  uploadImage(file: File): Observable<{ url: string }> {
+    const formData = new FormData();
+    formData.append('image', file);
+    return this.http.post<{ url: string }>(`${this.urlEnv}api/product/upload-image`, formData).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
+  updateProduct(data: any) {
+    return this.http.post(`${this.urlEnv}api/product/update-product`, data).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
+  createProduct(data: any) {
+    return this.http.post(`${this.urlEnv}api/product/create-product`, data).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+  deleteProduct(data: any) {
+    return this.http.post(`${this.urlEnv}api/product/delete-product`, data).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
+  // Trong AuthService
+  getHomeProducts() {
+    return this.http.get(`${this.urlEnv}api/home`).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
+  getProducts(params: any = {}) {
+    return this.http.get(`${this.urlEnv}api/products`, { params }).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
+  getBaseUrl(): string {
+    return this.urlEnv.replace(/\/$/, '');;
+  }
 }

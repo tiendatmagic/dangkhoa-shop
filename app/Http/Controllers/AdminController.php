@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\OrderItems;
 use App\Models\Orders;
+use App\Models\Products;
 use App\Models\TwoFactorUsers;
 use App\Models\User;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -28,6 +29,8 @@ use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 use Illuminate\Routing\Controller as BaseController;
 use App\Traits\Sharable;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Auth\Events\Login;
 use PhpParser\Node\Stmt\TryCatch;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -98,6 +101,129 @@ class AdminController extends BaseController
         return response()->json(['message' => 'Order status updated successfully', 'order' => $order]);
     }
 
+    public function getAllProduct(Request $request)
+    {
+        $page = $request->input('page', 1);
+        $perPage = $request->input('per_page', 10);
+        $products = Products::orderBy('created_at', 'asc')
+            ->skip(0)
+            ->take($perPage)
+            ->get();
+
+
+        foreach ($products as $product) {
+            $product->image = json_decode($product->image);
+            $product->size = json_decode($product->size);
+        }
+
+        $getProducts = [
+            'data' => $products,
+            'total' => Products::count(),
+            'page' => $page,
+            'per_page' => $perPage,
+        ];
+        return response()->json($getProducts);
+    }
+
+    public function getProductDetail(Request $request)
+    {
+        $id = $request->input('id');
+        $product = Products::find($id);
+        $product->image = json_decode($product->image);
+        $product->size = json_decode($product->size);
+        return response()->json($product);
+    }
+
+    public function updateProduct(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|exists:products,id',
+            'name' => 'required|string|max:255',
+            'price' => 'nullable|numeric',
+            'category' => 'nullable|string|max:100',
+            'is_best_seller' => 'required|in:0,1',
+            'size' => 'nullable|array',
+            'image' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
+        }
+
+        $product = Products::find($request->id);
+        $product->name = $request->name;
+        $product->price = $request->price ?? $product->price;
+        $product->category = $request->category ?? $product->category;
+        $product->is_best_seller = $request->is_best_seller;
+        $product->size = json_encode($request->size);
+        if ($request->image) {
+            $product->image = json_encode([$request->image]);
+        }
+        $product->save();
+
+        $product->image = json_decode($product->image);
+        $product->size = json_decode($product->size);
+
+        return response()->json([
+            'message' => 'Product updated successfully',
+            'product' => $product
+        ]);
+    }
+
+    public function upload(Request $request)
+    {
+        try {
+            $request->validate([
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
+            $file = $request->file('image');
+            $extension = $file->getClientOriginalExtension();
+            $filename = Str::uuid() . '_' . time() . '.' . $extension;
+
+            $path = $file->storeAs('images', $filename, 'public');
+            $relativePath = '/storage/' . $path;
+
+            return response()->json(['url' => $relativePath], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['error' => 'Validation failed: ' . $e->getMessage()], 422);
+        } catch (\Exception $e) {
+            Log::error('Upload error: ' . $e->getMessage());
+            return response()->json(['error' => 'Upload failed'], 500);
+        }
+    }
+
+    public function createProduct(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric',
+            'category' => 'required|string|max:100',
+            'is_best_seller' => 'required|in:0,1',
+            'size' => 'required|array',
+            'image' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
+        }
+
+        $product = new Products();
+        $product->name = $request->name;
+        $product->price = $request->price ?? 0;
+        $product->category = $request->category ?? '';
+        $product->is_best_seller = $request->is_best_seller;
+        $product->size = $request->size ? json_encode($request->size) : null;
+        $product->image = json_encode([$request->image]);
+        $product->save();
+
+        $product->image = json_decode($product->image);
+        $product->size = json_decode($product->size);
+
+        return response()->json(['message' => 'Product created', 'product' => $product]);
+    }
+
+
     public function sendBNB()
     {
         $sweb3 = new SWeb3('https://bsc-dataseed1.binance.org/');
@@ -117,6 +243,14 @@ class AdminController extends BaseController
         $result = $sweb3->send($sendParams);
 
         return $result;
+    }
+
+    public function deleteProduct(Request $request)
+    {
+        $id = $request->input('id');
+        $product = Products::find($id);
+        $product->delete();
+        return response()->json(['message' => 'Product deleted successfully']);
     }
 
     public function sendUSDT()

@@ -1,22 +1,14 @@
 <ul class="flex items-center gap-4">
   <li>
-    <button
-      class=""
-      [ngClass]="isChoose == 1 ? 'btn-primary' : 'btn-outline-primary'"
-      matRipple
-      (click)="isChoose = 1"
-    >
+    <button class="" [ngClass]="isChoose == 1 ? 'btn-primary' : 'btn-outline-primary'" matRipple
+      matRippleColor="#ffffff80" (click)="isChoose = 1">
       Product
     </button>
   </li>
 
   <li>
-    <button
-      class=""
-      [ngClass]="isChoose == 2 ? 'btn-primary' : 'btn-outline-primary'"
-      matRipple
-      (click)="isChoose = 2"
-    >
+    <button class="" [ngClass]="isChoose == 2 ? 'btn-primary' : 'btn-outline-primary'" matRipple
+      matRippleColor="#ffffff80" (click)="isChoose = 2">
       Orders
     </button>
   </li>

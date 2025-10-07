@@ -28,7 +28,6 @@ export class AdminOrderComponent {
       (res: any) => {
         this.orderData = res.data;
         this.totalOrders = res.total;
-        console.log(this.totalOrders);
         this.isLoading = false;
       },
       (error: any) => {
@@ -49,7 +48,6 @@ export class AdminOrderComponent {
       (res: any) => {
         this.orderData = res.data;
         this.totalOrders = res.total;
-        console.log(this.totalOrders);
         this.isLoading = false;
       },
       (error: any) => {

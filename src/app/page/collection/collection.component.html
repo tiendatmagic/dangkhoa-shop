@@ -15,23 +15,37 @@
           <div class="flex flex-col gap-2 text-sm">
             <p>
               <label for="Men" class="flex items-center gap-3">
-                <input type="checkbox" class="border border-gray-400 text-violet-700" id="Men" name="Men" value="Men"
-                  (change)="getProductsByCategory('men', $event)">
+                <input type="checkbox" class="border border-gray-400 text-violet-700" id="Men" name="Men" value="men"
+                  (change)="onCategoryChange('men', $event)">
                 <span>Men</span>
               </label>
             </p>
             <p>
               <label for="Women" class="flex items-center gap-3">
                 <input type="checkbox" class="border border-gray-400 text-violet-700" id="Women" name="Women"
-                  value="Women" (change)="getProductsByCategory('women', $event)">
+                  value="women" (change)="onCategoryChange('women', $event)">
                 <span>Women</span>
               </label>
             </p>
             <p>
-              <label for="Kids" class="flex items-center gap-3">
-                <input type="checkbox" class="border border-gray-400 text-violet-700" id="Kids" name="Kids" value="Kids"
-                  (change)="getProductsByCategory('kids', $event)">
-                <span>Kids</span>
+              <label for="Crypto" class="flex items-center gap-3">
+                <input type="checkbox" class="border border-gray-400 text-violet-700" id="Crypto" name="Crypto"
+                  value="crypto" (change)="onCategoryChange('crypto', $event)">
+                <span>Crypto</span>
+              </label>
+            </p>
+            <p>
+              <label for="NFT" class="flex items-center gap-3">
+                <input type="checkbox" class="border border-gray-400 text-violet-700" id="NFT" name="NFT" value="nft"
+                  (change)="onCategoryChange('nft', $event)">
+                <span>NFT</span>
+              </label>
+            </p>
+            <p>
+              <label for="Other" class="flex items-center gap-3">
+                <input type="checkbox" class="border border-gray-400 text-violet-700" id="Other" name="Other"
+                  value="other" (change)="onCategoryChange('other', $event)">
+                <span>Other</span>
               </label>
             </p>
           </div>
@@ -94,17 +108,43 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-4 mt-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-y-6">
-        <ng-container *ngFor="let product of productList">
-          <a class="overflow-auto rounded-lg cursor-pointer" routerLink="/product/{{ product.id }}">
-            <div class="overflow-hidden">
-              <img class="transition duration-300 ease-in-out hover:scale-110" alt="" src="{{ product.image[0] }}" />
-            </div>
-            <p class="pt-3 pb-1 text-sm">{{ product.name }}</p>
-            <p class="text-sm font-medium">${{ product.price }}</p>
-          </a>
-        </ng-container>
-      </div>
+      <ng-container *ngIf="!isLoading; else loadingTemplate">
+        <div class="grid grid-cols-2 gap-4 mt-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-y-6">
+          <ng-container *ngFor="let product of productList">
+            <a class="overflow-auto rounded-lg cursor-pointer" routerLink="/product/{{ product.id }}">
+              <div class="overflow-hidden">
+                <img class="object-cover w-full h-48 transition duration-300 ease-in-out hover:scale-110"
+                  (error)="handleImageError($event)" alt="{{ product.name }}" [src]="getImageUrl(product.image)" />
+              </div>
+              <p class="pt-3 pb-1 text-sm">{{ product.name }}</p>
+              <p class="text-sm font-medium">${{ product.price }}</p>
+            </a>
+          </ng-container>
+        </div>
+
+        <!-- Button View More -->
+        <div class="mt-6 text-center" *ngIf="hasMorePages && !isLoadingMore">
+          <button type="button" (click)="loadMoreProducts()" class="px-6 py-3 rounded-lg btn-primary" matRipple
+            matRippleColor="#ffffff66">
+            View More
+          </button>
+        </div>
+
+        <div class="mt-6 text-center" *ngIf="isLoadingMore">
+          <p class="text-gray-500">Loading more products...</p>
+        </div>
+
+        <div class="mt-6 text-center" *ngIf="!hasMorePages && productList.length > 0">
+          <p class="text-gray-500">No more products to load.</p>
+        </div>
+      </ng-container>
     </section>
   </div>
 </div>
+
+<!-- Loading template cho grid -->
+<ng-template #loadingTemplate>
+  <div class="py-8 text-center col-span-full">
+    <p class="text-lg font-medium text-gray-500">Loading products...</p>
+  </div>
+</ng-template>

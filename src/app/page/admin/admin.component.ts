@@ -8,5 +8,5 @@ import { Component } from '@angular/core';
 })
 export class AdminComponent {
 
-  isChoose: number = 0;
+  isChoose: number = 1;
 }
