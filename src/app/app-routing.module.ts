@@ -15,6 +15,8 @@ import { OrderComponent } from './page/order/order.component';
 import { OrderDetailComponent } from './page/order-detail/order-detail.component';
 import { AdminComponent } from './page/admin/admin.component';
 import { AdminOrderDetailComponent } from './page/admin/admin-order-detail/admin-order-detail.component';
+import { AdminProductDetailComponent } from './page/admin/admin-product-detail/admin-product-detail.component';
+import { AdminCreateProductComponent } from './page/admin/admin-create-product/admin-create-product.component';
 
 const routes: Routes = [
   {
@@ -88,6 +90,14 @@ const routes: Routes = [
   {
     path: 'product/:id',
     component: ProductComponent,
+  },
+  {
+    path: 'admin/product-detail/:id',
+    component: AdminProductDetailComponent,
+  },
+  {
+    path: 'admin/create-product',
+    component: AdminCreateProductComponent,
   },
   { path: '**', redirectTo: '', pathMatch: 'full' },
 ];

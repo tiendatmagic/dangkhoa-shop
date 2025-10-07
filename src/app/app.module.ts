@@ -36,6 +36,8 @@ import { AdminComponent } from './page/admin/admin.component';
 import { AdminProductComponent } from './page/admin/admin-product/admin-product.component';
 import { AdminOrderComponent } from './page/admin/admin-order/admin-order.component';
 import { AdminOrderDetailComponent } from './page/admin/admin-order-detail/admin-order-detail.component';
+import { AdminProductDetailComponent } from './page/admin/admin-product-detail/admin-product-detail.component';
+import { AdminCreateProductComponent } from './page/admin/admin-create-product/admin-create-product.component';
 
 const globalRippleConfig: RippleGlobalOptions = {
   animation: {
@@ -72,7 +74,9 @@ export function HttpLoaderFactory(http: HttpClient) {
     AdminComponent,
     AdminProductComponent,
     AdminOrderComponent,
-    AdminOrderDetailComponent
+    AdminOrderDetailComponent,
+    AdminProductDetailComponent,
+    AdminCreateProductComponent
   ],
   imports: [
     BrowserModule,
