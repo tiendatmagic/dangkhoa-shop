@@ -6,23 +6,14 @@
           <h2 class="text-4xl font-medium text-center">
             Welcome to DangKhoa Shop
           </h2>
-          <button
-            routerLink="/collection"
-            class="px-8 py-4 mt-3 btn-primary"
-            matRipple
-            matRippleColor="#ffffff80"
-          >
+          <button routerLink="/collection" class="px-8 py-4 mt-3 btn-primary" matRipple matRippleColor="#ffffff80">
             SHOP NOW
           </button>
         </div>
       </div>
 
       <div class="hidden w-full md:block">
-        <img
-          src="/assets/images/banner.jpg"
-          alt=""
-          class="w-full h-full aspect-video"
-        />
+        <img src="/assets/images/banner.jpg" alt="" class="w-full h-full aspect-video" />
       </div>
     </div>
   </div>
@@ -41,26 +32,20 @@
     </div>
   </div>
 
-  <div
-    class="grid grid-cols-2 gap-4 mt-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-y-6"
-  >
-    <ng-container *ngFor="let product of productList">
-      <a
-        class="overflow-auto text-gray-700 rounded-lg cursor-pointer"
-        routerLink="/product/{{ product.id }}"
-      >
-        <div class="overflow-hidden">
-          <img
-            class="transition duration-300 ease-in-out hover:scale-110"
-            alt=""
-            src="{{ product.image[0] }}"
-          />
-        </div>
-        <p class="pt-3 pb-1 text-sm">{{ product.name }}</p>
-        <p class="text-sm font-medium">${{ product.price }}</p>
-      </a>
-    </ng-container>
-  </div>
+  <ng-container *ngIf="!isLoading; else loadingTemplate">
+    <div class="grid grid-cols-2 gap-4 mt-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-y-6">
+      <ng-container *ngFor="let product of productList">
+        <a class="overflow-auto text-gray-700 rounded-lg cursor-pointer" routerLink="/product/{{ product.id }}">
+          <div class="overflow-hidden">
+            <img class="object-cover w-full h-48 transition duration-300 ease-in-out hover:scale-110"
+              alt="{{ product.name }}" [src]="getImageUrl(product.image)" />
+          </div>
+          <p class="pt-3 pb-1 text-sm">{{ product.name }}</p>
+          <p class="text-sm font-medium">${{ product.price }}</p>
+        </a>
+      </ng-container>
+    </div>
+  </ng-container>
 </section>
 
 <section>
@@ -77,24 +62,24 @@
     </div>
   </div>
 
-  <div
-    class="grid grid-cols-2 gap-4 mt-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-y-6"
-  >
-    <ng-container *ngFor="let product of bestSellerProducts">
-      <a
-        class="overflow-auto text-gray-700 rounded-lg cursor-pointer"
-        routerLink="/product/{{ product.id }}"
-      >
-        <div class="overflow-hidden">
-          <img
-            class="transition duration-300 ease-in-out hover:scale-110"
-            alt=""
-            src="{{ product.image[0] }}"
-          />
-        </div>
-        <p class="pt-3 pb-1 text-sm">{{ product.name }}</p>
-        <p class="text-sm font-medium">${{ product.price }}</p>
-      </a>
-    </ng-container>
-  </div>
+  <ng-container *ngIf="!isLoading; else loadingTemplate">
+    <div class="grid grid-cols-2 gap-4 mt-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-y-6">
+      <ng-container *ngFor="let product of bestSellerProducts">
+        <a class="overflow-auto text-gray-700 rounded-lg cursor-pointer" routerLink="/product/{{ product.id }}">
+          <div class="overflow-hidden">
+            <img class="object-cover w-full h-48 transition duration-300 ease-in-out hover:scale-110"
+              alt="{{ product.name }}" [src]="getImageUrl(product.image)" />
+          </div>
+          <p class="pt-3 pb-1 text-sm">{{ product.name }}</p>
+          <p class="text-sm font-medium">${{ product.price }}</p>
+        </a>
+      </ng-container>
+    </div>
+  </ng-container>
 </section>
+
+<ng-template #loadingTemplate>
+  <div class="py-8 text-center col-span-full">
+    <p class="text-lg font-medium text-gray-500">Loading products...</p>
+  </div>
+</ng-template>

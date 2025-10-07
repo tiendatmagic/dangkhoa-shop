@@ -16,7 +16,7 @@ export class AdminCreateProductComponent {
   category: FormControl;
   isBestSeller: FormControl;
   size: FormControl;
-  profileForm: FormGroup;
+  productForm: FormGroup;
   isLoading: boolean = false;
   isUploading: boolean = false;
   previewUrl: string | null = null;
@@ -31,7 +31,7 @@ export class AdminCreateProductComponent {
     this.isBestSeller = new FormControl('0', [Validators.required]);
     this.size = new FormControl('', [Validators.required, Validators.minLength(1)]);
 
-    this.profileForm = fb.group({
+    this.productForm = fb.group({
       productName: this.productName,
       price: this.price,
       category: this.category,
@@ -58,9 +58,9 @@ export class AdminCreateProductComponent {
   }
 
   createProduct() {
-    if (this.profileForm.valid && this.pendingImage && !this.isUploading) {
+    if (this.productForm.valid && this.pendingImage && !this.isUploading) {
       this.isUploading = true;
-      const formData = this.profileForm.value;
+      const formData = this.productForm.value;
       const sizeArray = formData.size ? formData.size.split(',').map((s: any) => s.trim()).filter((s: any) => s) : [];
 
       this.auth.uploadImage(this.pendingImage).subscribe(
@@ -75,11 +75,10 @@ export class AdminCreateProductComponent {
         }
       );
     } else {
-      // Error messages cụ thể
       if (!this.pendingImage) {
         this.dataService.showNotify('Error', 'Please select an image', 'error', true, true, false);
-      } else if (!this.profileForm.valid) {
-        this.profileForm.markAllAsTouched();
+      } else if (!this.productForm.valid) {
+        this.productForm.markAllAsTouched();
         this.dataService.showNotify('Error', 'Please check the form', 'error', true, true, false);
       }
     }
@@ -99,7 +98,7 @@ export class AdminCreateProductComponent {
       (res: any) => {
         this.isUploading = false;
         this.dataService.showNotify('Success', 'Create product successfully', 'success', true, true, false);
-        this.router.navigate(['/admin/products']);
+        this.router.navigate(['/admin/']);
       },
       (err: any) => {
         this.dataService.showNotify('Error', 'Failed to create product', 'error', true, true, false);

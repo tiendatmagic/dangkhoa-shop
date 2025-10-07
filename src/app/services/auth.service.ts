@@ -279,7 +279,7 @@ export class AuthService {
 
   uploadImage(file: File): Observable<{ url: string }> {
     const formData = new FormData();
-    formData.append('image', file);  // Key 'image' tùy backend, có thể là 'file'
+    formData.append('image', file);
     return this.http.post<{ url: string }>(`${this.urlEnv}api/product/upload-image`, formData).pipe(
       catchError((error: any) => this.handleError(error))
     );
@@ -296,6 +296,20 @@ export class AuthService {
       catchError((error: any) => this.handleError(error))
     );
   }
+  deleteProduct(data: any) {
+    return this.http.post(`${this.urlEnv}api/product/delete-product`, data).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
 
+  // Trong AuthService
+  getHomeProducts() {
+    return this.http.get(`${this.urlEnv}api/home`).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
 
+  getBaseUrl(): string {
+    return this.urlEnv.replace(/\/$/, '');;
+  }
 }

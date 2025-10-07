@@ -17,7 +17,7 @@ export class AdminProductDetailComponent {
   category: FormControl;
   isBestSeller: FormControl;
   size: FormControl;
-  profileForm: FormGroup;
+  productForm: FormGroup;
   id: any;
   isLoading: boolean = false;
   imageUrl: string = 'https://picsum.photos/300/300?random=1';
@@ -34,7 +34,7 @@ export class AdminProductDetailComponent {
     this.category = new FormControl('', [Validators.required]);
     this.isBestSeller = new FormControl('', [Validators.required]);
     this.size = new FormControl('', [Validators.required]);
-    this.profileForm = _fb.group({
+    this.productForm = _fb.group({
       productName: this.productName,
       price: this.price,
       category: this.category,
@@ -51,7 +51,7 @@ export class AdminProductDetailComponent {
       this.isLoading = true;
       this.auth.getProductDetail({ id: this.id }).subscribe(
         (res: any) => {
-          this.profileForm.patchValue({
+          this.productForm.patchValue({
             productName: res.name || '',
             price: res.price || '',
             category: res.category || '',
@@ -96,8 +96,8 @@ export class AdminProductDetailComponent {
   }
 
   updateProduct() {
-    if (this.profileForm.valid) {
-      const formData = this.profileForm.value;
+    if (this.productForm.valid) {
+      const formData = this.productForm.value;
       const sizeArray = formData.size ? formData.size.split(',').map((s: any) => s.trim()) : [];
 
       if (this.pendingImage) {
@@ -118,7 +118,7 @@ export class AdminProductDetailComponent {
         this.submitPayload(sizeArray, formData, this.imageUrl);
       }
     } else {
-      this.profileForm.markAllAsTouched();
+      this.productForm.markAllAsTouched();
     }
   }
 

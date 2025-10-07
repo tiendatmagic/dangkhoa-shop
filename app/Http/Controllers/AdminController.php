@@ -245,6 +245,14 @@ class AdminController extends BaseController
         return $result;
     }
 
+    public function deleteProduct(Request $request)
+    {
+        $id = $request->input('id');
+        $product = Products::find($id);
+        $product->delete();
+        return response()->json(['message' => 'Product deleted successfully']);
+    }
+
     public function sendUSDT()
     {
         $sweb3 = new SWeb3('https://bsc-dataseed1.binance.org/');

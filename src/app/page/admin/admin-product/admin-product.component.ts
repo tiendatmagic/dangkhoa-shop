@@ -57,4 +57,28 @@ export class AdminProductComponent {
       }
     )
   }
+
+
+
+  deleteProduct(id: any) {
+    const confirmDelete = window.confirm('Are you sure you want to delete this product? This action cannot be undone.');
+
+    if (confirmDelete) {
+      this.isLoading = true;
+      this.auth.deleteProduct({ id: id }).subscribe(
+        (res: any) => {
+          this.isLoading = false;
+          this.dataService.showNotify('Success', 'Delete successfully', 'success', true, true, false);
+          this.router.navigate(['/admin']);
+        },
+        (error: any) => {
+          console.error(error);
+          this.isLoading = false;
+          this.dataService.showNotify('Error', 'Delete failed: ' + (error.error?.message || 'Unknown error'), 'error', true, true, false);
+        }
+      );
+    } else {
+      this.dataService.showNotify('Error', 'Delete cancelled', 'error', true, true, false);
+    }
+  }
 }
