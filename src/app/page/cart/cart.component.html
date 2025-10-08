@@ -28,7 +28,7 @@
             <div class="grid items-center grid-cols-1 gap-4 py-4 text-gray-700 border-b sm:grid-cols-[3fr_1fr]"
               id="{{ product.id}}">
               <div class="flex items-start gap-6">
-                <img class="w-16 rounded-md sm:w-20" alt="" src="{{ product.image}}">
+                <img class="w-16 rounded-md sm:w-20" alt="" (error)="handleImageError($event)" src="{{ product.image}}">
                 <div>
                   <a routerLink="/product/{{ product.id}}" class="text-base font-medium sm:text-lg hover:underline">
                     {{ product.name}}

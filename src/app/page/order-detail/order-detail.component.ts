@@ -39,6 +39,10 @@ export class OrderDetailComponent {
     }
   }
 
+  handleImageError(event: any) {
+    event.target.src = 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg';
+  }
+
   viewOnBSCScan(tx: string) {
     window.open(`https://bscscan.com/tx/${tx}`, '_blank');
   }

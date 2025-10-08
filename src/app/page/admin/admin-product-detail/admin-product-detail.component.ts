@@ -31,7 +31,7 @@ export class AdminProductDetailComponent {
   constructor(private route: ActivatedRoute, _fb: FormBuilder, private router: Router, private http: HttpClient, private auth: AuthService, private dataService: DataService) {
     this.productName = new FormControl('', [Validators.required]);
     this.price = new FormControl('', [Validators.required]);
-    this.category = new FormControl('', [Validators.required]);
+    this.category = new FormControl('');
     this.isBestSeller = new FormControl('', [Validators.required]);
     this.size = new FormControl('', [Validators.required]);
     this.productForm = _fb.group({
@@ -103,12 +103,7 @@ export class AdminProductDetailComponent {
       if (this.pendingImage) {
         this.auth.uploadImage(this.pendingImage).subscribe(
           (response: { url: string }) => {
-            if (this.previewUrl) {
-              URL.revokeObjectURL(this.previewUrl);
-              this.previewUrl = null;
-            }
             this.pendingImage = null;
-
             this.submitPayload(sizeArray, formData, response.url);
           },
           (error: any) => {
@@ -123,6 +118,7 @@ export class AdminProductDetailComponent {
   }
 
   private submitPayload(sizeArray: string[], formData: any, finalImageUrl: string) {
+
     const payload = {
       id: this.id,
       name: formData.productName,
@@ -140,5 +136,9 @@ export class AdminProductDetailComponent {
       (error: any) => {
       }
     );
+  }
+
+  handleImageError(event: any) {
+    event.target.src = 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg';
   }
 }

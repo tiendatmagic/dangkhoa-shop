@@ -1,6 +1,7 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../services/auth.service';
 import { DataService } from '../../../services/data.service';
 
@@ -13,6 +14,8 @@ import { DataService } from '../../../services/data.service';
 export class AdminCreateProductComponent {
   productName: FormControl;
   price: FormControl;
+  quantity: FormControl;
+  productType: FormControl;
   category: FormControl;
   isBestSeller: FormControl;
   size: FormControl;
@@ -24,21 +27,32 @@ export class AdminCreateProductComponent {
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
-  constructor(private fb: FormBuilder, private router: Router, private auth: AuthService, private dataService: DataService) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private auth: AuthService,
+    private dataService: DataService,
+    private http: HttpClient
+  ) {
     this.productName = new FormControl('', [Validators.required, Validators.minLength(1), Validators.maxLength(30)]);
     this.price = new FormControl('', [Validators.required, Validators.min(0)]);
-    this.category = new FormControl('', [Validators.required]);
+    this.quantity = new FormControl('', [Validators.min(0)]);
+    this.productType = new FormControl('');
+    this.category = new FormControl('');
     this.isBestSeller = new FormControl('0', [Validators.required]);
     this.size = new FormControl('', [Validators.required, Validators.minLength(1)]);
 
     this.productForm = fb.group({
       productName: this.productName,
       price: this.price,
+      quantity: this.quantity,
+      productType: this.productType,
       category: this.category,
       isBestSeller: this.isBestSeller,
       size: this.size,
     });
   }
+
 
   onImageClick() {
     this.fileInput.nativeElement.click();
@@ -89,6 +103,8 @@ export class AdminCreateProductComponent {
       name: formData.productName,
       price: formData.price,
       category: formData.category,
+      product_type: formData.productType,
+      quantity: formData.quantity,
       is_best_seller: parseInt(formData.isBestSeller),
       size: sizeArray,
       image: imageUrl
