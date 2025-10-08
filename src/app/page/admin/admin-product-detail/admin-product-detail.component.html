@@ -29,7 +29,7 @@
                   <div>
                     <div class="relative w-full cursor-pointer" (click)="onImageClick()">
                       <div class="aspect-[2/3] max-w-32 max-h-48 relative group overflow-hidden rounded-lg">
-                        <img [src]="previewUrl || urlEnv + imageUrl" alt=""
+                        <img [src]="previewUrl || urlLink + imageUrl" alt=""
                           class="object-cover w-full h-full transition-transform group-hover:scale-110">
                         <div
                           class="absolute top-0 left-0 flex items-center justify-center w-full h-full transition-opacity duration-300 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100">

@@ -10,6 +10,7 @@ import { environment } from '../../environments/environment';
 })
 export class AuthService {
   public urlEnv = environment.production ? environment.apiUrl : environment.apiUrlLocal;
+  public urlLink = environment.production ? this.urlEnv + '/public'.replace(/\/$/, '') : this.urlEnv.replace(/\/$/, '');
   public imgError: string = '/assets/images/default.jpg';
   public getToken = localStorage.getItem('dangkhoa-token');
   public getProfile = localStorage.getItem('dangkhoa-profile');
@@ -316,6 +317,6 @@ export class AuthService {
   }
 
   getBaseUrl(): string {
-    return this.urlEnv.replace(/\/$/, '');;
+    return this.urlLink;
   }
 }

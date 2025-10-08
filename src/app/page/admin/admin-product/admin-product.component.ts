@@ -16,12 +16,12 @@ export class AdminProductComponent {
   per_page: number = 10;
   page: number = 1;
   totalProducts: number = 0;
-  urlEnv: string = '';
+  urlLink: string = '';
   constructor(private route: ActivatedRoute, private router: Router, private dataService: DataService, private http: HttpClient, private auth: AuthService) {
   }
 
   ngOnInit() {
-    this.urlEnv = this.auth.urlEnv.replace(/\/$/, '');
+    this.urlLink = this.auth.getBaseUrl();
     this.isLoading = true;
     this.auth.getAllProduct({
       page: 1
