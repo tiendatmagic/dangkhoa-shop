@@ -71,5 +71,6 @@ Route::group(
         Route::post('register', [RegisterController::class, 'register']);
         Route::get('home', [HomeController::class, 'getHomeProducts']);
         Route::get('products', [HomeController::class, 'getProducts']);
+        Route::get('products/{id}', [HomeController::class, 'getProductById']);
     }
 );

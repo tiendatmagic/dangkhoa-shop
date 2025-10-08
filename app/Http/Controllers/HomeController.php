@@ -119,4 +119,24 @@ class HomeController extends BaseController
             return response()->json(['error' => 'Failed to fetch products'], 500);
         }
     }
+
+    public function getProductById($id)
+    {
+        try {
+            $product = Products::findOrFail($id);
+            $product->image = json_decode($product->image ?? '[]', true);
+            $product->size = json_decode($product->size ?? '[]', true);
+
+            return response()->json([
+                'message' => 'Product fetched successfully',
+                'product' => $product
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Get product by ID error: ' . $e->getMessage());
+            if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+                return response()->json(['error' => 'Product not found'], 404);
+            }
+            return response()->json(['error' => 'Failed to fetch product'], 500);
+        }
+    }
 }

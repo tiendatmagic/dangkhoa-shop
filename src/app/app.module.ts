@@ -38,6 +38,7 @@ import { AdminOrderComponent } from './page/admin/admin-order/admin-order.compon
 import { AdminOrderDetailComponent } from './page/admin/admin-order-detail/admin-order-detail.component';
 import { AdminProductDetailComponent } from './page/admin/admin-product-detail/admin-product-detail.component';
 import { AdminCreateProductComponent } from './page/admin/admin-create-product/admin-create-product.component';
+import { CommonModule } from '@angular/common';
 
 const globalRippleConfig: RippleGlobalOptions = {
   animation: {
@@ -88,6 +89,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     FormsModule,
     MatTabsModule,
     MatIconModule,
+    CommonModule, FormsModule,
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,

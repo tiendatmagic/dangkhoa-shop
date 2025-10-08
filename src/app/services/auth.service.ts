@@ -316,6 +316,12 @@ export class AuthService {
     );
   }
 
+  getProductById(id: string | number) {
+    return this.http.get(`${this.urlEnv}api/products/${id}`).pipe(
+      catchError((error: any) => this.handleError(error))
+    )
+  }
+
   getBaseUrl(): string {
     return this.urlLink;
   }
