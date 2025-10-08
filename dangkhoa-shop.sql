@@ -3,13 +3,13 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Sep 28, 2025 at 06:15 AM
+-- Generation Time: Oct 07, 2025 at 04:39 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.1.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
-SET time_zone = "+00:00";
+SET time_zone = "+07:00";
 
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
@@ -86,16 +86,22 @@ CREATE TABLE `orders` (
 --
 
 INSERT INTO `orders` (`id`, `order_code`, `user_id`, `payment`, `txhash`, `status`, `name`, `email`, `phone`, `address`, `note`, `created_at`, `updated_at`) VALUES
+('0089d858-7ecb-4cff-8eb4-99af2e0c3cf0', '41683556', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-09-27 23:18:50', '2025-09-27 23:18:50'),
 ('11dc5771-deaf-4bd6-909c-570d9fa9e2de', '03768232', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-29 13:13:56', '2025-08-29 13:13:56'),
 ('1c2a0cc3-6c20-44d9-bf2d-4212df0d5aca', '30990376', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-28 08:47:13', '2025-08-28 08:47:13'),
 ('1e769b46-9ca5-4cc1-9b29-40779e0a8181', '43647188', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'usdt', '0x44ed52b93ca583894f66848d9b0f72dbf637459325a8dff6da9f796a9194bb62', 'pending', NULL, NULL, NULL, NULL, NULL, '2025-08-28 07:27:44', '2025-08-28 07:27:44'),
 ('1f8b4b0b-596d-4b21-82c2-362f4526b61c', '25264813', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-28 08:45:01', '2025-08-28 08:45:01'),
 ('3314c387-5199-492d-b82d-fac64688058e', '95382504', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-28 09:13:09', '2025-08-28 09:13:09'),
+('35697302-8b1c-4532-900e-374541ed5bed', '01003782', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'completed', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-10-06 23:26:50', '2025-10-06 23:27:03'),
 ('367b5a7f-2248-4239-84a7-c7e3166f2ae9', '01118087', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'usdt', '0xcb7441269f92426d999c56c539772b2bdd68df49675ae298b7f4eb5ba3ca8eb4', 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-28 07:31:52', '2025-08-28 07:31:52'),
+('39098938-7249-4ef1-b53e-05d65a16aa94', '91959284', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-09-27 23:30:12', '2025-09-27 23:30:12'),
 ('55af48a4-a5a8-4f16-944c-d68b3b98ee0e', '19442921', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'usdt', '0xf8b161a09a1857beea6f41e63cb4ae6160efa89ca9f4d0ef8f0c5277d74adb3c', 'pending', NULL, NULL, NULL, NULL, NULL, '2025-08-27 22:53:00', '2025-08-27 22:53:00'),
+('58a93ac4-5b22-4db0-995c-9f25d6dd7877', '15921195', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-09-27 23:30:26', '2025-09-27 23:30:26'),
+('5e757394-97ea-4731-98f2-2f7b9410c53b', '99554808', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-09-27 23:31:06', '2025-09-27 23:31:06'),
 ('6234f4b9-6882-4ae1-bd1a-d1d95985c0a8', '93860348', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-29 12:23:10', '2025-08-29 12:23:10'),
+('68cd5068-7fa3-4cfb-86f9-7b97d35b3522', '86384616', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'canceled', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-10-03 21:39:21', '2025-10-06 23:39:40'),
 ('8bd0d101-5f38-4e31-8f49-80afa379c935', '10972985', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'usdt', '0xcf77c0ea1d4916d4bad6a3d54d8c786e1d3724d7b295b6ecfa3ae73dac9d2c70', 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-28 17:18:34', '2025-08-28 17:18:34'),
-('9102ebb2-8d4b-43a3-853b-bcd6dd08f786', '73283878', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Magic', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-30 00:02:51', '2025-08-30 00:02:51'),
+('9102ebb2-8d4b-43a3-853b-bcd6dd08f786', '73283878', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'completed', 'Đạt Magic', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-08-30 00:02:51', '2025-09-28 02:12:24'),
 ('99a5ec1d-8b76-4cda-bffd-618b7ec812c0', '33500440', 'e0f8acd1-b5a9-4516-a12c-739e4728b0fe', 'cash', NULL, 'pending', 'User63361', 'tiendatmagic9@yopmail.com', '123456789876', '123', NULL, '2025-08-29 01:35:51', '2025-08-29 01:35:51'),
 ('9a863c8c-886e-4a6b-8fce-13445db1e462', '47650567', '8e8fea86-fe33-4910-8d28-6ef614286d25', 'cash', NULL, 'pending', 'Đạt Mg', 'tiendatmagic8@yopmail.com', '1234567890', 'Nha Trang', NULL, '2025-09-27 21:59:47', '2025-09-27 21:59:47'),
 ('a956e297-cdbf-40e0-969c-e9203ca16729', '37751520', 'e0f8acd1-b5a9-4516-a12c-739e4728b0fe', 'usdt', '0xa223d6de37ed85d994c633e643bb29813dfd027f0f3a7cb0a5c629cd79d731e4', 'pending', 'User63361', 'tiendatmagic9@yopmail.com', '123456789876', '123', NULL, '2025-08-28 18:01:50', '2025-08-28 18:01:50'),
@@ -130,16 +136,19 @@ CREATE TABLE `order_items` (
 
 INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `size`, `quantity`, `price`, `created_at`, `updated_at`) VALUES
 ('0958b234-0938-40dd-a737-31070b45cb21', 'a956e297-cdbf-40e0-969c-e9203ca16729', '1', 'XL', 1, 1, '2025-08-28 18:01:50', '2025-08-28 18:01:50'),
+('0c219535-3906-4bcf-a5be-b76782893b45', '39098938-7249-4ef1-b53e-05d65a16aa94', '4', 'S', 1, 10, '2025-09-27 23:30:12', '2025-09-27 23:30:12'),
 ('1217e822-5fdc-4dac-8879-70b892919d0b', '9102ebb2-8d4b-43a3-853b-bcd6dd08f786', '2', 'L', 1, 50, '2025-08-30 00:02:51', '2025-08-30 00:02:51'),
 ('1e19815c-25ab-4039-930e-3f8726f5a05e', '1f8b4b0b-596d-4b21-82c2-362f4526b61c', '1', 'XXL', 1, 1, '2025-08-28 08:45:01', '2025-08-28 08:45:01'),
 ('23342310-4a33-4c7d-96e0-5cdea6d357f9', 'bffecfe5-0f8a-42cb-abd3-0d7315e9b516', '1', 'XXL', 1, 1, '2025-08-30 02:41:59', '2025-08-30 02:41:59'),
 ('2621c16b-6ce0-450c-882f-2a34ade9d959', '1c2a0cc3-6c20-44d9-bf2d-4212df0d5aca', '2', 'L', 1, 50, '2025-08-28 08:47:13', '2025-08-28 08:47:13'),
 ('3242d060-9955-45e1-b90a-3cff29e8c459', 'bffecfe5-0f8a-42cb-abd3-0d7315e9b516', '3', 'XXL', 1, 30, '2025-08-30 02:41:59', '2025-08-30 02:41:59'),
 ('3e945dfe-176e-4c32-8048-c2d51c83b64c', '9102ebb2-8d4b-43a3-853b-bcd6dd08f786', '1', 'XXL', 1, 1, '2025-08-30 00:02:51', '2025-08-30 00:02:51'),
+('497c3a4c-e49b-4b60-b759-c0cd98a332e1', '58a93ac4-5b22-4db0-995c-9f25d6dd7877', '3', 'XXL', 1, 30, '2025-09-27 23:30:26', '2025-09-27 23:30:26'),
 ('4e92c626-3243-4dac-8e15-79d3b111d340', '1f8b4b0b-596d-4b21-82c2-362f4526b61c', '1', 'XXL', 1, 1, '2025-08-28 08:45:01', '2025-08-28 08:45:01'),
 ('538e1461-9954-4e7f-a5df-e98daafeb873', '1e769b46-9ca5-4cc1-9b29-40779e0a8181', '1', 'XXL', 1, 1, '2025-08-28 07:27:44', '2025-08-28 07:27:44'),
 ('54aa8227-826f-4800-8b5d-ff800d97ca05', '1c2a0cc3-6c20-44d9-bf2d-4212df0d5aca', '1', 'XXL', 1, 1, '2025-08-28 08:47:13', '2025-08-28 08:47:13'),
 ('554a759b-fea3-49bd-afb0-b196ed571d8a', '3314c387-5199-492d-b82d-fac64688058e', '1', 'XXL', 1, 1, '2025-08-28 09:13:09', '2025-08-28 09:13:09'),
+('5e5797f2-0cb4-48cd-a9e1-5ff138e6744f', '35697302-8b1c-4532-900e-374541ed5bed', '2', 'L', 1, 50, '2025-10-06 23:26:50', '2025-10-06 23:26:50'),
 ('5e7f164e-4404-4d44-a851-f57e63a99cd7', '367b5a7f-2248-4239-84a7-c7e3166f2ae9', '1', 'XXL', 1, 1, '2025-08-28 07:31:52', '2025-08-28 07:31:52'),
 ('60056de0-3430-4bde-a667-60e7f8f76a87', 'ba11f4c3-f663-45f6-9546-96e95cdd27a9', '1', 'XXL', 1, 1, '2025-08-28 07:26:19', '2025-08-28 07:26:19'),
 ('6576f0ea-ff63-49e4-b719-099ac5d9922d', 'bffecfe5-0f8a-42cb-abd3-0d7315e9b516', '3', 'XXL', 1, 30, '2025-08-30 02:41:59', '2025-08-30 02:41:59'),
@@ -150,6 +159,8 @@ INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `size`, `quantity`, `
 ('71a37dcb-ae3f-4c7f-a8d8-d2c2520e18e4', '11dc5771-deaf-4bd6-909c-570d9fa9e2de', '3', 'M', 1, 30, '2025-08-29 13:13:56', '2025-08-29 13:13:56'),
 ('74de514b-5605-463b-bb30-ff2b503657ea', 'da6550ff-7e2c-4816-9024-fa42900318de', '2', 'L', 1, 50, '2025-08-29 13:47:11', '2025-08-29 13:47:11'),
 ('7deaa6cd-0858-404a-865d-26ae22d06aa9', 'f7f75064-82e4-4666-9bdd-44ce8cea0f53', '1', 'XXL', 1, 1, '2025-08-29 12:28:12', '2025-08-29 12:28:12'),
+('7f5993ba-8f8a-4a1a-9004-ae6c02d0bf2c', '0089d858-7ecb-4cff-8eb4-99af2e0c3cf0', '5', 'XL', 1, 35, '2025-09-27 23:18:50', '2025-09-27 23:18:50'),
+('8087ce37-4626-43d4-8739-773de5f38de7', '5e757394-97ea-4731-98f2-2f7b9410c53b', '1', 'M', 1, 5, '2025-09-27 23:31:06', '2025-09-27 23:31:06'),
 ('8d126d04-02aa-4372-8a7d-76b630563de1', 'ad87d71a-d68d-4237-9613-f7b588c8e4d7', '1', 'XXL', 1, 1, '2025-08-27 13:21:39', '2025-08-27 13:21:39'),
 ('92900640-bfe5-4108-bcae-2330ccb1494f', 'ecac91f9-1693-47c5-82e3-7cc315239670', '1', 'S', 1, 1, '2025-08-29 13:45:09', '2025-08-29 13:45:09'),
 ('99428a96-8f40-4e75-a171-f24ca0f71813', '55af48a4-a5a8-4f16-944c-d68b3b98ee0e', '1', 'XXL', 1, 1, '2025-08-27 22:53:00', '2025-08-27 22:53:00'),
@@ -159,6 +170,7 @@ INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `size`, `quantity`, `
 ('ab0a7d1b-a1a6-4826-8c6b-805fa1bf9999', '6234f4b9-6882-4ae1-bd1a-d1d95985c0a8', '2', 'L', 1, 50, '2025-08-29 12:23:10', '2025-08-29 12:23:10'),
 ('c33ab377-79de-427f-9414-75cdd921d745', '3314c387-5199-492d-b82d-fac64688058e', '3', 'L', 3, 30, '2025-08-28 09:13:09', '2025-08-28 09:13:09'),
 ('c928e2bc-b573-41b8-a6d8-15b1caca00d3', '11dc5771-deaf-4bd6-909c-570d9fa9e2de', '4', 'L', 1, 25, '2025-08-29 13:13:56', '2025-08-29 13:13:56'),
+('d240dd3e-f008-4813-8b5f-7ef57e782662', '68cd5068-7fa3-4cfb-86f9-7b97d35b3522', '4', 'M', 1, 10, '2025-10-03 21:39:21', '2025-10-03 21:39:21'),
 ('dda2b3c1-933d-4d10-bed0-fb63163da98d', '1f8b4b0b-596d-4b21-82c2-362f4526b61c', '2', 'L', 1, 50, '2025-08-28 08:45:01', '2025-08-28 08:45:01'),
 ('ef3b376f-6d3b-4ce7-8fb1-64dbbf59d2b8', '8bd0d101-5f38-4e31-8f49-80afa379c935', '1', 'XXL', 1, 1, '2025-08-28 17:18:34', '2025-08-28 17:18:34'),
 ('f8fb256c-fe69-4ff9-b864-ff40ece35426', '11dc5771-deaf-4bd6-909c-570d9fa9e2de', '4', 'M', 1, 25, '2025-08-29 13:13:56', '2025-08-29 13:13:56');
@@ -216,15 +228,19 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `name`, `price`, `image`, `size`, `category`, `is_best_seller`, `created_at`, `updated_at`) VALUES
-(1, 'Football Jersey', 6.00, '[\"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063577/b1devpuovnvqwdo8pfia.jpg\", \"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063577/o7kcxzpkbvobb05iu949.jpg\", \"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063577/iwopzvmpc5olrt7anheh.jpg\"]', '[\"S\", \"M\", \"XL\", \"XXL\"]', 'men', 1, NULL, NULL),
-(2, 'Hampton Long Sleeve Shirt', 50.00, '[\"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063302/wowbtd0tlj6tpfxvkxcg.jpg\", \"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063302/kjfejg6lvpqwib89qwfy.jpg\"]', '[\"S\", \"M\", \"L\"]', 'men', 0, NULL, NULL),
-(3, 'Cropped Fit Graphic T-Shirt', 30.00, '[\"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063623/gnttim2dl0vxljmpejlu.jpg\", \"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063623/fwtx0axdz5iowwgarff7.jpg\"]', '[\"S\", \"M\", \"XL\", \"XXL\", \"L\"]', 'men', 0, NULL, NULL),
-(4, 'Easy Short', 10.00, '[\"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063667/qudc6bwwlvnzfsgmx2ah.jpg\", \"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063667/ocu1bqsqtipqrk1dt61i.jpg\"]', '[\"S\", \"M\", \"L\"]', 'men', 0, NULL, NULL),
-(5, 'Alina Shirred Halter Top', 35.00, '[\"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063762/ggjerydhpsewxvm8kbyd.jpg\", \"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063762/jqoik9izii3hv5j2z2b4.jpg\"]', '[\"S\", \"M\", \"L\", \"XL\"]', 'women', 1, NULL, NULL),
-(6, 'Mikki Drop Hem Mini Dress', 60.00, '[\"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063815/hbrtbquoemjpaghclydx.jpg\", \"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063815/hk4ofjpoxe8ocrfvagkz.jpg\"]', '[\"S\", \"M\", \"L\", \"XL\"]', 'women', 1, NULL, NULL),
-(7, 'Haven Wide Leg Pant', 30.00, '[\"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063885/cnffks7xikrhgjan9zil.jpg\", \"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063885/e6xpjggzveoxjospfxos.jpg\"]', '[\"S\", \"M\", \"L\", \"XL\"]', 'women', 0, NULL, NULL),
-(8, 'Kaia Faux Leather Bomber', 109.00, '[\"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753064020/zc0xgahhdyl4jttwci2e.jpg\", \"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753064020/mwzlfoxgfofmncknwecv.jpg\"]', '[\"S\", \"M\", \"L\", \"XL\", \"XXL\"]', 'women', 1, NULL, NULL),
-(9, 'Sammy Oversize Hoodie', 34.00, '[\"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753064102/ri8zbzu6eq3z2ajkrwff.jpg\"]', '[\"S\", \"M\", \"L\"]', 'kids', 0, NULL, NULL);
+(1, 'Football Jersey', 6.00, '[\"\\/storage\\/images\\/1e4600b5-984d-4eba-89a1-23820d5df8b2_1759851111.png\"]', '[\"S\",\"M\",\"XL\",\"XXL\"]', 'men', 0, '2025-10-07 09:04:39', '2025-10-07 08:31:52'),
+(2, 'Hampton Long Sleeve Shirt', 50.00, '[\"https:\\/\\/res.cloudinary.com\\/dfyykwzsa\\/image\\/upload\\/v1753063302\\/wowbtd0tlj6tpfxvkxcg.jpg\"]', '[\"S\",\"M\",\"L\"]', 'men', 0, '2025-10-07 09:04:39', '2025-10-07 07:42:19'),
+(3, 'Cropped Fit Graphic T-Shirt', 30.00, '[\"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063623/gnttim2dl0vxljmpejlu.jpg\", \"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063623/fwtx0axdz5iowwgarff7.jpg\"]', '[\"S\", \"M\", \"XL\", \"XXL\", \"L\"]', 'men', 0, '2025-10-07 09:04:39', '2025-10-07 09:04:47'),
+(4, 'Easy Short', 10.00, '[\"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063667/qudc6bwwlvnzfsgmx2ah.jpg\", \"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063667/ocu1bqsqtipqrk1dt61i.jpg\"]', '[\"S\", \"M\", \"L\"]', 'men', 0, '2025-10-07 09:04:39', '2025-10-07 09:04:47'),
+(5, 'Alina Shirred Halter Top', 35.00, '[\"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063762/ggjerydhpsewxvm8kbyd.jpg\", \"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063762/jqoik9izii3hv5j2z2b4.jpg\"]', '[\"S\", \"M\", \"L\", \"XL\"]', 'women', 1, '2025-10-07 09:04:39', '2025-10-07 09:04:47'),
+(6, 'Mikki Drop Hem Mini Dress', 60.00, '[\"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063815/hbrtbquoemjpaghclydx.jpg\", \"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063815/hk4ofjpoxe8ocrfvagkz.jpg\"]', '[\"S\", \"M\", \"L\", \"XL\"]', 'women', 1, '2025-10-07 09:04:39', '2025-10-07 09:04:47'),
+(7, 'Haven Wide Leg Pant', 30.00, '[\"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063885/cnffks7xikrhgjan9zil.jpg\", \"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753063885/e6xpjggzveoxjospfxos.jpg\"]', '[\"S\", \"M\", \"L\", \"XL\"]', 'women', 0, '2025-10-07 09:04:39', '2025-10-07 09:04:47'),
+(8, 'Kaia Faux Leather Bomber', 109.00, '[\"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753064020/zc0xgahhdyl4jttwci2e.jpg\", \"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753064020/mwzlfoxgfofmncknwecv.jpg\"]', '[\"S\", \"M\", \"L\", \"XL\", \"XXL\"]', 'women', 1, '2025-10-07 09:04:39', '2025-10-07 09:04:47'),
+(9, 'Sammy Oversize Hoodie', 34.00, '[\"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753064102/ri8zbzu6eq3z2ajkrwff.jpg\"]', '[\"S\", \"M\", \"L\"]', 'kids', 0, '2025-10-07 09:04:39', '2025-10-07 09:04:47'),
+(10, 'Sammy Oversize Hoodie 2', 34.00, '[\"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753064102/ri8zbzu6eq3z2ajkrwff.jpg\"]', '[\"S\", \"M\", \"L\"]', 'kids', 0, '2025-10-07 09:04:39', '2025-10-07 09:04:47'),
+(11, 'Sammy Oversize Hoodie 3', 34.00, '[\"https://res.cloudinary.com/dfyykwzsa/image/upload/v1753064102/ri8zbzu6eq3z2ajkrwff.jpg\"]', '[\"S\", \"M\", \"L\"]', 'kids', 0, '2025-10-07 09:04:39', '2025-10-07 09:04:47'),
+(14, 'P1', 900.00, '[\"\\/storage\\/images\\/1b5b75fc-afc7-4abc-a092-0883c02523e9_1759852492.jpg\"]', '[\"K\",\"L\"]', 'nft', 1, '2025-10-07 08:54:53', '2025-10-07 08:54:53'),
+(15, 'A', 3.00, '[\"\\/storage\\/images\\/832184a2-3891-4dea-b866-3b4f310c7bfe_1759852962.png\"]', '[\"L\",\"M\"]', 'men', 1, '2025-10-07 09:02:42', '2025-10-07 09:02:42');
 
 -- --------------------------------------------------------
 
@@ -253,7 +269,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `full_name`, `phone`, `address`, `email`, `email_verified_at`, `password`, `amount`, `is_admin`, `remember_token`, `created_at`, `updated_at`) VALUES
-('8e8fea86-fe33-4910-8d28-6ef614286d25', 'User82210', 'Đạt Mg', '1234567890', 'Nha Trang', 'tiendatmagic8@yopmail.com', NULL, '$2y$12$I/UGVtopHukSw7BHdk1AbOgK/70SfTarknv1bGLRb/vcZhzoO3iby', 0.00000, 1, NULL, '2025-08-23 20:00:57', '2025-09-27 22:15:50'),
+('8e8fea86-fe33-4910-8d28-6ef614286d25', 'User82210', 'Đạt Mg', '1234567890', 'Nha Trang', 'tiendatmagic8@yopmail.com', NULL, '$2y$12$I/UGVtopHukSw7BHdk1AbOgK/70SfTarknv1bGLRb/vcZhzoO3iby', 0.00000, 1, NULL, '2025-08-23 20:00:57', '2025-09-28 08:44:54'),
 ('e0f8acd1-b5a9-4516-a12c-739e4728b0fe', 'User73407', 'User63361', '123456789876', '123', 'tiendatmagic9@yopmail.com', NULL, '$2y$12$kDcqueX0nC0GmKvezB4xnePsAL0UFq5ejyfjOIyhg4wKW5TKF2OVm', 0.00000, 0, NULL, '2025-08-28 17:43:15', '2025-08-29 11:56:37'),
 ('f1d8cd64-8f3e-4760-9d6b-9da5d1064ef7', 'User70153', 'User96908', NULL, NULL, 'viet99cm@gmail.com', NULL, '$2y$12$sgObxy73pAFJRgVE887f3OMSPrSkGSWUtwDzwckrUuRYZ4GJ.A2Z2', 0.00000, 0, NULL, '2025-08-29 13:55:43', '2025-08-29 13:55:43');
 
@@ -334,6 +350,12 @@ ALTER TABLE `migrations`
 --
 ALTER TABLE `personal_access_tokens`
   MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `products`
+--
+ALTER TABLE `products`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
