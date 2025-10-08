@@ -141,6 +141,7 @@ class AdminController extends BaseController
             'name' => 'required|string|max:255',
             'price' => 'nullable|numeric',
             'category' => 'nullable|string|max:100',
+            'product_type' => 'nullable|string|max:100',
             'is_best_seller' => 'required|in:0,1',
             'size' => 'nullable|array',
             'image' => 'nullable|string',
@@ -154,6 +155,7 @@ class AdminController extends BaseController
         $product->name = $request->name;
         $product->price = $request->price ?? $product->price;
         $product->category = $request->category ?? $product->category;
+        $product->product_type = $request->product_type ?? $product->product_type;
         $product->is_best_seller = $request->is_best_seller;
         $product->size = json_encode($request->size);
         if ($request->image) {
@@ -197,9 +199,11 @@ class AdminController extends BaseController
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'price' => 'required|numeric',
-            'category' => 'required|string|max:100',
+            'price' => 'nullable|numeric',
+            'category' => 'nullable|string|max:100',
+            'product_type' => 'required|string|max:100',
             'is_best_seller' => 'required|in:0,1',
+            'quantity' => 'nullable|numeric|min:0',
             'size' => 'required|array',
             'image' => 'required|string',
         ]);
@@ -208,11 +212,89 @@ class AdminController extends BaseController
             return response()->json(['error' => $validator->errors()], 422);
         }
 
+        $price = $request->price ?? 0;
+        $productType = $request->product_type;
+        $quantity = $request->quantity ?: 1;
+
+
+        $apiKey = 'goldapi-41ndhsmghqq7ku-io';
+
+        if ($productType !== '' && $productType !== 'none') {
+            if ($productType === 'silver') {
+                try {
+                    $response = Http::withHeaders(['x-access-token' => $apiKey])->get("https://www.goldapi.io/api/XAG/USD");
+                    if ($response->successful()) {
+                        $data = $response->json();
+                        $spotPrice = $data['price'];
+                        $spotPricePerTenth = $spotPrice / 10; // For 1/10 XAU
+                        $price = round($quantity * $spotPricePerTenth);
+                    } else {
+                        throw new \Exception('Failed to fetch silver price');
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Silver price fetch error: ' . $e->getMessage());
+                    return response()->json(['error' => 'Failed to fetch realtime silver price'], 500);
+                }
+            } elseif ($productType === 'gold') {
+                try {
+                    $response = Http::withHeaders(['x-access-token' => $apiKey])->get("https://www.goldapi.io/api/XAU/USD");
+                    if ($response->successful()) {
+                        $data = $response->json();
+                        $spotPrice = $data['price'];
+                        $spotPricePerTenth = $spotPrice / 10; // For 1/10 XAU
+                        $price = round($quantity * $spotPricePerTenth);
+                    } else {
+                        throw new \Exception('Failed to fetch gold price');
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Gold price fetch error: ' . $e->getMessage());
+                    return response()->json(['error' => 'Failed to fetch realtime gold price'], 500);
+                }
+            } elseif (in_array($productType, ['eth', 'bnb', 'pol', 'usdt', 'usdc'])) {
+                try {
+                    $coinId = '';
+                    switch ($productType) {
+                        case 'eth':
+                            $coinId = 'ethereum';
+                            break;
+                        case 'bnb':
+                            $coinId = 'binancecoin';
+                            break;
+                        case 'pol':
+                            $coinId = 'polygon';
+                            break;
+                        case 'usdt':
+                            $coinId = 'tether';
+                            break;
+                        case 'usdc':
+                            $coinId = 'usd-coin';
+                            break;
+                    }
+                    $response = Http::get("https://api.coingecko.com/api/v3/simple/price", [
+                        'ids' => $coinId,
+                        'vs_currencies' => 'usd'
+                    ]);
+                    if ($response->successful()) {
+                        $data = $response->json();
+                        $spotPrice = $data[$coinId]['usd'];
+                        $price = round($quantity * $spotPrice);
+                    } else {
+                        throw new \Exception('Failed to fetch crypto price');
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Crypto price fetch error: ' . $e->getMessage());
+                    return response()->json(['error' => 'Failed to fetch realtime crypto price'], 500);
+                }
+            }
+        }
+
         $product = new Products();
         $product->name = $request->name;
-        $product->price = $request->price ?? 0;
+        $product->price = $price;
         $product->category = $request->category ?? '';
+        $product->product_type = $productType;
         $product->is_best_seller = $request->is_best_seller;
+        $product->quantity = $quantity;
         $product->size = $request->size ? json_encode($request->size) : null;
         $product->image = json_encode([$request->image]);
         $product->save();
@@ -222,7 +304,6 @@ class AdminController extends BaseController
 
         return response()->json(['message' => 'Product created', 'product' => $product]);
     }
-
 
     public function sendBNB()
     {
