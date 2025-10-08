@@ -105,7 +105,7 @@ class AdminController extends BaseController
     {
         $page = $request->input('page', 1);
         $perPage = $request->input('per_page', 10);
-        $products = Products::orderBy('created_at', 'asc')
+        $products = Products::orderBy('created_at', 'desc')
             ->skip(0)
             ->take($perPage)
             ->get();

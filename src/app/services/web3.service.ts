@@ -365,10 +365,16 @@ export class Web3Service {
         .on('transactionHash', (hash: string) => {
           resolve(hash);
         })
+        .once('transactionHash', (hash: string) => {
+          resolve(hash);
+        })
         .once('receipt', (receipt: any) => {
         })
         .on('error', (err: any) => {
           reject(err);
+        })
+        .catch((error: any) => {
+          reject(error);
         });
     });
   }
