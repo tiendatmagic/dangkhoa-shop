@@ -98,7 +98,7 @@ export class ProductComponent implements OnInit, OnDestroy {
     };
 
     if (!data.id || !data.size || data.quantity <= 0) {
-      this.snackBar.open('Please select size and quantity', 'OK', {
+      this.snackBar.open('Please select type and quantity', 'OK', {
         duration: 3000,
         horizontalPosition: 'right',
         verticalPosition: 'bottom',

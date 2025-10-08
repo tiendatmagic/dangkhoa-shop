@@ -38,6 +38,10 @@ export class CartComponent {
     }
   }
 
+  handleImageError(event: any) {
+    event.target.src = 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg';
+  }
+
   onQuantityChange(product: any) {
     if (product.quantity < 1) {
       product.quantity = 1;
