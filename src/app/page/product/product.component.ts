@@ -46,10 +46,15 @@ export class ProductComponent implements OnInit, OnDestroy {
         if (!this.productData) {
           throw new Error(`Product with ID ${this.id} not found`);
         }
+
+        this.productData.image = this.productData.image.map((img: string) => this.auth.getBaseUrl() + img);
         this.selectedImage = this.productData.image[0] || null;
 
         const homeRes: any = await this.auth.getHomeProducts().toPromise();
         this.productList = homeRes.latest_collection || [];
+        this.productList.forEach((product: any) => {
+          product.image = product.image.map((img: string) => this.auth.getBaseUrl() + img);
+        });
       } catch (e: any) {
         console.error(e);
         this.error = e.message || 'Failed to load product data';
@@ -62,6 +67,10 @@ export class ProductComponent implements OnInit, OnDestroy {
         this.loading = false;
       }
     });
+  }
+
+  handleImageError(event: any) {
+    event.target.src = 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg';
   }
 
   ngOnDestroy() {
