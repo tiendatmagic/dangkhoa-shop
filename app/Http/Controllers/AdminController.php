@@ -156,7 +156,7 @@ class AdminController extends BaseController
             $spotPrice = $data['price'];
             $spotPricePerTenth = $spotPrice / 10; // For 1/10 XAU
             return round($quantity * $spotPricePerTenth);
-        } elseif (in_array($productType, ['eth', 'bnb', 'pol', 'sol', 'usdt', 'usdc',])) {
+        } elseif (in_array($productType, ['eth', 'bnb', 'pol', 'sol', 'paxg', 'usdt', 'usdc'])) {
             if (in_array($productType, ['usdt', 'usdc'])) {
                 return round($quantity * 1); // Stablecoins pegged to 1 USD
             }
@@ -164,6 +164,7 @@ class AdminController extends BaseController
             $symbolMap = [
                 'eth' => 'ETHUSDT',
                 'bnb' => 'BNBUSDT',
+                'paxg' => 'PAXGUSDT',
                 'pol' => 'POLUSDT',
                 'sol' => 'SOLUSDT'
             ];
@@ -181,7 +182,7 @@ class AdminController extends BaseController
             }
             $data = $response->json();
             $spotPrice = (float) $data['price'];
-            return round($quantity * $spotPrice);
+            return $quantity * $spotPrice;
         }
 
         return null;
@@ -231,7 +232,9 @@ class AdminController extends BaseController
                     'bnb' => 'crypto',
                     'pol' => 'crypto',
                     'usdt' => 'crypto',
-                    'usdc' => 'crypto'
+                    'usdc' => 'crypto',
+                    'paxg' => 'crypto',
+                    'sol' => 'crypto'
                 ];
                 $typeKey = $typeMap[$productType] ?? 'product';
                 Log::error("{$typeKey} price fetch error: " . $e->getMessage());
@@ -240,7 +243,6 @@ class AdminController extends BaseController
         }
 
         $product->price = $price;
-
         if ($request->image) {
             $product->image = json_encode([$request->image]);
         }
@@ -313,7 +315,9 @@ class AdminController extends BaseController
                     'bnb' => 'crypto',
                     'pol' => 'crypto',
                     'usdt' => 'crypto',
-                    'usdc' => 'crypto'
+                    'usdc' => 'crypto',
+                    'paxg' => 'crypto',
+                    'sol' => 'crypto'
                 ];
                 $typeKey = $typeMap[$productType] ?? 'product';
                 Log::error("{$typeKey} price fetch error: " . $e->getMessage());
