@@ -13,7 +13,13 @@
         <div class="flex" *ngIf="!isLoading">
           <button class="mt-3 btn-primary whitespace-nowrap" matRipple matRippleColor="#ffffff80"
             routerLink="/admin/create-product">
-            Create Product
+            <div class="flex items-center gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              <span>Create Product</span>
+            </div>
           </button>
         </div>
       </div>
@@ -39,7 +45,7 @@
             <div>
               <div class="flex items-start gap-6 mt-2">
                 <div>
-                  <img src="{{urlEnv}}{{ product.image[0] }}" alt="" (error)="handleImageError($event)"
+                  <img src="{{urlLink}}{{ product.image[0] }}" alt="" (error)="handleImageError($event)"
                     class="w-16 rounded-md cursor-pointer sm:w-20"
                     routerLink="/admin/product-detail/{{ product.id }}" />
                 </div>
@@ -64,9 +70,9 @@
           <div class="flex justify-end gap-3 md:w-1/6">
             <button class="mt-3 btn-primary whitespace-nowrap" routerLink="/admin/product-detail/{{ product.id }}"
               matRipple matRippleColor="#ffffff80">
-              View
+              Edit
             </button>
-            <button class="mt-3 btn-primary whitespace-nowrap" (click)="deleteProduct(product.id)" matRipple
+            <button class="mt-3 btn-outline-primary whitespace-nowrap" (click)="deleteProduct(product.id)" matRipple
               matRippleColor="#ffffff80">
               Delete
             </button>

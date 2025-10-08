@@ -23,7 +23,7 @@ export class AdminProductDetailComponent {
   imageUrl: string = 'https://picsum.photos/300/300?random=1';
   previewUrl: string | null = null;
   pendingImage: File | null = null;
-  urlEnv: string = '';
+  urlLink: string = '';
 
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
@@ -44,7 +44,7 @@ export class AdminProductDetailComponent {
   }
 
   ngOnInit() {
-    this.urlEnv = this.auth.urlEnv.replace(/\/$/, '');
+    this.urlLink = this.auth.getBaseUrl();
 
     this.id = this.route.snapshot.paramMap.get('id');
     if (this.id) {

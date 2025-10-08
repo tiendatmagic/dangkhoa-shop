@@ -3,6 +3,7 @@ import { DataService } from '../../services/data.service';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-product',
@@ -17,24 +18,48 @@ export class ProductComponent implements OnInit, OnDestroy {
   public id: any;
   productList: any[] = [];
   quantity: number = 1;
+  loading: boolean = false;
+  error: any | null = null;
 
   public routeSubscription: Subscription | undefined;
 
-  constructor(private dataService: DataService, private route: ActivatedRoute, private snackBar: MatSnackBar) { }
+  constructor(
+    private auth: AuthService,
+    private dataService: DataService,
+    private route: ActivatedRoute,
+    private snackBar: MatSnackBar
+  ) { }
 
-  ngOnInit() {
-    this.routeSubscription = this.route.paramMap.subscribe(params => {
+  async ngOnInit() {
+    this.routeSubscription = this.route.paramMap.subscribe(async params => {
       window.scrollTo(0, 0);
       this.selectedImage = null;
       this.selectedSize = null;
       this.quantity = 1;
+      this.loading = true;
+      this.error = null;
       this.id = params.get('id');
-      this.productList = this.dataService.productList;
-      this.productData = this.dataService.productList.find(product => product.id == this.id);
-      if (!this.productData) {
-        console.error(`Product with ID ${this.id} not found`);
-      } else {
+
+      try {
+        const productRes: any = await this.auth.getProductById(this.id).toPromise();
+        this.productData = productRes.product || productRes;
+        if (!this.productData) {
+          throw new Error(`Product with ID ${this.id} not found`);
+        }
         this.selectedImage = this.productData.image[0] || null;
+
+        const homeRes: any = await this.auth.getHomeProducts().toPromise();
+        this.productList = homeRes.latest_collection || [];
+      } catch (e: any) {
+        console.error(e);
+        this.error = e.message || 'Failed to load product data';
+        this.snackBar.open(this.error, 'OK', {
+          duration: 3000,
+          horizontalPosition: 'right',
+          verticalPosition: 'bottom',
+        });
+      } finally {
+        this.loading = false;
       }
     });
   }
@@ -68,7 +93,7 @@ export class ProductComponent implements OnInit, OnDestroy {
         duration: 3000,
         horizontalPosition: 'right',
         verticalPosition: 'bottom',
-      })
+      });
       return;
     }
 
@@ -78,7 +103,7 @@ export class ProductComponent implements OnInit, OnDestroy {
       duration: 3000,
       horizontalPosition: 'right',
       verticalPosition: 'bottom',
-    })
+    });
   }
 
   increment() {
