@@ -134,6 +134,59 @@ class AdminController extends BaseController
         return response()->json($product);
     }
 
+    private function calculateDynamicPrice($productType, $quantity)
+    {
+        $apiKey = env('GOLDAPI_KEY', 'goldapi-41ndhsmghqq7ku-io');
+
+        if ($productType === 'silver') {
+            $response = Http::withHeaders(['x-access-token' => $apiKey])->get("https://www.goldapi.io/api/XAG/USD");
+            if (!$response->successful()) {
+                throw new \Exception('Failed to fetch silver price');
+            }
+            $data = $response->json();
+            $spotPrice = $data['price'];
+            $spotPricePerTenth = $spotPrice / 10; // For 1/10 XAG
+            return round($quantity * $spotPricePerTenth);
+        } elseif ($productType === 'gold') {
+            $response = Http::withHeaders(['x-access-token' => $apiKey])->get("https://www.goldapi.io/api/XAU/USD");
+            if (!$response->successful()) {
+                throw new \Exception('Failed to fetch gold price');
+            }
+            $data = $response->json();
+            $spotPrice = $data['price'];
+            $spotPricePerTenth = $spotPrice / 10; // For 1/10 XAU
+            return round($quantity * $spotPricePerTenth);
+        } elseif (in_array($productType, ['eth', 'bnb', 'pol', 'sol', 'usdt', 'usdc',])) {
+            if (in_array($productType, ['usdt', 'usdc'])) {
+                return round($quantity * 1); // Stablecoins pegged to 1 USD
+            }
+
+            $symbolMap = [
+                'eth' => 'ETHUSDT',
+                'bnb' => 'BNBUSDT',
+                'pol' => 'POLUSDT',
+                'sol' => 'SOLUSDT'
+            ];
+            $symbol = $symbolMap[$productType] ?? '';
+
+            if (empty($symbol)) {
+                throw new \Exception('Invalid crypto symbol');
+            }
+
+            $response = Http::get("https://api.binance.com/api/v3/ticker/price", [
+                'symbol' => $symbol
+            ]);
+            if (!$response->successful()) {
+                throw new \Exception('Failed to fetch crypto price');
+            }
+            $data = $response->json();
+            $spotPrice = (float) $data['price'];
+            return round($quantity * $spotPrice);
+        }
+
+        return null;
+    }
+
     public function updateProduct(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -142,6 +195,7 @@ class AdminController extends BaseController
             'price' => 'nullable|numeric',
             'category' => 'nullable|string|max:100',
             'product_type' => 'nullable|string|max:100',
+            'quantity' => 'nullable|numeric|min:0',
             'is_best_seller' => 'required|in:0,1',
             'size' => 'nullable|array',
             'image' => 'nullable|string',
@@ -153,11 +207,40 @@ class AdminController extends BaseController
 
         $product = Products::find($request->id);
         $product->name = $request->name;
-        $product->price = $request->price ?? $product->price;
         $product->category = $request->category ?? $product->category;
         $product->product_type = $request->product_type ?? $product->product_type;
+        $product->quantity = $request->quantity ?? $product->quantity;
         $product->is_best_seller = $request->is_best_seller;
-        $product->size = json_encode($request->size);
+        $product->size = json_encode($request->size ?? json_decode($product->size, true));
+
+        $price = $request->price ?? $product->price;
+        $productType = $request->product_type ?? $product->product_type;
+        $quantity = $request->quantity ?? $product->quantity;
+
+        if ($productType !== '' && $productType !== 'none') {
+            try {
+                $dynamicPrice = $this->calculateDynamicPrice($productType, $quantity);
+                if ($dynamicPrice !== null) {
+                    $price = $dynamicPrice;
+                }
+            } catch (\Exception $e) {
+                $typeMap = [
+                    'silver' => 'silver',
+                    'gold' => 'gold',
+                    'eth' => 'crypto',
+                    'bnb' => 'crypto',
+                    'pol' => 'crypto',
+                    'usdt' => 'crypto',
+                    'usdc' => 'crypto'
+                ];
+                $typeKey = $typeMap[$productType] ?? 'product';
+                Log::error("{$typeKey} price fetch error: " . $e->getMessage());
+                return response()->json(['error' => "Failed to fetch realtime {$typeKey} price"], 500);
+            }
+        }
+
+        $product->price = $price;
+
         if ($request->image) {
             $product->image = json_encode([$request->image]);
         }
@@ -201,7 +284,7 @@ class AdminController extends BaseController
             'name' => 'required|string|max:255',
             'price' => 'nullable|numeric',
             'category' => 'nullable|string|max:100',
-            'product_type' => 'required|string|max:100',
+            'product_type' => 'nullable|string|max:100',
             'is_best_seller' => 'required|in:0,1',
             'quantity' => 'nullable|numeric|min:0',
             'size' => 'required|array',
@@ -216,75 +299,25 @@ class AdminController extends BaseController
         $productType = $request->product_type;
         $quantity = $request->quantity ?: 1;
 
-
-        $apiKey = 'goldapi-41ndhsmghqq7ku-io';
-
         if ($productType !== '' && $productType !== 'none') {
-            if ($productType === 'silver') {
-                try {
-                    $response = Http::withHeaders(['x-access-token' => $apiKey])->get("https://www.goldapi.io/api/XAG/USD");
-                    if ($response->successful()) {
-                        $data = $response->json();
-                        $spotPrice = $data['price'];
-                        $spotPricePerTenth = $spotPrice / 10; // For 1/10 XAU
-                        $price = round($quantity * $spotPricePerTenth);
-                    } else {
-                        throw new \Exception('Failed to fetch silver price');
-                    }
-                } catch (\Exception $e) {
-                    Log::error('Silver price fetch error: ' . $e->getMessage());
-                    return response()->json(['error' => 'Failed to fetch realtime silver price'], 500);
+            try {
+                $dynamicPrice = $this->calculateDynamicPrice($productType, $quantity);
+                if ($dynamicPrice !== null) {
+                    $price = $dynamicPrice;
                 }
-            } elseif ($productType === 'gold') {
-                try {
-                    $response = Http::withHeaders(['x-access-token' => $apiKey])->get("https://www.goldapi.io/api/XAU/USD");
-                    if ($response->successful()) {
-                        $data = $response->json();
-                        $spotPrice = $data['price'];
-                        $spotPricePerTenth = $spotPrice / 10; // For 1/10 XAU
-                        $price = round($quantity * $spotPricePerTenth);
-                    } else {
-                        throw new \Exception('Failed to fetch gold price');
-                    }
-                } catch (\Exception $e) {
-                    Log::error('Gold price fetch error: ' . $e->getMessage());
-                    return response()->json(['error' => 'Failed to fetch realtime gold price'], 500);
-                }
-            } elseif (in_array($productType, ['eth', 'bnb', 'pol', 'usdt', 'usdc'])) {
-                try {
-                    $coinId = '';
-                    switch ($productType) {
-                        case 'eth':
-                            $coinId = 'ethereum';
-                            break;
-                        case 'bnb':
-                            $coinId = 'binancecoin';
-                            break;
-                        case 'pol':
-                            $coinId = 'polygon';
-                            break;
-                        case 'usdt':
-                            $coinId = 'tether';
-                            break;
-                        case 'usdc':
-                            $coinId = 'usd-coin';
-                            break;
-                    }
-                    $response = Http::get("https://api.coingecko.com/api/v3/simple/price", [
-                        'ids' => $coinId,
-                        'vs_currencies' => 'usd'
-                    ]);
-                    if ($response->successful()) {
-                        $data = $response->json();
-                        $spotPrice = $data[$coinId]['usd'];
-                        $price = round($quantity * $spotPrice);
-                    } else {
-                        throw new \Exception('Failed to fetch crypto price');
-                    }
-                } catch (\Exception $e) {
-                    Log::error('Crypto price fetch error: ' . $e->getMessage());
-                    return response()->json(['error' => 'Failed to fetch realtime crypto price'], 500);
-                }
+            } catch (\Exception $e) {
+                $typeMap = [
+                    'silver' => 'silver',
+                    'gold' => 'gold',
+                    'eth' => 'crypto',
+                    'bnb' => 'crypto',
+                    'pol' => 'crypto',
+                    'usdt' => 'crypto',
+                    'usdc' => 'crypto'
+                ];
+                $typeKey = $typeMap[$productType] ?? 'product';
+                Log::error("{$typeKey} price fetch error: " . $e->getMessage());
+                return response()->json(['error' => "Failed to fetch realtime {$typeKey} price"], 500);
             }
         }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\OrderItems;
 use App\Models\Orders;
+use App\Models\Products;
 use App\Models\TwoFactorUsers;
 use App\Models\User;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -298,13 +299,16 @@ class AuthController extends BaseController
 
             $cart = $request->data['cart'];
             foreach ($cart as $item) {
+                $product = Products::find($item['id']);
+                $currentPrice = $product ? $product->price : $item['price'];
+
                 OrderItems::insert([
                     'id' => UUID::uuid4(),
                     'order_id' => $orderId,
                     'product_id' => $item['id'],
                     'size' => $item['size'],
                     'quantity' => $item['quantity'],
-                    'price' => $item['price'],
+                    'price' => $currentPrice,
                     'created_at' => now(),
                     'updated_at' => now()
                 ]);
@@ -378,13 +382,16 @@ class AuthController extends BaseController
             ]);
 
             foreach ($request->data['cart'] as $item) {
+                $product = Products::find($item['id']);
+                $currentPrice = $product ? $product->price : $item['price'];
+
                 OrderItems::insert([
                     'id'         => UUID::uuid4(),
                     'order_id'   => $orderId,
                     'product_id' => $item['id'],
                     'size'       => $item['size'],
                     'quantity'   => $item['quantity'],
-                    'price'      => $item['price'],
+                    'price'      => $currentPrice,
                     'created_at' => now(),
                     'updated_at' => now()
                 ]);

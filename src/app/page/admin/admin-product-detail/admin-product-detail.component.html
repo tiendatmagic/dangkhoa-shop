@@ -49,7 +49,7 @@
               <div class="flex flex-col gap-2 md:gap-5 md:flex-row">
                 <div class="flex flex-col items-start w-full mb-3 gap-y-1 md:w-1/2">
                   <label class="block mb-2 text-sm font-medium text-gray-900">
-                    Product name
+                    Product name <span class="text-red-500">*</span>
                   </label>
                   <div class="relative w-full">
                     <input autocomplete="off" type="text"
@@ -59,10 +59,45 @@
                   </div>
                 </div>
 
+                <div class="flex items-end w-full gap-1 mb-3 gap-y-1 md:w-1/2">
+                  <div class="w-full md:w-1/2">
+                    <label class="block mb-2 text-sm font-medium text-gray-900">
+                      Product type
+                    </label>
+                    <div class="relative w-full">
+                      <select [formControl]="productType"
+                        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg">
+                        <option value="" selected>None</option>
+                        <option value="gold">Gold - (1/10 XAU)</option>
+                        <option value="silver">Silver - (1/10 XAG)</option>
+                        <option value="eth">ETH</option>
+                        <option value="bnb">BNB</option>
+                        <option value="sol">SOL</option>
+                        <option value="pol">POL</option>
+                        <option value="usdt">USDT</option>
+                        <option value="usdc">USDC</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="w-full md:w-1/2" *ngIf="productType.value">
+                    <label
+                      class="block mb-2 overflow-hidden text-xs font-medium text-gray-900 text-ellipsis whitespace-nowrap">
+                      Price calculated by multiplication
+                    </label>
+                    <div class="relative w-full">
+                      <input autocomplete="off" type="number"
+                        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+                        placeholder="Enter quantity, example: 1" [formControl]="quantity" maxlength="30">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-2 mt-2 md:gap-5 md:mt-0 md:flex-row">
                 <div class="flex flex-col items-start w-full mb-3 gap-y-1 md:w-1/2">
                   <div class="flex">
                     <label class="block mb-2 text-sm font-medium text-gray-900">
-                      Price
+                      Price <span class="text-red-500">*</span>
                     </label>
                   </div>
                   <div class="relative w-full">
@@ -71,9 +106,7 @@
                       placeholder="Enter price" [formControl]="price" maxlength="30" required>
                   </div>
                 </div>
-              </div>
 
-              <div class="flex flex-col gap-2 mt-2 md:gap-5 md:mt-0 md:flex-row">
                 <div class="flex flex-col items-start w-full mb-3 gap-y-1 md:w-1/2">
                   <label class="block mb-2 text-sm font-medium text-gray-900">
                     Category
@@ -81,7 +114,7 @@
                   <div class="relative w-full">
                     <select [formControl]="category"
                       class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg">
-                      <option>None</option>
+                      <option value="" selected>None</option>
                       <option value="men">Men</option>
                       <option value="women">Women</option>
                       <option value="crypto">Crypto</option>
@@ -90,10 +123,12 @@
                     </select>
                   </div>
                 </div>
+              </div>
 
+              <div class="flex flex-col gap-2 mt-2 md:gap-5 md:mt-0 md:flex-row">
                 <div class="flex flex-col items-start w-full mb-3 gap-y-1 md:w-1/2">
                   <label class="block mb-2 text-sm font-medium text-gray-900">
-                    Is Best Seller
+                    Is Best Seller <span class="text-red-500">*</span>
                   </label>
                   <div class="relative w-full">
                     <select [formControl]="isBestSeller"
@@ -103,23 +138,18 @@
                     </select>
                   </div>
                 </div>
-              </div>
 
-              <div class="flex flex-col gap-2 mt-2 md:gap-5 md:mt-0 md:flex-row">
                 <div class="flex flex-col items-start w-full mb-3 gap-y-1 md:w-1/2">
                   <label class="block mb-2 text-sm font-medium text-gray-900">
-                    Type
+                    Type <span class="text-red-500">*</span>
                   </label>
                   <div class="relative w-full">
                     <input autocomplete="off" type="text" class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0
                     placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f]
                     dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700
-                    rounded-lg" placeholder="Enter size, example: S, M, L" [formControl]="size" maxlength="500"
+                    rounded-lg" placeholder="Enter type, example: S, M, L" [formControl]="size" maxlength="500"
                       required>
                   </div>
-                </div>
-
-                <div class="flex flex-col items-start w-full mb-3 gap-y-1 md:w-1/2">
                 </div>
               </div>
             </div>
@@ -127,7 +157,7 @@
 
           <div class="w-full mt-3 text-center">
             <button type="button" (click)="updateProduct()" class="w-full btn-primary" matRipple
-              matRippleColor="#ffffff66">
+              matRippleColor="#ffffff66" [disabled]="!productForm.valid">
               Update
             </button>
           </div>
