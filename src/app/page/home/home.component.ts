@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Web3Service } from '../../services/web3.service';
 import { DataService } from '../../services/data.service';
 import { AuthService } from '../../services/auth.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -9,10 +10,11 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
   productList: any[] = [];
   bestSellerProducts: any[] = [];
   isLoading: boolean = false;
+  isIntervalActive: any;
 
   constructor(
     private web3Service: Web3Service,
@@ -21,16 +23,29 @@ export class HomeComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.isLoading = true;
     this.loadHomeProducts();
+    this.callLoadHomeProducts();
+  }
+
+  callLoadHomeProducts() {
+    clearTimeout(this.isIntervalActive);
+    this.isIntervalActive = setTimeout(() => {
+      this.loadHomeProducts();
+    }, 30000)
+  }
+
+  ngOnDestroy() {
+    clearTimeout(this.isIntervalActive);
   }
 
   loadHomeProducts() {
-    this.isLoading = true;
+    clearTimeout(this.isIntervalActive);
     this.auth.getHomeProducts().subscribe(
       (res: any) => {
         this.productList = res.latest_collection || [];
         this.bestSellerProducts = res.best_sellers || [];
-        console.log('Loaded products:', this.productList);
+        this.callLoadHomeProducts();
         this.isLoading = false;
       },
       (error: any) => {
@@ -39,6 +54,10 @@ export class HomeComponent implements OnInit {
       }
     );
   }
+
+
+
+
 
   getImageUrl(imagePath: string | string[]): string {
     let path: any = '';
