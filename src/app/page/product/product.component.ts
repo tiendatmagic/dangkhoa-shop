@@ -55,6 +55,9 @@ export class ProductComponent implements OnInit, OnDestroy {
         this.productList.forEach((product: any) => {
           product.image = product.image.map((img: string) => this.auth.getBaseUrl() + img);
         });
+        if (this.productData.size.length == 1) {
+          this.selectedSize = this.productData.size[0];
+        }
       } catch (e: any) {
         console.error(e);
         this.error = e.message || 'Failed to load product data';

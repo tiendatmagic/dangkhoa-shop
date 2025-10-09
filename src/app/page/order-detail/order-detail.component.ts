@@ -15,11 +15,13 @@ export class OrderDetailComponent {
   id: any;
   deliveryFee: number = 0;
   isLoading: boolean = false;
+  urlLink: string = '';
   constructor(private route: ActivatedRoute, private router: Router, private dataService: DataService, private http: HttpClient, private auth: AuthService) {
     this.deliveryFee = this.dataService.deliveryFee;
   }
 
   ngOnInit() {
+    this.urlLink = this.auth.getBaseUrl();
     this.id = this.route.snapshot.paramMap.get('id');
     if (this.id) {
       this.isLoading = true;
