@@ -72,7 +72,7 @@ class HomeController extends BaseController
 
             $processedProducts = $this->preloadAndProcessProducts(collect($products->items()));
             $products->setCollection($processedProducts);
-
+            $this->updateAllProductsPrices();
             return response()->json($products, 200);
         } catch (\Exception $e) {
             Log::error('Get products error: ' . $e->getMessage());
@@ -108,6 +108,20 @@ class HomeController extends BaseController
     public function updateAllProductsPrices()
     {
         try {
+            $fullUpdateCacheKey = 'update_all_prices_last_run';
+            $cacheDuration = now()->addMinutes(30);
+
+            if (Cache::has($fullUpdateCacheKey)) {
+                Log::info('Skipped updateAllProductsPrices: cache still valid.');
+                return [
+                    'updated_count' => 0,
+                    'total_processed' => 0,
+                    'message' => 'Skipped: cache still valid'
+                ];
+            }
+
+            Cache::put($fullUpdateCacheKey, now(), $cacheDuration);
+
             $chunkSize = 100;
             $totalUpdated = 0;
             $totalProcessed = 0;
