@@ -28,8 +28,10 @@
               <div class="flex flex-col h-full gap-2 md:gap-5 md:flex-row ">
                 <div class="flex flex-col w-full mb-3 md:justify-center md:items-center gap-y-1">
                   <div>
+                    <label for="image" class="block mb-2 text-sm font-medium text-gray-900">Product image <span
+                        class="text-red-500">*</span></label>
                     <div class="relative w-full cursor-pointer" (click)="onImageClick()">
-                      <div class="aspect-[2/3] max-w-32 max-h-48 relative group overflow-hidden rounded-lg">
+                      <div class="relative overflow-hidden rounded-lg aspect-square max-w-48 max-h-48 group">
                         <img [src]="previewUrl || 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'"
                           alt="" class="object-cover w-full h-full transition-transform group-hover:scale-110">
                         <div
@@ -74,7 +76,7 @@
                       <select [formControl]="productType"
                         class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg">
                         <option value="" selected>None</option>
-                        <option value="paxg">Gold - (1/10 XAU)</option>
+                        <option value="paxg">Gold - (1 XAU)</option>
                         <option value="silver">Silver - (1/10 XAG)</option>
                         <option value="eth">ETH</option>
                         <option value="bnb">BNB</option>

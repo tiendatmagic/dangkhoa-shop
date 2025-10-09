@@ -109,11 +109,11 @@
       </div>
 
       <ng-container *ngIf="!isLoading; else loadingTemplate">
-        <div class="grid grid-cols-2 gap-4 mt-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-y-6">
+        <div class="grid grid-cols-2 gap-4 mt-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-y-6">
           <ng-container *ngFor="let product of productList">
             <a class="overflow-auto rounded-lg cursor-pointer" routerLink="/product/{{ product.id }}">
-              <div class="overflow-hidden">
-                <img class="object-cover w-full h-48 transition duration-300 ease-in-out hover:scale-110"
+              <div class="max-w-full max-h-full mx-auto overflow-hidden rounded-lg aspect-square">
+                <img class="object-cover w-full h-full transition duration-300 ease-in-out hover:scale-110"
                   (error)="handleImageError($event)" alt="{{ product.name }}" [src]="getImageUrl(product.image)" />
               </div>
               <p class="pt-3 pb-1 text-sm">{{ product.name }}</p>
