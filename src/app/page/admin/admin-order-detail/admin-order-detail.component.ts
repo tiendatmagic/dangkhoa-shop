@@ -25,7 +25,7 @@ export class AdminOrderDetailComponent {
     this.id = this.route.snapshot.paramMap.get('id');
     if (this.id) {
       this.isLoading = true;
-      this.auth.getOrderDetail({ id: this.id }).subscribe(
+      this.auth.getOrderDetailAdmin({ id: this.id }).subscribe(
         (res: any) => {
           this.orderData = res;
           this.isLoading = false;
