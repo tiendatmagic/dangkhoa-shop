@@ -322,6 +322,12 @@ export class AuthService {
     )
   }
 
+  getOverview() {
+    return this.http.get(`${this.urlEnv}api/overview`).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
   getBaseUrl(): string {
     return this.urlLink;
   }

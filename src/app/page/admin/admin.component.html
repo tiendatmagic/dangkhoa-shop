@@ -12,6 +12,13 @@
       Orders
     </button>
   </li>
+
+  <li>
+    <button class="" [ngClass]="isChoose == 3 ? 'btn-primary' : 'btn-outline-primary'" matRipple
+      matRippleColor="#ffffff80" (click)="isChooseMenu(3)">
+      Overview
+    </button>
+  </li>
 </ul>
 
 <div class="my-5">
@@ -20,5 +27,8 @@
   </ng-container>
   <ng-container *ngIf="isChoose == 2">
     <app-admin-order></app-admin-order>
+  </ng-container>
+  <ng-container *ngIf="isChoose == 3">
+    <app-admin-overview></app-admin-overview>
   </ng-container>
 </div>

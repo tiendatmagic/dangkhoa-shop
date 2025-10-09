@@ -53,6 +53,12 @@ Route::group([
 
 Route::group([
     'middleware' => ['api', 'admin'],
+], function ($router) {
+    Route::get('overview', [AdminController::class, 'getOverview']);
+});
+
+Route::group([
+    'middleware' => ['api', 'admin'],
     'prefix' => 'product'
 ], function ($router) {
     Route::get('get-all-product', [AdminController::class, 'getAllProduct']);

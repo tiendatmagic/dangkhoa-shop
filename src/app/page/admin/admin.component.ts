@@ -22,7 +22,9 @@ export class AdminComponent {
       this.isChoose = 1
     } else if (this.menu == 'orders') {
       this.isChoose = 2
-    };
+    } else if (this.menu == 'overview') {
+      this.isChoose = 3
+    }
   }
 
   isChooseMenu(menu: number) {
@@ -31,6 +33,8 @@ export class AdminComponent {
       this.router.navigate(['/admin/product']);
     } else if (menu == 2) {
       this.router.navigate(['/admin/orders']);
+    } else if (menu == 3) {
+      this.router.navigate(['/admin/overview']);
     }
   }
 

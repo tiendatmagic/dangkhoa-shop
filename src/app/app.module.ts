@@ -38,7 +38,9 @@ import { AdminOrderComponent } from './page/admin/admin-order/admin-order.compon
 import { AdminOrderDetailComponent } from './page/admin/admin-order-detail/admin-order-detail.component';
 import { AdminProductDetailComponent } from './page/admin/admin-product-detail/admin-product-detail.component';
 import { AdminCreateProductComponent } from './page/admin/admin-create-product/admin-create-product.component';
+import { AdminOverviewComponent } from './page/admin/admin-overview/admin-overview.component';
 import { CommonModule } from '@angular/common';
+import { NgApexchartsModule } from 'ng-apexcharts';
 
 const globalRippleConfig: RippleGlobalOptions = {
   animation: {
@@ -77,7 +79,8 @@ export function HttpLoaderFactory(http: HttpClient) {
     AdminOrderComponent,
     AdminOrderDetailComponent,
     AdminProductDetailComponent,
-    AdminCreateProductComponent
+    AdminCreateProductComponent,
+    AdminOverviewComponent
   ],
   imports: [
     BrowserModule,
@@ -89,7 +92,9 @@ export function HttpLoaderFactory(http: HttpClient) {
     FormsModule,
     MatTabsModule,
     MatIconModule,
-    CommonModule, FormsModule,
+    CommonModule,
+    FormsModule,
+    NgApexchartsModule,
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,

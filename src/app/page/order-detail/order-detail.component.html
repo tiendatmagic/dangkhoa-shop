@@ -28,7 +28,7 @@
           <ul role="list" class="divide-y divide-gray-200">
             <li *ngFor="let order of orderData['items']" class="flex py-3">
               <div class="flex-shrink-0 w-20 overflow-hidden border border-gray-200 rounded-md">
-                <img src="{{ order.image[0] }}" routerLink="/product/{{ order.product_id }}" alt=""
+                <img src="{{urlLink}}{{ order.image[0] }}" routerLink="/product/{{ order.product_id }}" alt=""
                   (error)="handleImageError($event)" class="object-cover object-center w-full h-full" />
               </div>
 

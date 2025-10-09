@@ -342,6 +342,55 @@ class AdminController extends BaseController
         return response()->json(['message' => 'Product created', 'product' => $product]);
     }
 
+    public function getOverview()
+    {
+        // Lấy ngày hiện tại
+        $now = Carbon::now();
+
+        // Khởi tạo mảng doanh thu 12 tháng gần nhất
+        $months = [];
+        $revenues = [];
+        for ($i = 11; $i >= 0; $i--) {
+            $month = $now->copy()->subMonths($i);
+            $months[] = $month->format('Y-m'); // Hoặc 'M Y' để hiển thị tên tháng
+            $revenues[$month->format('Y-m')] = 0;
+        }
+
+        // Lấy đơn hàng đã hoàn thành trong 12 tháng gần nhất
+        $startDate = $now->copy()->subMonths(11)->startOfMonth();
+        $orders = Orders::where('status', 'completed')
+            ->where('created_at', '>=', $startDate)
+            ->get();
+
+        // Tính tổng doanh thu theo tháng
+        foreach ($orders as $order) {
+            $monthKey = Carbon::parse($order->created_at)->format('Y-m');
+
+            $orderItems = OrderItems::where('order_id', $order->id)->get();
+            $total = $orderItems->sum(fn($item) => $item->quantity * $item->price);
+
+            if (isset($revenues[$monthKey])) {
+                $revenues[$monthKey] += $total;
+            }
+        }
+
+        // Trả về dữ liệu chart
+        $chart = [
+            'categories' => $months,
+            'series' => [
+                [
+                    'name' => 'Doanh thu',
+                    'data' => array_values($revenues)
+                ]
+            ]
+        ];
+
+        return response()->json([
+            'chart' => $chart
+        ]);
+    }
+
+
     public function sendBNB()
     {
         $sweb3 = new SWeb3('https://bsc-dataseed1.binance.org/');
