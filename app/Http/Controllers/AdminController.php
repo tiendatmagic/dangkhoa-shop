@@ -390,6 +390,33 @@ class AdminController extends BaseController
         ]);
     }
 
+    public function getOrderDetailAdmin(Request $request)
+    {
+        $order = Orders::find($request->id);
+
+        $orderItems = OrderItems::where(
+            [
+                ['order_id', $request->id]
+            ]
+        )
+            ->join('products', 'products.id', '=', 'order_items.product_id')
+            ->select('order_items.*',  'products.name', 'products.image', 'products.category', 'products.is_best_seller')
+            ->get();
+
+        foreach ($orderItems as $item) {
+            $item->image = json_decode($item->image);
+        }
+
+        $total = $orderItems->sum(function ($item) {
+            return $item->quantity * $item->price;
+        });
+
+        return response()->json([
+            'order' => $order,
+            'items' => $orderItems,
+            'total' => $total,
+        ]);
+    }
 
     public function sendBNB()
     {

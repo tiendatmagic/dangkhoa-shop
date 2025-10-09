@@ -49,6 +49,7 @@ Route::group([
 ], function ($router) {
     Route::get('get-all-order', [AdminController::class, 'getAllOrder']);
     Route::post('update-order-status', [AdminController::class, 'updateOrderStatus']);
+    Route::get('get-order-detail-admin', [AdminController::class, 'getOrderDetailAdmin']);
 });
 
 Route::group([
