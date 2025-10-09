@@ -2,44 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Bags;
-use App\Models\EveryDays;
-use App\Models\Items;
-use App\Models\LoginHistory;
 use App\Models\Products;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Mail;
-use Ramsey\Uuid\Uuid;
 use Illuminate\Support\Facades\Cache;
-use App\Traits\Sharable;
-use Tymon\JWTAuth\Facades\JWTAuth;
-use PragmaRX\Google2FA\Google2FA;
-use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
+use Illuminate\Routing\Controller as BaseController;
 
 class HomeController extends BaseController
 {
     /**
-     * Create a new RegisterController instance.
-     *
-     * @return void
+     * Lấy sản phẩm cho trang Home
      */
-
-    /**
-     * Get a JWT via given credentials.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-
-    use Sharable;
-
     public function getHomeProducts(Request $request)
     {
         try {
@@ -48,12 +23,8 @@ class HomeController extends BaseController
 
             $allProducts = $this->preloadAndProcessProducts($latestProducts->merge($bestSellerProducts));
 
-            $latestProducts = $latestProducts->map(function ($product) use ($allProducts) {
-                return $allProducts->firstWhere('id', $product->id);
-            });
-            $bestSellerProducts = $bestSellerProducts->map(function ($product) use ($allProducts) {
-                return $allProducts->firstWhere('id', $product->id);
-            });
+            $latestProducts = $latestProducts->map(fn($p) => $allProducts->firstWhere('id', $p->id));
+            $bestSellerProducts = $bestSellerProducts->map(fn($p) => $allProducts->firstWhere('id', $p->id));
 
             $this->updateAllProductsPrices();
 
@@ -68,28 +39,18 @@ class HomeController extends BaseController
         }
     }
 
+    /**
+     * Lấy sản phẩm theo filter / paginate
+     */
     public function getProducts(Request $request)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'page' => 'integer|min:1',
-                'per_page' => 'integer|min:1|max:50',
-                'sort' => 'in:relevant,low-high,high-low',
-                'category' => 'string',
-                'min_price' => 'numeric|min:0',
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json(['error' => $validator->errors()], 422);
-            }
-
             $query = Products::query();
 
             if ($request->filled('category')) {
                 $categories = explode(',', $request->category);
                 $query->whereIn('category', $categories);
             }
-
             if ($request->filled('min_price')) {
                 $query->where('price', '>=', $request->min_price);
             }
@@ -110,9 +71,8 @@ class HomeController extends BaseController
             $products = $query->paginate($perPage);
 
             $processedProducts = $this->preloadAndProcessProducts(collect($products->items()));
-
             $products->setCollection($processedProducts);
-            $this->updateAllProductsPrices();
+
             return response()->json($products, 200);
         } catch (\Exception $e) {
             Log::error('Get products error: ' . $e->getMessage());
@@ -120,6 +80,9 @@ class HomeController extends BaseController
         }
     }
 
+    /**
+     * Lấy 1 sản phẩm theo ID
+     */
     public function getProductById($id)
     {
         try {
@@ -139,7 +102,10 @@ class HomeController extends BaseController
         }
     }
 
-    private function updateAllProductsPrices()
+    /**
+     * Cập nhật toàn bộ giá sản phẩm và lưu vào DB nếu thay đổi
+     */
+    public function updateAllProductsPrices()
     {
         try {
             $chunkSize = 100;
@@ -150,10 +116,12 @@ class HomeController extends BaseController
                 ->where('product_type', '!=', '')
                 ->where('product_type', '!=', 'none')
                 ->chunk($chunkSize, function ($products) use (&$totalUpdated, &$totalProcessed) {
-                    $processedProducts = $this->preloadAndProcessProducts($products);
+                    $processedProducts = $this->preloadAndProcessProducts($products, true);
+
                     $chunkUpdated = 0;
                     foreach ($processedProducts as $product) {
                         if ($product->wasRecentlySaved || $product->isDirty('price')) {
+                            $product->save();
                             $chunkUpdated++;
                         }
                     }
@@ -177,6 +145,9 @@ class HomeController extends BaseController
         }
     }
 
+    /**
+     * Phiên bản public gọi qua API
+     */
     public function updateAllProductsPricesPublic()
     {
         $result = $this->updateAllProductsPrices();
@@ -186,26 +157,17 @@ class HomeController extends BaseController
         ], 200);
     }
 
-    private function preloadAndProcessProducts($products)
+    /**
+     * Preload và tính giá sản phẩm
+     */
+    private function preloadAndProcessProducts($products, $isFullUpdate = false)
     {
-
-        $cacheKey = 'last_full_price_update';
-        $lastUpdate = Cache::get($cacheKey);
-        $oneHourAgo = now()->subHour();
-
-        if (!$lastUpdate || Carbon::parse($lastUpdate)->lt($oneHourAgo)) {
-            Log::info('Triggering full price update due to cache expiration (1 hour)');
-            Cache::put($cacheKey, now()->toDateTimeString(), now()->addHours(1));
-        }
+        $cachePrefix = $isFullUpdate ? 'update_all_prices' : 'dynamic_price_type';
+        $cacheDuration = $isFullUpdate ? now()->addMinutes(30) : now()->addMinutes(1);
 
         $typeQuantities = $products
-            ->filter(function ($product) {
-                return $product->product_type !== '' && $product->product_type !== 'none';
-            })
-            ->map(function ($product) {
-                $quantity = $product->quantity ?? 1;
-                return "{$product->product_type}_{$quantity}";
-            })
+            ->filter(fn($p) => $p->product_type && $p->product_type !== 'none')
+            ->map(fn($p) => "{$p->product_type}_" . ($p->quantity ?? 1))
             ->unique()
             ->values();
 
@@ -213,124 +175,98 @@ class HomeController extends BaseController
             [$productType, $quantity] = explode('_', $typeQuantity, 2);
             $quantity = (int) $quantity;
 
-            $cacheKey = "dynamic_price_type_{$productType}_{$quantity}";
+            $cacheKey = "{$cachePrefix}_{$productType}_{$quantity}";
             $cachedPrice = Cache::get($cacheKey);
 
-            if ($cachedPrice !== null) {
-                continue;
-            }
+            if ($cachedPrice !== null) continue;
 
             try {
                 $dynamicPrice = $this->calculateDynamicPriceWithTimeout($productType, $quantity);
                 if ($dynamicPrice !== null) {
-                    Cache::put($cacheKey, $dynamicPrice, now()->addMinutes(1));
+                    Cache::put($cacheKey, $dynamicPrice, $cacheDuration);
                 }
             } catch (\Exception $e) {
-                $typeMap = [
-                    'silver' => 'silver',
-                    'gold' => 'gold',
-                    'eth' => 'crypto',
-                    'bnb' => 'crypto',
-                    'pol' => 'crypto',
-                    'usdt' => 'crypto',
-                    'usdc' => 'crypto',
-                    'paxg' => 'crypto',
-                    'sol' => 'crypto'
-                ];
-                $typeKey = $typeMap[$productType] ?? 'product';
-                Log::error("{$typeKey} price fetch error for type {$productType}: " . $e->getMessage());
-                Cache::put($cacheKey, 0, now()->addMinutes(1));
+                Log::error("Price fetch error for {$productType}: {$e->getMessage()}");
+                Cache::put($cacheKey, 0, $cacheDuration);
             }
         }
 
-        $products->each(function ($product) {
-            $this->updateProductPriceOnFly($product);
-            $product->image = json_decode($product->image ?? '[]', true);
-            $product->size = json_decode($product->size ?? '[]', true);
-        });
+        $products->each(fn($product) => $this->updateProductPriceOnFly($product, $cachePrefix));
+
+        // Decode image & size
+        $products->each(fn($p) => $p->image = json_decode($p->image ?? '[]', true));
+        $products->each(fn($p) => $p->size = json_decode($p->size ?? '[]', true));
 
         return $products;
     }
 
-    private function updateProductPriceOnFly($product)
+    /**
+     * Cập nhật giá hiển thị theo cache
+     */
+    private function updateProductPriceOnFly($product, $cachePrefix)
     {
         $productType = $product->product_type;
         $quantity = $product->quantity ?? 1;
 
-        if ($productType !== '' && $productType !== 'none') {
-            $cacheKey = "dynamic_price_type_{$productType}_{$quantity}";
+        if ($productType && $productType !== 'none') {
+            $cacheKey = "{$cachePrefix}_{$productType}_{$quantity}";
             $cachedPrice = Cache::get($cacheKey);
-
             if ($cachedPrice !== null) {
                 if ($product->price != $cachedPrice) {
                     $product->price = $cachedPrice;
-                    $product->save();
                     Log::info("Updated product ID {$product->id} with new price: {$cachedPrice}");
                 }
-                return;
+            } else {
+                Log::warning("No cached price for type {$productType}, using fallback");
+                $product->price = $product->price ?? 0;
             }
-
-            Log::warning("No cached price for type {$productType}, using fallback");
-            $product->price = $product->price ?? 0;
         }
     }
 
+    /**
+     * Wrapper gọi hàm tính giá
+     */
     private function calculateDynamicPriceWithTimeout($productType, $quantity)
     {
         return $this->calculateDynamicPrice($productType, $quantity);
     }
 
+    /**
+     * Hàm tính giá động theo loại sản phẩm
+     */
     private function calculateDynamicPrice($productType, $quantity)
     {
-        $apiKey = env('GOLDAPI_KEY', 'goldapi-41ndhsmghqq7ku-io');
+        $apiKey = env('GOLDAPI_KEY');
 
         if ($productType === 'silver') {
             $response = Http::withHeaders(['x-access-token' => $apiKey])->timeout(5)->get("https://www.goldapi.io/api/XAG/USD");
-            if (!$response->successful()) {
-                throw new \Exception('Failed to fetch silver price');
-            }
-            $data = $response->json();
-            $spotPrice = $data['price'];
-            $spotPricePerTenth = $spotPrice / 10; // For 1/10 XAG
-            return round($quantity * $spotPricePerTenth);
-        } elseif ($productType === 'gold') {
-            $response = Http::withHeaders(['x-access-token' => $apiKey])->timeout(5)->get("https://www.goldapi.io/api/XAU/USD");
-            if (!$response->successful()) {
-                throw new \Exception('Failed to fetch gold price');
-            }
-            $data = $response->json();
-            $spotPrice = $data['price'];
-            $spotPricePerTenth = $spotPrice / 10; // For 1/10 XAU
-            return round($quantity * $spotPricePerTenth);
-        } elseif (in_array($productType, ['eth', 'bnb', 'pol', 'sol', 'paxg', 'usdt', 'usdc'])) {
-            if (in_array($productType, ['usdt', 'usdc'])) {
-                return round($quantity * 1); // Stablecoins pegged to 1 USD
-            }
-
-            $symbolMap = [
-                'eth' => 'ETHUSDT',
-                'bnb' => 'BNBUSDT',
-                'paxg' => 'PAXGUSDT',
-                'pol' => 'POLUSDT',
-                'sol' => 'SOLUSDT'
-            ];
-            $symbol = $symbolMap[$productType] ?? '';
-
-            if (empty($symbol)) {
-                throw new \Exception('Invalid crypto symbol');
-            }
-
-            $response = Http::timeout(5)->get("https://api.binance.com/api/v3/ticker/price", [
-                'symbol' => $symbol
-            ]);
-            if (!$response->successful()) {
-                throw new \Exception('Failed to fetch crypto price');
-            }
-            $data = $response->json();
-            $spotPrice = (float) $data['price'];
-            return $quantity * $spotPrice;
+            $price = $response->successful() ? $response->json()['price'] / 10 : null;
+            return $price ? round($price * $quantity) : null;
         }
 
-        return null;
+        if ($productType === 'gold') {
+            $response = Http::withHeaders(['x-access-token' => $apiKey])->timeout(5)->get("https://www.goldapi.io/api/XAU/USD");
+            $price = $response->successful() ? $response->json()['price'] / 10 : null;
+            return $price ? round($price * $quantity) : null;
+        }
+
+        $symbolMap = [
+            'eth' => 'ETHUSDT',
+            'bnb' => 'BNBUSDT',
+            'paxg' => 'PAXGUSDT',
+            'pol' => 'POLUSDT',
+            'sol' => 'SOLUSDT',
+            'usdt' => 'USDT',
+            'usdc' => 'USDC',
+        ];
+
+        if (!isset($symbolMap[$productType])) return null;
+
+        if (in_array($productType, ['usdt', 'usdc'])) return $quantity * 1;
+
+        $response = Http::timeout(5)->get("https://api.binance.com/api/v3/ticker/price", ['symbol' => $symbolMap[$productType]]);
+        $spotPrice = $response->successful() ? (float)$response->json()['price'] : null;
+
+        return $spotPrice ? $quantity * $spotPrice : null;
     }
 }

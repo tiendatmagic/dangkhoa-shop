@@ -80,10 +80,6 @@ const routes: Routes = [
     component: PlaceOrderComponent,
   },
   {
-    path: 'admin',
-    component: AdminComponent,
-  },
-  {
     path: 'admin/order-detail/:id',
     component: AdminOrderDetailComponent,
   },
@@ -98,6 +94,14 @@ const routes: Routes = [
   {
     path: 'admin/create-product',
     component: AdminCreateProductComponent,
+  },
+  {
+    path: 'admin/:menu',
+    component: AdminComponent,
+  },
+  {
+    path: 'admin',
+    component: AdminComponent,
   },
   { path: '**', redirectTo: '', pathMatch: 'full' },
 ];
