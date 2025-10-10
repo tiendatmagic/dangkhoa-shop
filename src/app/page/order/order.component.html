@@ -36,7 +36,9 @@
                 Date: {{ order.created_at | date : "dd/MM/yyyy HH:mm:ss" }}
               </div>
               <div *ngIf="order.name">User: {{ order.name }}</div>
-              <div>Status: {{ order.status }}</div>
+              <div>Status: <span
+                  [ngClass]="order.status == 'canceled' ? 'text-gray-500' : (order.status == 'pending' || order.status == 'processing') ? 'text-orange-500' : order.status == 'completed' ? 'text-green-500' : ''">{{
+                  order.status }}</span></div>
             </div>
           </div>
 

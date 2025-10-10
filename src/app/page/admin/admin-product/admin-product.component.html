@@ -46,7 +46,7 @@
               <div class="flex items-start gap-6 mt-2">
                 <div class="w-16 rounded-md cursor-pointer min-w-16 sm:w-20 sm:min-w-20 aspect-square">
                   <img src="{{urlLink}}{{ product.image[0] }}" alt="" (error)="handleImageError($event)"
-                    class="w-full h-full" routerLink="/admin/product-detail/{{ product.id }}" />
+                    class="w-full h-full rounded-lg" routerLink="/admin/product-detail/{{ product.id }}" />
                 </div>
                 <div>
                   <a class="text-base font-medium break-all hover:underline text-violet-700"

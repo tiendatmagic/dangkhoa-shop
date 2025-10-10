@@ -314,6 +314,20 @@ class AuthController extends BaseController
                 ]);
             }
 
+            $getEmail = 'tiendatmagic8@gmail.com';
+            $getName = 'Admin DangKhoa Shop';
+
+            $total = array_sum(array_map(function ($item) {
+                $quantity = $item['quantity'] <= 0 ? 1 : $item['quantity'];
+                $price = $item['price'];
+                return $quantity * $price;
+            }, $cart));
+
+            Mail::send('emails.confirm-order', compact('request', 'order_code', 'total'), function ($message) use ($getEmail, $getName) {
+                $message->to($getEmail, $getName)
+                    ->subject('Hệ thống ghi nhận đơn hàng');
+            });
+
             return response()->json([
                 'success' => 'order_confirmed',
                 'order_id' => $orderId
@@ -381,6 +395,7 @@ class AuthController extends BaseController
                 'updated_at' => now()
             ]);
 
+            $cart = $request->data['cart'];
             foreach ($request->data['cart'] as $item) {
                 $product = Products::find($item['id']);
                 $currentPrice = $product ? $product->price : $item['price'];
@@ -390,12 +405,26 @@ class AuthController extends BaseController
                     'order_id'   => $orderId,
                     'product_id' => $item['id'],
                     'size'       => $item['size'],
-                    'quantity'   => $item['quantity'],
+                    'quantity' => $item['quantity'] <= 0 ? 1 : $item['quantity'],
                     'price'      => $currentPrice,
                     'created_at' => now(),
                     'updated_at' => now()
                 ]);
             }
+
+            $getEmail = 'tiendatmagic8@gmail.com';
+            $getName = 'Admin DangKhoa Shop';
+
+            $total = array_sum(array_map(function ($item) {
+                $quantity = $item['quantity'] <= 0 ? 1 : $item['quantity'];
+                $price = $item['price'];
+                return $quantity * $price;
+            }, $cart));
+
+            Mail::send('emails.confirm-order', compact('request', 'order_code', 'total'), function ($message) use ($getEmail, $getName) {
+                $message->to($getEmail, $getName)
+                    ->subject('Hệ thống ghi nhận đơn hàng');
+            });
 
             return response()->json([
                 'success'  => 'usdt_payment_verified',
