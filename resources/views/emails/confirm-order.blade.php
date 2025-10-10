@@ -44,7 +44,7 @@
         <p>Email: <span class="email">{{ $request->data['email'] }}</span></p>
         <p>Số điện thoại: <span class="phone">{{ $request->data['phone'] }}</span></p>
         <p>Địa chỉ: {{ $request->data['address'] }}</p>
-        <p>Tổng đơn hàng: <strong>$ {{ number_format($total, 0, '.', ',') }}</strong></p>
+        <p>Tổng đơn hàng: <strong>$ {{ number_format($total, 4) }}</strong></p>
         <p>Ghi chú: {{ $request->data['note'] ?? '-' }}</p>
 
         <p>Trân trọng,</p>
