@@ -412,7 +412,7 @@ class AuthController extends BaseController
                 ]);
             }
 
-            $getEmail = 'tiendatmagic8@gmail.com';
+            $getEmail = 'doandangkhoa1492004@gmail.com';
             $getName = 'Admin DangKhoa Shop';
 
             $total = array_sum(array_map(function ($item) {
