@@ -307,7 +307,7 @@ class AuthController extends BaseController
                     'order_id' => $orderId,
                     'product_id' => $item['id'],
                     'size' => $item['size'],
-                    'quantity' => $item['quantity'],
+                    'quantity' => $item['quantity'] <= 0 ? 1 : $item['quantity'],
                     'price' => $currentPrice,
                     'created_at' => now(),
                     'updated_at' => now()

@@ -27,7 +27,7 @@
 
     <ng-container *ngIf="!productData && !isLoading">
       <div class="min-h-40">
-        <p class="text-xl font-medium text-center">My order is empty</p>
+        <p class="text-xl font-medium text-center">Order is empty</p>
       </div>
     </ng-container>
 
@@ -44,10 +44,9 @@
           <div class="md:w-3/6">
             <div>
               <div class="flex items-start gap-6 mt-2">
-                <div>
+                <div class="w-16 rounded-md cursor-pointer min-w-16 sm:w-20 sm:min-w-20 aspect-square">
                   <img src="{{urlLink}}{{ product.image[0] }}" alt="" (error)="handleImageError($event)"
-                    class="w-16 rounded-md cursor-pointer sm:w-20"
-                    routerLink="/admin/product-detail/{{ product.id }}" />
+                    class="w-full h-full" routerLink="/admin/product-detail/{{ product.id }}" />
                 </div>
                 <div>
                   <a class="text-base font-medium break-all hover:underline text-violet-700"
