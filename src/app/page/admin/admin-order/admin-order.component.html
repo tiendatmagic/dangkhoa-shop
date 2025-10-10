@@ -12,7 +12,7 @@
 
     <ng-container *ngIf="!orderData && !isLoading">
       <div class="min-h-40">
-        <p class="text-xl font-medium text-center">My order is empty</p>
+        <p class="text-xl font-medium text-center">Order is empty</p>
       </div>
     </ng-container>
 
@@ -44,7 +44,8 @@
 
           <div class="md:w-2/6">
             <p class="font-medium" *ngFor="let item of order.items">
-              <span class="text-gray-500">Name: </span><a routerLink="/product/{{ item.id }}" class="hover:underline">
+              <span class="text-gray-500">Name: </span><a routerLink="/product/{{ item.product_id }}"
+                class="hover:underline">
                 {{ item.name }}</a>
             </p>
           </div>

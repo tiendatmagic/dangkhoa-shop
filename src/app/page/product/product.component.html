@@ -103,9 +103,9 @@
   <div class="grid grid-cols-2 gap-4 mt-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-y-6">
     <ng-container *ngFor="let product of productList">
       <a class="overflow-auto text-gray-700 rounded-lg cursor-pointer" routerLink="/product/{{ product.id }}">
-        <div class="overflow-hidden">
-          <img class="transition duration-300 ease-in-out hover:scale-110" alt="" src="{{ product.image[0] }}"
-            (error)="handleImageError($event)" />
+        <div class="max-w-full max-h-full mx-auto overflow-hidden rounded-lg aspect-square">
+          <img class="object-cover w-full h-full transition duration-300 ease-in-out hover:scale-110"
+            alt="{{ product.name }}" src="{{ product.image[0] }}" (error)="handleImageError($event)">
         </div>
         <p class="pt-3 pb-1 text-sm">{{ product.name }}</p>
         <p class="text-sm font-medium">${{ product.price }}</p>
