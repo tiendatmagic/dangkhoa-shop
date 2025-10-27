@@ -145,7 +145,7 @@ class AdminController extends BaseController
             }
             $data = $response->json();
             $spotPrice = $data['price'];
-            $spotPricePerTenth = $spotPrice / 10; // For 1/10 XAG
+            $spotPricePerTenth = $spotPrice / 10;
             return round($quantity * $spotPricePerTenth);
         } elseif ($productType === 'gold') {
             $response = Http::withHeaders(['x-access-token' => $apiKey])->get("https://www.goldapi.io/api/XAU/USD");
@@ -154,39 +154,62 @@ class AdminController extends BaseController
             }
             $data = $response->json();
             $spotPrice = $data['price'];
-            $spotPricePerTenth = $spotPrice / 10; // For 1/10 XAU
+            $spotPricePerTenth = $spotPrice / 10;
             return round($quantity * $spotPricePerTenth);
-        } elseif (in_array($productType, ['eth', 'bnb', 'pol', 'sol', 'paxg', 'usdt', 'usdc'])) {
-            if (in_array($productType, ['usdt', 'usdc'])) {
-                return round($quantity * 1); // Stablecoins pegged to 1 USD
-            }
-
-            $symbolMap = [
-                'eth' => 'ETHUSDT',
-                'bnb' => 'BNBUSDT',
-                'paxg' => 'PAXGUSDT',
-                'pol' => 'POLUSDT',
-                'sol' => 'SOLUSDT'
-            ];
-            $symbol = $symbolMap[$productType] ?? '';
-
-            if (empty($symbol)) {
-                throw new \Exception('Invalid crypto symbol');
-            }
-
-            $response = Http::get("https://api.binance.com/api/v3/ticker/price", [
-                'symbol' => $symbol
-            ]);
-            if (!$response->successful()) {
-                throw new \Exception('Failed to fetch crypto price');
-            }
-            $data = $response->json();
-            $spotPrice = (float) $data['price'];
-            return $quantity * $spotPrice;
         }
 
-        return null;
+        if (in_array($productType, ['usdt', 'usdc'])) {
+            return round($quantity * 1);
+        }
+
+        $symbolMap = [
+            'eth' => 'ETHUSDT',
+            'bnb' => 'BNBUSDT',
+            'paxg' => 'PAXGUSDT',
+            'pol' => 'POLUSDT',
+            'sol' => 'SOLUSDT',
+            'ondo' => 'ONDOUSDT',
+            'ton'  => 'TONUSDT',
+            'avax' => 'AVAXUSDT',
+            'btc'  => 'BTCUSDT',
+            'xrp'  => 'XRPUSDT',
+            'trx'  => 'TRXUSDT',
+            'sui'  => 'SUIUSDT',
+            'shib' => 'SHIBUSDT',
+            'near' => 'NEARUSDT',
+            'fil'  => 'FILUSDT',
+            'etc'  => 'ETCUSDT',
+            'ena'  => 'ENAUSDT',
+            'doge' => 'DOGEUSDT',
+            'link' => 'LINKUSDT',
+            'ada'  => 'ADAUSDT',
+            'tao'  => 'TAOUSDT',
+            'arb'  => 'ARBUSDT',
+            'apt'  => 'APTUSDT',
+            'aave' => 'AAVEUSDT',
+            'ltc'  => 'LTCUSDT',
+        ];
+
+        $symbol = $symbolMap[strtolower($productType)] ?? null;
+
+        if (!$symbol) {
+            throw new \Exception('Invalid crypto symbol: ' . $productType);
+        }
+
+        $response = Http::get("https://api.binance.com/api/v3/ticker/price", [
+            'symbol' => strtoupper($symbol)
+        ]);
+
+        if (!$response->successful()) {
+            throw new \Exception('Failed to fetch crypto price');
+        }
+
+        $data = $response->json();
+        $spotPrice = (float) $data['price'];
+
+        return $quantity * $spotPrice;
     }
+
 
     public function updateProduct(Request $request)
     {
@@ -225,18 +248,7 @@ class AdminController extends BaseController
                     $price = $dynamicPrice;
                 }
             } catch (\Exception $e) {
-                $typeMap = [
-                    'silver' => 'silver',
-                    'gold' => 'gold',
-                    'eth' => 'crypto',
-                    'bnb' => 'crypto',
-                    'pol' => 'crypto',
-                    'usdt' => 'crypto',
-                    'usdc' => 'crypto',
-                    'paxg' => 'crypto',
-                    'sol' => 'crypto'
-                ];
-                $typeKey = $typeMap[$productType] ?? 'product';
+                $typeKey = in_array($productType, ['gold', 'silver']) ? $productType : 'crypto';
                 Log::error("{$typeKey} price fetch error: " . $e->getMessage());
                 return response()->json(['error' => "Failed to fetch realtime {$typeKey} price"], 500);
             }
@@ -256,6 +268,7 @@ class AdminController extends BaseController
             'product' => $product
         ]);
     }
+
 
     public function upload(Request $request)
     {
@@ -297,9 +310,9 @@ class AdminController extends BaseController
             return response()->json(['error' => $validator->errors()], 422);
         }
 
-        $price = $request->price ?? 0;
-        $productType = $request->product_type;
+        $productType = $request->product_type ?? 'none';
         $quantity = $request->quantity ?: 1;
+        $price = $request->price ?? 0;
 
         if ($productType !== '' && $productType !== 'none') {
             try {
@@ -308,18 +321,7 @@ class AdminController extends BaseController
                     $price = $dynamicPrice;
                 }
             } catch (\Exception $e) {
-                $typeMap = [
-                    'silver' => 'silver',
-                    'gold' => 'gold',
-                    'eth' => 'crypto',
-                    'bnb' => 'crypto',
-                    'pol' => 'crypto',
-                    'usdt' => 'crypto',
-                    'usdc' => 'crypto',
-                    'paxg' => 'crypto',
-                    'sol' => 'crypto'
-                ];
-                $typeKey = $typeMap[$productType] ?? 'product';
+                $typeKey = in_array($productType, ['gold', 'silver']) ? $productType : 'crypto';
                 Log::error("{$typeKey} price fetch error: " . $e->getMessage());
                 return response()->json(['error' => "Failed to fetch realtime {$typeKey} price"], 500);
             }
@@ -332,15 +334,19 @@ class AdminController extends BaseController
         $product->product_type = $productType;
         $product->is_best_seller = $request->is_best_seller;
         $product->quantity = $quantity;
-        $product->size = $request->size ? json_encode($request->size) : null;
+        $product->size = json_encode($request->size);
         $product->image = json_encode([$request->image]);
         $product->save();
 
         $product->image = json_decode($product->image);
         $product->size = json_decode($product->size);
 
-        return response()->json(['message' => 'Product created', 'product' => $product]);
+        return response()->json([
+            'message' => 'Product created successfully',
+            'product' => $product
+        ]);
     }
+
 
     public function getOverview()
     {
