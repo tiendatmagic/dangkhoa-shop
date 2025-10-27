@@ -258,7 +258,7 @@ class HomeController extends BaseController
             return $price ? round($price * $quantity) : null;
         }
 
-        if ($productType === 'gold') {
+        if ($productType === 'gold' || $productType === 'paxg') {
             $response = Http::withHeaders(['x-access-token' => $apiKey])->timeout(5)->get("https://www.goldapi.io/api/XAU/USD");
             $price = $response->successful() ? $response->json()['price'] / 10 : null;
             return $price ? round($price * $quantity) : null;
@@ -267,16 +267,32 @@ class HomeController extends BaseController
         $symbolMap = [
             'eth' => 'ETHUSDT',
             'bnb' => 'BNBUSDT',
-            'paxg' => 'PAXGUSDT',
-            'pol' => 'POLUSDT',
             'sol' => 'SOLUSDT',
+            'pol' => 'POLUSDT',
+            'btc' => 'BTCUSDT',
+            'xrp' => 'XRPUSDT',
+            'trx' => 'TRXUSDT',
+            'sui' => 'SUIUSDT',
+            'shib' => 'SHIBUSDT',
+            'near' => 'NEARUSDT',
+            'fil' => 'FILUSDT',
+            'etc' => 'ETCUSDT',
+            'ena' => 'ENAUSDT',
+            'ondo' => 'ONDOUSDT',
+            'link' => 'LINKUSDT',
+            'ada' => 'ADAUSDT',
+            'tao' => 'TAOUSDT',
+            'arb' => 'ARBUSDT',
+            'apt' => 'APTUSDT',
+            'aave' => 'AAVEUSDT',
+            'ltc' => 'LTCUSDT',
             'usdt' => 'USDT',
-            'usdc' => 'USDC',
+            'usdc' => 'USDC'
         ];
 
-        if (!isset($symbolMap[$productType])) return null;
-
         if (in_array($productType, ['usdt', 'usdc'])) return $quantity * 1;
+
+        if (!isset($symbolMap[$productType])) return null;
 
         $response = Http::timeout(5)->get("https://api.binance.com/api/v3/ticker/price", ['symbol' => $symbolMap[$productType]]);
         $spotPrice = $response->successful() ? (float)$response->json()['price'] : null;

@@ -106,14 +106,34 @@ class AdminController extends BaseController
         $page = $request->input('page', 1);
         $perPage = $request->input('per_page', 10);
         $products = Products::orderBy('created_at', 'desc')
-            ->skip(0)
+            ->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get();
-
 
         foreach ($products as $product) {
             $product->image = json_decode($product->image);
             $product->size = json_decode($product->size);
+
+            if ($product->product_type && $product->product_type !== 'none') {
+                $cacheKey = "admin_product_price_{$product->product_type}_{$product->quantity}";
+                $cachedPrice = Cache::get($cacheKey);
+
+                if ($cachedPrice !== null) {
+                    $product->price = $cachedPrice;
+                } else {
+                    try {
+                        $dynamicPrice = $this->calculateDynamicPrice(
+                            $product->product_type,
+                            $product->quantity ?? 1
+                        );
+                        $product->price = $dynamicPrice ?? $product->price ?? 0;
+                        Cache::put($cacheKey, $product->price, now()->addMinutes(1));
+                    } catch (\Exception $e) {
+                        \Log::error("Failed to fetch price for {$product->product_type}: " . $e->getMessage());
+                        $product->price = $product->price ?? 0;
+                    }
+                }
+            }
         }
 
         $getProducts = [
