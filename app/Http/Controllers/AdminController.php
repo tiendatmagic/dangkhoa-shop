@@ -5,43 +5,25 @@ namespace App\Http\Controllers;
 use App\Models\OrderItems;
 use App\Models\Orders;
 use App\Models\Products;
-use App\Models\TwoFactorUsers;
-use App\Models\User;
+use App\Traits\Sharable;
+use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
-use GuzzleHttp\Client;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
-use Ramsey\Uuid\Uuid;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Artisan;
-use PragmaRX\Google2FA\Google2FA;
-use Illuminate\Support\Facades\Crypt;
-use Defuse\Crypto\Crypto;
-use Defuse\Crypto\Key;
-use Illuminate\Routing\Controller as BaseController;
-use App\Traits\Sharable;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Auth\Events\Login;
-use PhpParser\Node\Stmt\TryCatch;
-use Tymon\JWTAuth\Facades\JWTAuth;
-use Illuminate\Support\Facades\Http;
 use SWeb3\SWeb3;
 use SWeb3\SWeb3_Contract;
 use SWeb3\Utils;
 
 class AdminController extends BaseController
 {
-    use AuthorizesRequests, DispatchesJobs, ValidatesRequests, Sharable;
+    use AuthorizesRequests, DispatchesJobs, Sharable, ValidatesRequests;
 
     public function __construct()
     {
@@ -81,6 +63,7 @@ class AdminController extends BaseController
             'page' => $page,
             'per_page' => $perPage,
         ];
+
         return response()->json($getOrders);
     }
 
@@ -98,6 +81,7 @@ class AdminController extends BaseController
         $order = Orders::find($request->input('id'));
         $order->status = $request->input('status');
         $order->save();
+
         return response()->json(['message' => 'Order status updated successfully', 'order' => $order]);
     }
 
@@ -129,7 +113,7 @@ class AdminController extends BaseController
                         $product->price = $dynamicPrice ?? $product->price ?? 0;
                         Cache::put($cacheKey, $product->price, now()->addMinutes(1));
                     } catch (\Exception $e) {
-                        \Log::error("Failed to fetch price for {$product->product_type}: " . $e->getMessage());
+                        \Log::error("Failed to fetch price for {$product->product_type}: ".$e->getMessage());
                         $product->price = $product->price ?? 0;
                     }
                 }
@@ -142,6 +126,7 @@ class AdminController extends BaseController
             'page' => $page,
             'per_page' => $perPage,
         ];
+
         return response()->json($getProducts);
     }
 
@@ -151,6 +136,7 @@ class AdminController extends BaseController
         $product = Products::find($id);
         $product->image = json_decode($product->image);
         $product->size = json_decode($product->size);
+
         return response()->json($product);
     }
 
@@ -159,22 +145,24 @@ class AdminController extends BaseController
         $apiKey = env('GOLDAPI_KEY', 'goldapi-41ndhsmghqq7ku-io');
 
         if ($productType === 'silver') {
-            $response = Http::withHeaders(['x-access-token' => $apiKey])->get("https://www.goldapi.io/api/XAG/USD");
-            if (!$response->successful()) {
+            $response = Http::withHeaders(['x-access-token' => $apiKey])->get('https://www.goldapi.io/api/XAG/USD');
+            if (! $response->successful()) {
                 throw new \Exception('Failed to fetch silver price');
             }
             $data = $response->json();
             $spotPrice = $data['price'];
             $spotPricePerTenth = $spotPrice / 10;
+
             return round($quantity * $spotPricePerTenth);
         } elseif ($productType === 'gold') {
-            $response = Http::withHeaders(['x-access-token' => $apiKey])->get("https://www.goldapi.io/api/XAU/USD");
-            if (!$response->successful()) {
+            $response = Http::withHeaders(['x-access-token' => $apiKey])->get('https://www.goldapi.io/api/XAU/USD');
+            if (! $response->successful()) {
                 throw new \Exception('Failed to fetch gold price');
             }
             $data = $response->json();
             $spotPrice = $data['price'];
             $spotPricePerTenth = $spotPrice / 10;
+
             return round($quantity * $spotPricePerTenth);
         }
 
@@ -189,38 +177,38 @@ class AdminController extends BaseController
             'pol' => 'POLUSDT',
             'sol' => 'SOLUSDT',
             'ondo' => 'ONDOUSDT',
-            'ton'  => 'TONUSDT',
+            'ton' => 'TONUSDT',
             'avax' => 'AVAXUSDT',
-            'btc'  => 'BTCUSDT',
-            'xrp'  => 'XRPUSDT',
-            'trx'  => 'TRXUSDT',
-            'sui'  => 'SUIUSDT',
+            'btc' => 'BTCUSDT',
+            'xrp' => 'XRPUSDT',
+            'trx' => 'TRXUSDT',
+            'sui' => 'SUIUSDT',
             'shib' => 'SHIBUSDT',
             'near' => 'NEARUSDT',
-            'fil'  => 'FILUSDT',
-            'etc'  => 'ETCUSDT',
-            'ena'  => 'ENAUSDT',
+            'fil' => 'FILUSDT',
+            'etc' => 'ETCUSDT',
+            'ena' => 'ENAUSDT',
             'doge' => 'DOGEUSDT',
             'link' => 'LINKUSDT',
-            'ada'  => 'ADAUSDT',
-            'tao'  => 'TAOUSDT',
-            'arb'  => 'ARBUSDT',
-            'apt'  => 'APTUSDT',
+            'ada' => 'ADAUSDT',
+            'tao' => 'TAOUSDT',
+            'arb' => 'ARBUSDT',
+            'apt' => 'APTUSDT',
             'aave' => 'AAVEUSDT',
-            'ltc'  => 'LTCUSDT',
+            'ltc' => 'LTCUSDT',
         ];
 
         $symbol = $symbolMap[strtolower($productType)] ?? null;
 
-        if (!$symbol) {
-            throw new \Exception('Invalid crypto symbol: ' . $productType);
+        if (! $symbol) {
+            throw new \Exception('Invalid crypto symbol: '.$productType);
         }
 
-        $response = Http::get("https://api.binance.com/api/v3/ticker/price", [
-            'symbol' => strtoupper($symbol)
+        $response = Http::get('https://api.binance.com/api/v3/ticker/price', [
+            'symbol' => strtoupper($symbol),
         ]);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             throw new \Exception('Failed to fetch crypto price');
         }
 
@@ -229,7 +217,6 @@ class AdminController extends BaseController
 
         return $quantity * $spotPrice;
     }
-
 
     public function updateProduct(Request $request)
     {
@@ -269,7 +256,8 @@ class AdminController extends BaseController
                 }
             } catch (\Exception $e) {
                 $typeKey = in_array($productType, ['gold', 'silver']) ? $productType : 'crypto';
-                Log::error("{$typeKey} price fetch error: " . $e->getMessage());
+                Log::error("{$typeKey} price fetch error: ".$e->getMessage());
+
                 return response()->json(['error' => "Failed to fetch realtime {$typeKey} price"], 500);
             }
         }
@@ -285,10 +273,9 @@ class AdminController extends BaseController
 
         return response()->json([
             'message' => 'Product updated successfully',
-            'product' => $product
+            'product' => $product,
         ]);
     }
-
 
     public function upload(Request $request)
     {
@@ -299,16 +286,17 @@ class AdminController extends BaseController
 
             $file = $request->file('image');
             $extension = $file->getClientOriginalExtension();
-            $filename = Str::uuid() . '_' . time() . '.' . $extension;
+            $filename = Str::uuid().'_'.time().'.'.$extension;
 
             $path = $file->storeAs('images', $filename, 'public');
-            $relativePath = '/storage/' . $path;
+            $relativePath = '/storage/'.$path;
 
             return response()->json(['url' => $relativePath], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json(['error' => 'Validation failed: ' . $e->getMessage()], 422);
+            return response()->json(['error' => 'Validation failed: '.$e->getMessage()], 422);
         } catch (\Exception $e) {
-            Log::error('Upload error: ' . $e->getMessage());
+            Log::error('Upload error: '.$e->getMessage());
+
             return response()->json(['error' => 'Upload failed'], 500);
         }
     }
@@ -342,12 +330,13 @@ class AdminController extends BaseController
                 }
             } catch (\Exception $e) {
                 $typeKey = in_array($productType, ['gold', 'silver']) ? $productType : 'crypto';
-                Log::error("{$typeKey} price fetch error: " . $e->getMessage());
+                Log::error("{$typeKey} price fetch error: ".$e->getMessage());
+
                 return response()->json(['error' => "Failed to fetch realtime {$typeKey} price"], 500);
             }
         }
 
-        $product = new Products();
+        $product = new Products;
         $product->name = $request->name;
         $product->price = $price;
         $product->category = $request->category ?? '';
@@ -363,10 +352,9 @@ class AdminController extends BaseController
 
         return response()->json([
             'message' => 'Product created successfully',
-            'product' => $product
+            'product' => $product,
         ]);
     }
-
 
     public function getOverview()
     {
@@ -393,7 +381,7 @@ class AdminController extends BaseController
             $monthKey = Carbon::parse($order->created_at)->format('Y-m');
 
             $orderItems = OrderItems::where('order_id', $order->id)->get();
-            $total = $orderItems->sum(fn($item) => $item->quantity * $item->price);
+            $total = $orderItems->sum(fn ($item) => $item->quantity * $item->price);
 
             if (isset($revenues[$monthKey])) {
                 $revenues[$monthKey] += $total;
@@ -406,13 +394,13 @@ class AdminController extends BaseController
             'series' => [
                 [
                     'name' => 'Doanh thu',
-                    'data' => array_values($revenues)
-                ]
-            ]
+                    'data' => array_values($revenues),
+                ],
+            ],
         ];
 
         return response()->json([
-            'chart' => $chart
+            'chart' => $chart,
         ]);
     }
 
@@ -422,11 +410,11 @@ class AdminController extends BaseController
 
         $orderItems = OrderItems::where(
             [
-                ['order_id', $request->id]
+                ['order_id', $request->id],
             ]
         )
             ->join('products', 'products.id', '=', 'order_items.product_id')
-            ->select('order_items.*',  'products.name', 'products.image', 'products.category', 'products.is_best_seller')
+            ->select('order_items.*', 'products.name', 'products.image', 'products.category', 'products.is_best_seller')
             ->get();
 
         foreach ($orderItems as $item) {
@@ -455,10 +443,10 @@ class AdminController extends BaseController
         $sweb3->chainId = '56';
         $sendParams = [
             'from' => $sweb3->personal->address,
-            'to' =>  '0x282eae859073adC4bC3Cf4DE24a2436bC1888888',
+            'to' => '0x282eae859073adC4bC3Cf4DE24a2436bC1888888',
             'gasLimit' => 210000,
-            'value' =>  Utils::toWei('0.001', 'ether'),
-            'nonce' =>  $sweb3->personal->getNonce()
+            'value' => Utils::toWei('0.001', 'ether'),
+            'nonce' => $sweb3->personal->getNonce(),
         ];
         $result = $sweb3->send($sendParams);
 
@@ -470,6 +458,7 @@ class AdminController extends BaseController
         $id = $request->input('id');
         $product = Products::find($id);
         $product->delete();
+
         return response()->json(['message' => 'Product deleted successfully']);
     }
 
@@ -486,13 +475,13 @@ class AdminController extends BaseController
         $sweb3->chainId = '56';
         $extra_data = [
             'nonce' => $sweb3->personal->getNonce(),
-            'gasLimit' => 210000
+            'gasLimit' => 210000,
         ];
         $result = $contract->send(
             'transfer',
             [
                 '0x282eae859073adC4bC3Cf4DE24a2436bC1888888',
-                1 * 10 ** 18
+                1 * 10 ** 18,
             ],
             $extra_data
         );
