@@ -52,6 +52,9 @@ Route::group([
     Route::get('get-order-detail-admin', [AdminController::class, 'getOrderDetailAdmin']);
 });
 
+// Coinbase webhook (no auth)
+Route::post('coinbase/webhook', [AuthController::class, 'coinbaseWebhook']);
+
 Route::group([
     'middleware' => ['api', 'admin'],
 ], function ($router) {

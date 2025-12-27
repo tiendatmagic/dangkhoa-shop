@@ -5,42 +5,30 @@ namespace App\Http\Controllers;
 use App\Models\OrderItems;
 use App\Models\Orders;
 use App\Models\Products;
-use App\Models\TwoFactorUsers;
 use App\Models\User;
+use App\Traits\Sharable;
+use Carbon\Carbon;
+use Defuse\Crypto\Key;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
-use Carbon\Carbon;
-use GuzzleHttp\Client;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
-use Ramsey\Uuid\Uuid;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Artisan;
-use PragmaRX\Google2FA\Google2FA;
-use Illuminate\Support\Facades\Crypt;
-use Defuse\Crypto\Crypto;
-use Defuse\Crypto\Key;
 use Illuminate\Routing\Controller as BaseController;
-use App\Traits\Sharable;
-use Illuminate\Auth\Events\Login;
-use PhpParser\Node\Stmt\TryCatch;
-use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
+use Ramsey\Uuid\Uuid;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends BaseController
 {
-    use AuthorizesRequests, DispatchesJobs, ValidatesRequests, Sharable;
+    use AuthorizesRequests, DispatchesJobs, Sharable, ValidatesRequests;
 
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login', 'refresh']]);
+        $this->middleware('auth:api', ['except' => ['login', 'refresh', 'coinbaseWebhook']]);
     }
 
     public function systemSetting(Request $request)
@@ -83,6 +71,7 @@ class AuthController extends BaseController
             default:
                 break;
         }
+
         return true;
     }
 
@@ -90,7 +79,7 @@ class AuthController extends BaseController
     {
         $credentials = request(['email', 'password']);
         if (strlen($request->password) >= 8) {
-            if (!$token = auth('api')->attempt($credentials)) {
+            if (! $token = auth('api')->attempt($credentials)) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Unauthorized',
@@ -103,11 +92,12 @@ class AuthController extends BaseController
             if ($user->two_factor_secret) {
                 return response()->json([
                     'requires_2fa' => true,
-                    'message' => '2FA required'
+                    'message' => '2FA required',
                 ], 200);
             }
 
             $newRefreshToken = $this->createRefreshToken();
+
             return $this->respondWithToken($token, $newRefreshToken, null, request());
         }
     }
@@ -116,11 +106,12 @@ class AuthController extends BaseController
     {
         $data = [
             'user_id' => auth('api')->user()->id,
-            'random' => rand() . time(),
-            'exp' => time() + config('jwt.refresh_ttl')
+            'random' => rand().time(),
+            'exp' => time() + config('jwt.refresh_ttl'),
         ];
 
         $refreshToken = JWTAuth::getJWTProvider()->encode($data);
+
         return $refreshToken;
     }
 
@@ -148,6 +139,7 @@ class AuthController extends BaseController
         $refreshToken = request()->refresh_token;
 
         auth('api')->logout();
+
         return response()->json(['message' => 'Successfully logged out']);
     }
 
@@ -168,7 +160,7 @@ class AuthController extends BaseController
                     'message' => 'Unauthorized',
                 ], 401);
             } else {
-                if (!$user) {
+                if (! $user) {
                     return response()->json([
                         'status' => 'error',
                         'message' => 'Unauthorized',
@@ -197,19 +189,19 @@ class AuthController extends BaseController
         if ($validator->fails()) {
             return response()->json([
                 'error' => 'can_not_save_password',
-                'messages' => $validator->errors()
+                'messages' => $validator->errors(),
             ], 400);
         }
 
         $user = $request->user();
         $getUserPassword = $user->password;
 
-        if (!password_verify($request->password, $getUserPassword)) {
+        if (! password_verify($request->password, $getUserPassword)) {
             return response()->json(['error' => 'password_does_not_match'], 400);
         }
 
         $user->update([
-            'password' => password_hash($request->newPassword, PASSWORD_DEFAULT)
+            'password' => password_hash($request->newPassword, PASSWORD_DEFAULT),
         ]);
 
         return response()->json(['success' => 'password_changed'], 200);
@@ -232,34 +224,31 @@ class AuthController extends BaseController
             'full_name' => $request->full_name,
             'address' => $request->address,
             'email' => $request->email,
-            'phone' => $request->phone
+            'phone' => $request->phone,
         ]);
 
         $getProfile = User::where('id', $request->user()->id)->first();
 
         return response()->json([
             'success' => 'profile_updated',
-            'data' => $getProfile
+            'data' => $getProfile,
         ], 200);
     }
-
 
     /**
      * Get the token array structure.
      *
-     * @param  string $token
-     *
+     * @param  string  $token
      * @return \Illuminate\Http\JsonResponse
      */
-
-    public function respondWithToken($token, $newRefreshToken, $refreshToken = null, Request $request)
+    public function respondWithToken($token, $newRefreshToken, $refreshToken, Request $request)
     {
         return response()->json([
             'access_token' => $token,
             'refresh_token' => $newRefreshToken,
             'token_type' => 'bearer',
             'expires_in' => auth('api')->factory()->getTTL() * 60,
-            'information' =>  response()->json(auth('api')->user())->getData()
+            'information' => response()->json(auth('api')->user())->getData(),
         ]);
     }
 
@@ -275,6 +264,7 @@ class AuthController extends BaseController
                 $order_code = str_pad($num, 8, '0', STR_PAD_LEFT);
             } while (isset($usedCodes[$order_code]));
             $usedCodes[$order_code] = true;
+
             return $order_code;
         };
 
@@ -294,7 +284,7 @@ class AuthController extends BaseController
                 'address' => $request->data['address'],
                 'note' => $request->data['note'],
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ]);
 
             $cart = $request->data['cart'];
@@ -310,7 +300,7 @@ class AuthController extends BaseController
                     'quantity' => $item['quantity'] <= 0 ? 1 : $item['quantity'],
                     'price' => $currentPrice,
                     'created_at' => now(),
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ]);
             }
 
@@ -320,6 +310,7 @@ class AuthController extends BaseController
             $total = array_sum(array_map(function ($item) {
                 $quantity = $item['quantity'] <= 0 ? 1 : $item['quantity'];
                 $price = $item['price'];
+
                 return $quantity * $price;
             }, $cart));
 
@@ -330,21 +321,21 @@ class AuthController extends BaseController
 
             return response()->json([
                 'success' => 'order_confirmed',
-                'order_id' => $orderId
+                'order_id' => $orderId,
             ]);
-        } else if ($payment === 'usdt') {
+        } elseif ($payment === 'usdt') {
             $data = (object) $request->input('data');
 
-            $txHash           = strtolower($data->transactionHash);
-            $expectedAmount   = $data->amount;
+            $txHash = strtolower($data->transactionHash);
+            $expectedAmount = $data->amount;
             $expectedReceiver = strtolower('0x1ad11e0e96797a14336bf474676eb0a332055555');
-            $usdtContract     = strtolower('0x55d398326f99059ff775485246999027b3197955');
+            $usdtContract = strtolower('0x55d398326f99059ff775485246999027b3197955');
 
             $apiKey = env('ETHERSCAN_API_KEY');
             $apiUrl = "https://api.etherscan.io/v2/api?chainid=56&module=proxy&action=eth_getTransactionByHash&txhash={$txHash}&apikey={$apiKey}";
             $response = Http::get($apiUrl)->json();
 
-            if (!isset($response['result'])) {
+            if (! isset($response['result'])) {
                 return response()->json(['error' => 'Invalid response from explorer'], 400);
             }
 
@@ -354,15 +345,15 @@ class AuthController extends BaseController
                 return response()->json(['error' => 'Not a USDT transaction'], 400);
             }
 
-            $input  = $tx['input'];
+            $input = $tx['input'];
             $method = substr($input, 0, 10);
             if ($method !== '0xa9059cbb') {
                 return response()->json(['error' => 'Not a transfer() call'], 400);
             }
 
-            $recipient = '0x' . substr($input, 10 + 24, 40);
-            $amountHex = '0x' . substr($input, 10 + 64, 64);
-            $amount    = gmp_strval(gmp_init($amountHex, 16)) / 1e18;
+            $recipient = '0x'.substr($input, 10 + 24, 40);
+            $amountHex = '0x'.substr($input, 10 + 64, 64);
+            $amount = gmp_strval(gmp_init($amountHex, 16)) / 1e18;
 
             if (strtolower($recipient) !== $expectedReceiver) {
                 return response()->json(['error' => 'Wrong recipient'], 400);
@@ -380,19 +371,19 @@ class AuthController extends BaseController
             $order_code = $generateOrderCode();
 
             Orders::insert([
-                'id'         => $orderId,
+                'id' => $orderId,
                 'order_code' => $order_code,
-                'user_id'    => $request->user()->id,
-                'payment'    => $payment,
-                'status'     => 'pending',
-                'name'       => $request->data['name'],
-                'email'      => $request->data['email'],
-                'phone'      => $request->data['phone'],
-                'address'    => $request->data['address'],
-                'note'       => $request->data['note'],
-                'txhash'     => $txHash,
+                'user_id' => $request->user()->id,
+                'payment' => $payment,
+                'status' => 'pending',
+                'name' => $request->data['name'],
+                'email' => $request->data['email'],
+                'phone' => $request->data['phone'],
+                'address' => $request->data['address'],
+                'note' => $request->data['note'],
+                'txhash' => $txHash,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ]);
 
             $cart = $request->data['cart'];
@@ -401,14 +392,14 @@ class AuthController extends BaseController
                 $currentPrice = $product ? $product->price : $item['price'];
 
                 OrderItems::insert([
-                    'id'         => UUID::uuid4(),
-                    'order_id'   => $orderId,
+                    'id' => UUID::uuid4(),
+                    'order_id' => $orderId,
                     'product_id' => $item['id'],
-                    'size'       => $item['size'],
+                    'size' => $item['size'],
                     'quantity' => $item['quantity'] <= 0 ? 1 : $item['quantity'],
-                    'price'      => $currentPrice,
+                    'price' => $currentPrice,
                     'created_at' => now(),
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ]);
             }
 
@@ -418,6 +409,7 @@ class AuthController extends BaseController
             $total = array_sum(array_map(function ($item) {
                 $quantity = $item['quantity'] <= 0 ? 1 : $item['quantity'];
                 $price = $item['price'];
+
                 return $quantity * $price;
             }, $cart));
 
@@ -427,12 +419,108 @@ class AuthController extends BaseController
             });
 
             return response()->json([
-                'success'  => 'usdt_payment_verified',
-                'txhash'   => $txHash,
-                'amount'   => $amount,
+                'success' => 'usdt_payment_verified',
+                'txhash' => $txHash,
+                'amount' => $amount,
                 'receiver' => $recipient,
-                'order_id' => $orderId
+                'order_id' => $orderId,
             ]);
+        } elseif ($payment === 'coinbase') {
+            $orderId = UUID::uuid4();
+            $order_code = $generateOrderCode();
+
+            Orders::insert([
+                'id' => $orderId,
+                'order_code' => $order_code,
+                'user_id' => $request->user()->id,
+                'payment' => $payment,
+                'status' => 'pending',
+                'name' => $request->data['name'],
+                'email' => $request->data['email'],
+                'phone' => $request->data['phone'],
+                'address' => $request->data['address'],
+                'note' => $request->data['note'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $cart = $request->data['cart'];
+            foreach ($cart as $item) {
+                $product = Products::find($item['id']);
+                $currentPrice = $product ? $product->price : $item['price'];
+
+                OrderItems::insert([
+                    'id' => UUID::uuid4(),
+                    'order_id' => $orderId,
+                    'product_id' => $item['id'],
+                    'size' => $item['size'],
+                    'quantity' => $item['quantity'] <= 0 ? 1 : $item['quantity'],
+                    'price' => $currentPrice,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            $total = array_sum(array_map(function ($item) {
+                $quantity = $item['quantity'] <= 0 ? 1 : $item['quantity'];
+                $price = $item['price'];
+
+                return $quantity * $price;
+            }, $cart));
+
+            $coinbaseApiKey = env('COINBASE_COMMERCE_API_KEY');
+            $coinbaseVersion = env('COINBASE_COMMERCE_API_VERSION', '2018-03-22');
+            $currency = env('COINBASE_COMMERCE_CURRENCY', 'USD');
+
+            $body = [
+                'name' => "Order {$order_code}",
+                'description' => 'DangKhoa Shop order',
+                'local_price' => [
+                    'amount' => number_format($total, 2, '.', ''),
+                    'currency' => $currency,
+                ],
+                'pricing_type' => 'fixed_price',
+                'metadata' => [
+                    'order_id' => $orderId,
+                ],
+                'redirect_url' => rtrim(env('FRONTEND_URL', env('APP_URL')), '/').'/checkout/'.$orderId,
+                'cancel_url' => rtrim(env('FRONTEND_URL', env('APP_URL')), '/').'/cart',
+            ];
+
+            try {
+                $response = Http::withHeaders([
+                    'X-CC-Api-Key' => $coinbaseApiKey,
+                    'X-CC-Version' => $coinbaseVersion,
+                ])->post('https://api.commerce.coinbase.com/charges', $body)->json();
+
+                if (isset($response['data'])) {
+                    $chargeId = $response['data']['id'] ?? null;
+                    $hostedUrl = $response['data']['hosted_url'] ?? null;
+                    $expiresAt = $response['data']['expires_at'] ?? null;
+
+                    // Force a 10-minute expiry for our checkout regardless of Coinbase default
+                    $dbExpires = Carbon::now()->addMinutes(10)->toDateTimeString();
+                    $returnExpires = Carbon::parse($dbExpires)->toIso8601String();
+
+                    Orders::where('id', $orderId)->update([
+                        'coinbase_charge_id' => $chargeId,
+                        'coinbase_hosted_url' => $hostedUrl,
+                        'coinbase_expires_at' => $dbExpires,
+                        'updated_at' => now(),
+                    ]);
+
+                    return response()->json([
+                        'success' => 'coinbase_charge_created',
+                        'hosted_url' => $hostedUrl,
+                        'expires_at' => $returnExpires,
+                        'order_id' => $orderId,
+                    ]);
+                } else {
+                    return response()->json(['error' => 'coinbase_error', 'detail' => $response], 500);
+                }
+            } catch (\Throwable $th) {
+                return response()->json(['error' => 'coinbase_request_failed', 'message' => $th->getMessage()], 500);
+            }
         }
     }
 
@@ -497,11 +585,11 @@ class AuthController extends BaseController
 
         $orderItems = OrderItems::where(
             [
-                ['order_id', $request->id]
+                ['order_id', $request->id],
             ]
         )
             ->join('products', 'products.id', '=', 'order_items.product_id')
-            ->select('order_items.*',  'products.name', 'products.image', 'products.category', 'products.is_best_seller')
+            ->select('order_items.*', 'products.name', 'products.image', 'products.category', 'products.is_best_seller')
             ->get();
 
         foreach ($orderItems as $item) {
@@ -517,5 +605,37 @@ class AuthController extends BaseController
             'items' => $orderItems,
             'total' => $total,
         ]);
+    }
+
+    public function coinbaseWebhook(Request $request)
+    {
+        $signature = $request->header('X-CC-Webhook-Signature');
+        $payload = $request->getContent();
+        $secret = env('COINBASE_COMMERCE_WEBHOOK_SECRET');
+
+        if (! $signature || ! $secret) {
+            return response()->json(['error' => 'missing_signature_or_secret'], 400);
+        }
+
+        $computed = hash_hmac('sha256', $payload, $secret);
+        if (! hash_equals($computed, $signature)) {
+            return response()->json(['error' => 'invalid_signature'], 400);
+        }
+
+        $data = json_decode($payload, true);
+        $eventType = $data['event']['type'] ?? null;
+        $chargeData = $data['event']['data'] ?? null;
+        $metadata = $chargeData['metadata'] ?? [];
+        $orderId = $metadata['order_id'] ?? null;
+
+        if ($orderId && $eventType === 'charge:confirmed') {
+            Orders::where('id', $orderId)->update([
+                'status' => 'confirmed',
+                'coinbase_charge_id' => $chargeData['id'] ?? null,
+                'updated_at' => now(),
+            ]);
+        }
+
+        return response()->json(['received' => true]);
     }
 }

@@ -1,6 +1,7 @@
 <ng-container *ngIf="!id">
   <div
-    class="rounded-lg w-full overflow-auto border-[#ececec] dark:border-[#46525f] border-[1px] glass-effect not-bg-glass shadow-md relative max-w-screen-4xl p-3">
+    class="rounded-lg w-full overflow-auto border-[#ececec] dark:border-[#46525f] border-[1px] glass-effect not-bg-glass shadow-md relative max-w-screen-4xl p-3"
+  >
     <section class="py-3 antialiased">
       <form action="#" class="mx-auto mt-3 lg:px-3">
         <div class="lg:flex lg:items-start lg:gap-6">
@@ -13,57 +14,100 @@
 
               <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label for="your_name" class="block mb-2 text-sm font-medium text-gray-900">Your name <span
-                      class="text-red-500">*</span>
+                  <label
+                    for="your_name"
+                    class="block mb-2 text-sm font-medium text-gray-900"
+                    >Your name <span class="text-red-500">*</span>
                   </label>
-                  <input type="text" [(ngModel)]="name" name="name" id="your_name"
+                  <input
+                    type="text"
+                    [(ngModel)]="name"
+                    name="name"
+                    id="your_name"
                     class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
-                    placeholder="Your name" required />
+                    placeholder="Your name"
+                    required
+                  />
                 </div>
 
                 <div>
-                  <label for="your_email" class="block mb-2 text-sm font-medium text-gray-900">Your email <span
-                      class="text-red-500">*</span>
+                  <label
+                    for="your_email"
+                    class="block mb-2 text-sm font-medium text-gray-900"
+                    >Your email <span class="text-red-500">*</span>
                   </label>
-                  <input type="email" [(ngModel)]="email" name="email" id="your_email"
+                  <input
+                    type="email"
+                    [(ngModel)]="email"
+                    name="email"
+                    id="your_email"
                     class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
-                    placeholder="Your email" required />
+                    placeholder="Your email"
+                    required
+                  />
                 </div>
 
                 <div>
                   <div class="flex items-center gap-2 mb-2">
-                    <label for="your_address-input-3" class="block text-sm font-medium text-gray-900">
+                    <label
+                      for="your_address-input-3"
+                      class="block text-sm font-medium text-gray-900"
+                    >
                       Address <span class="text-red-500">*</span>
                     </label>
                   </div>
-                  <input type="text" id="your_address" [(ngModel)]="address" name="address"
+                  <input
+                    type="text"
+                    id="your_address"
+                    [(ngModel)]="address"
+                    name="address"
                     class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
-                    placeholder="Your address" required />
+                    placeholder="Your address"
+                    required
+                  />
                 </div>
 
                 <div>
-                  <label for="phone-input-3" class="block mb-2 text-sm font-medium text-gray-900">
+                  <label
+                    for="phone-input-3"
+                    class="block mb-2 text-sm font-medium text-gray-900"
+                  >
                     Phone <span class="text-red-500">*</span>
                   </label>
                   <div class="flex items-center">
                     <div class="relative w-full">
-                      <input type="text" id="phone-input" [(ngModel)]="phone" name="phone"
+                      <input
+                        type="text"
+                        id="phone-input"
+                        [(ngModel)]="phone"
+                        name="phone"
                         class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
-                        pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" placeholder="Your phone" required />
+                        pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
+                        placeholder="Your phone"
+                        required
+                      />
                     </div>
                   </div>
                 </div>
               </div>
 
               <div>
-                <label for="phone-input-3" class="block mb-2 text-sm font-medium text-gray-900">
+                <label
+                  for="phone-input-3"
+                  class="block mb-2 text-sm font-medium text-gray-900"
+                >
                   Note
                 </label>
                 <div class="flex items-center">
                   <div class="relative w-full">
-                    <textarea name="" id="" name="note" [(ngModel)]="note"
+                    <textarea
+                      name=""
+                      id=""
+                      name="note"
+                      [(ngModel)]="note"
                       class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg resize-none"
-                      placeholder="Your note"></textarea>
+                      placeholder="Your note"
+                    ></textarea>
                   </div>
                 </div>
               </div>
@@ -77,22 +121,35 @@
 
               <ul role="list" class="divide-y divide-gray-200">
                 <li *ngFor="let cart of cartProducts" class="flex py-3">
-                  <div class="flex-shrink-0 w-20 overflow-hidden border border-gray-200 rounded-md">
-                    <img src="{{ cart.image }}" routerLink="/product/{{ cart.id }}" alt=""
-                      (error)="handleImageError($event)" class="object-cover object-center w-full h-full" />
+                  <div
+                    class="flex-shrink-0 w-20 overflow-hidden border border-gray-200 rounded-md"
+                  >
+                    <img
+                      src="{{ cart.image }}"
+                      routerLink="/product/{{ cart.id }}"
+                      alt=""
+                      (error)="handleImageError($event)"
+                      class="object-cover object-center w-full h-full"
+                    />
                   </div>
 
                   <div class="flex flex-1 ml-4">
                     <div class="flex flex-col flex-1">
                       <div>
-                        <div class="flex justify-between text-base font-medium text-gray-900">
+                        <div
+                          class="flex justify-between text-base font-medium text-gray-900"
+                        >
                           <div>
                             <a routerLink="/product/{{ cart.id }}">{{
                               cart.name
-                              }}</a>
+                            }}</a>
                             <p>${{ cart.price | number : "1.0-2" }}</p>
-                            <div class="flex flex-col items-start justify-center gap-3 mt-2">
-                              <p class="px-2 border rounded-md sm:px-3 sm:py-1 bg-slate-50">
+                            <div
+                              class="flex flex-col items-start justify-center gap-3 mt-2"
+                            >
+                              <p
+                                class="px-2 border rounded-md sm:px-3 sm:py-1 bg-slate-50"
+                              >
                                 {{ cart.size }}
                               </p>
                             </div>
@@ -143,45 +200,100 @@
               </div>
 
               <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div class="p-4 border rounded-lg cursor-pointer ps-4 bg-gray-50" matRipple [ngClass]="
+                <div
+                  class="p-4 border rounded-lg cursor-pointer ps-4 bg-gray-50"
+                  matRipple
+                  [ngClass]="
                     choosePaymentMethod == 1
                       ? 'border-violet-700 border-2'
                       : 'border-gray-200'
-                  " (click)="choosePayment(1)">
+                  "
+                  (click)="choosePayment(1)"
+                >
                   <div class="flex items-center">
-                    <div class="flex items-center justify-center rounded-full min-w-5 min-h-5" [ngClass]="
+                    <div
+                      class="flex items-center justify-center rounded-full min-w-5 min-h-5"
+                      [ngClass]="
                         choosePaymentMethod == 1
                           ? 'bg-green-500'
                           : 'bg-transparent'
-                      "></div>
+                      "
+                    ></div>
                     <div class="text-sm ms-4">
                       <p class="font-medium leading-none text-gray-900">
                         Cash on delivery
                       </p>
-                      <p id="cash-on-delivery-text" class="mt-1 text-xs font-normal text-gray-700">
+                      <p
+                        id="cash-on-delivery-text"
+                        class="mt-1 text-xs font-normal text-gray-700"
+                      >
                         Pay with cash upon delivery.
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div class="p-4 border rounded-lg cursor-pointer ps-4 bg-gray-50" matRipple [ngClass]="
+                <div
+                  class="p-4 border rounded-lg cursor-pointer ps-4 bg-gray-50"
+                  matRipple
+                  [ngClass]="
                     choosePaymentMethod == 2
                       ? 'border-violet-700 border-2'
                       : 'border-gray-200'
-                  " (click)="choosePayment(2)">
+                  "
+                  (click)="choosePayment(2)"
+                >
                   <div class="flex items-center">
-                    <div class="flex items-center justify-center rounded-full min-w-5 min-h-5" [ngClass]="
+                    <div
+                      class="flex items-center justify-center rounded-full min-w-5 min-h-5"
+                      [ngClass]="
                         choosePaymentMethod == 2
                           ? 'bg-green-500'
                           : 'bg-transparent'
-                      "></div>
+                      "
+                    ></div>
                     <div class="text-sm ms-4">
                       <p class="font-medium leading-none text-gray-900">
                         USDT - BEP20
                       </p>
-                      <p id="usdt-text" class="mt-1 text-xs font-normal text-gray-700">
+                      <p
+                        id="usdt-text"
+                        class="mt-1 text-xs font-normal text-gray-700"
+                      >
                         Pay with USDT (Metamask).
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  class="p-4 border rounded-lg cursor-pointer ps-4 bg-gray-50"
+                  matRipple
+                  [ngClass]="
+                    choosePaymentMethod == 3
+                      ? 'border-violet-700 border-2'
+                      : 'border-gray-200'
+                  "
+                  (click)="choosePayment(3)"
+                >
+                  <div class="flex items-center">
+                    <div
+                      class="flex items-center justify-center rounded-full min-w-5 min-h-5"
+                      [ngClass]="
+                        choosePaymentMethod == 3
+                          ? 'bg-green-500'
+                          : 'bg-transparent'
+                      "
+                    ></div>
+                    <div class="text-sm ms-4">
+                      <p class="font-medium leading-none text-gray-900">
+                        Crypto (Coinbase)
+                      </p>
+                      <p
+                        id="coinbase-text"
+                        class="mt-1 text-xs font-normal text-gray-700"
+                      >
+                        Pay with crypto via Coinbase Commerce (scan QR).
                       </p>
                     </div>
                   </div>
@@ -196,7 +308,9 @@
                   </div>
                 </ng-container>
 
-                <ng-container *ngIf="choosePaymentMethod == 2 && (!isConnected || !account)">
+                <ng-container
+                  *ngIf="choosePaymentMethod == 2 && (!isConnected || !account)"
+                >
                   <div class="text-sm font-medium text-gray-700">
                     <p>
                       Orders will be paid online by USDT, transaction via crypto
@@ -204,35 +318,65 @@
                     </p>
                     <p>
                       First, you need to connect your wallet, or
-                      <a href="https://metamask.io/" target="_blank" class="text-violet-700 hover:underline">install
-                        Metamask</a>.
+                      <a
+                        href="https://metamask.io/"
+                        target="_blank"
+                        class="text-violet-700 hover:underline"
+                        >install Metamask</a
+                      >.
                     </p>
                   </div>
                 </ng-container>
 
-                <ng-container *ngIf="choosePaymentMethod == 2 && account && isConnected">
-                  <div class="text-sm font-medium text-gray-700 break-all cursor-pointer"
-                    (click)="copyAddress(account)">
+                <ng-container
+                  *ngIf="choosePaymentMethod == 2 && account && isConnected"
+                >
+                  <div
+                    class="text-sm font-medium text-gray-700 break-all cursor-pointer"
+                    (click)="copyAddress(account)"
+                  >
                     {{ account }}
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                      stroke="currentColor" class="inline ml-2 size-4">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.5"
+                      stroke="currentColor"
+                      class="inline ml-2 size-4"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75"
+                      />
                     </svg>
                   </div>
 
                   <div class="flex items-center justify-between">
                     <div>
-                      <div class="flex items-center gap-3 mt-2 text-sm font-medium text-gray-700 break-all">
-                        <img src="/assets/images/logo/bnb.png" alt="" width="30" />
+                      <div
+                        class="flex items-center gap-3 mt-2 text-sm font-medium text-gray-700 break-all"
+                      >
+                        <img
+                          src="/assets/images/logo/bnb.png"
+                          alt=""
+                          width="30"
+                        />
                         <span class="font-medium text-green-500">{{
                           balance | number : "1.1-5"
-                          }}</span>
+                        }}</span>
                         BNB
                       </div>
-                      <div class="flex items-center gap-3 mt-2 text-sm font-medium text-gray-700 break-all">
-                        <img src="/assets/images/logo/usdt.png" alt="" width="30" />
-                        <span class="font-medium text-green-500">{{ USDTBalance | number : "1.1-5" }}
+                      <div
+                        class="flex items-center gap-3 mt-2 text-sm font-medium text-gray-700 break-all"
+                      >
+                        <img
+                          src="/assets/images/logo/usdt.png"
+                          alt=""
+                          width="30"
+                        />
+                        <span class="font-medium text-green-500"
+                          >{{ USDTBalance | number : "1.1-5" }}
                         </span>
                         USDT
                       </div>
@@ -241,29 +385,87 @@
                     <div>
                       <div
                         class="flex items-center justify-center w-10 h-10 border border-gray-300 rounded-lg cursor-pointer"
-                        matRipple (click)="disconnectWallet()">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                          stroke="currentColor" class="size-5">
-                          <path stroke-linecap="round" stroke-linejoin="round"
-                            d="m15 15 6-6m0 0-6-6m6 6H9a6 6 0 0 0 0 12h3" />
+                        matRipple
+                        (click)="disconnectWallet()"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="size-5"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="m15 15 6-6m0 0-6-6m6 6H9a6 6 0 0 0 0 12h3"
+                          />
                         </svg>
                       </div>
                     </div>
+                  </div>
+                </ng-container>
+
+                <ng-container *ngIf="choosePaymentMethod == 3">
+                  <div class="text-sm font-medium text-gray-700">
+                    <p>
+                      Orders will be paid via Coinbase Commerce. After creating
+                      the checkout, scan the QR code below to pay.
+                    </p>
+                  </div>
+                </ng-container>
+
+                <ng-container *ngIf="coinbaseHostedUrl">
+                  <div class="mt-4 text-center">
+                    <p class="mb-2 text-sm">Scan to pay</p>
+                    <img
+                      [src]="coinbaseQrUrl"
+                      alt="Coinbase QR"
+                      class="mx-auto"
+                    />
+                    <p class="mt-2 text-xs break-words">
+                      <a
+                        [href]="coinbaseHostedUrl"
+                        target="_blank"
+                        class="text-violet-700"
+                        >Open hosted checkout</a
+                      >
+                    </p>
+                    <p class="mt-2 text-sm text-gray-700">
+                      Time left:
+                      <span class="font-medium text-violet-700">{{
+                        coinbaseRemaining
+                      }}</span>
+                    </p>
+                    <p class="mt-2 text-xs text-gray-600">
+                      Waiting for payment confirmation...
+                    </p>
                   </div>
                 </ng-container>
               </div>
             </div>
 
             <div class="mt-4">
-              <button type="button" class="w-full mt-0 btn-primary" matRipple matRippleColor="#ffffff80"
-                (click)="proceedToPayment()" [disabled]="!name || !email || !address || !phone">
+              <button
+                type="button"
+                class="w-full mt-0 btn-primary"
+                matRipple
+                matRippleColor="#ffffff80"
+                (click)="proceedToPayment()"
+                [disabled]="!name || !email || !address || !phone"
+              >
                 Proceed to Payment
               </button>
 
               <p class="mt-3 text-sm font-normal text-gray-700">
                 One or more items in your cart require an account.
-                <a routerLink="/login" title="" class="font-medium underline text-primary-700 hover:no-underline">Sign
-                  in or create an account now.</a>
+                <a
+                  routerLink="/login"
+                  title=""
+                  class="font-medium underline text-primary-700 hover:no-underline"
+                  >Sign in or create an account now.</a
+                >
               </p>
             </div>
           </div>
@@ -275,15 +477,25 @@
 
 <ng-container *ngIf="id">
   <div
-    class="rounded-lg w-full overflow-auto border-[#ececec] dark:border-[#46525f] border-[1px] glass-effect not-bg-glass shadow-md relative max-w-screen-4xl p-3 py-5 min-h-[300px] flex items-center justify-center">
+    class="rounded-lg w-full overflow-auto border-[#ececec] dark:border-[#46525f] border-[1px] glass-effect not-bg-glass shadow-md relative max-w-screen-4xl p-3 py-5 min-h-[300px] flex items-center justify-center"
+  >
     <div class="leading-6" *ngIf="orderData">
-      <p class="mb-3 text-xl font-medium text-center text-orange-500" *ngIf="orderData.status == 'pending'">
+      <p
+        class="mb-3 text-xl font-medium text-center text-orange-500"
+        *ngIf="orderData.status == 'pending'"
+      >
         Thank you. Your order has been received. Processing
       </p>
-      <p class="mb-3 text-xl font-medium text-center text-gray-500" *ngIf="orderData.status == 'canceled'">
+      <p
+        class="mb-3 text-xl font-medium text-center text-gray-500"
+        *ngIf="orderData.status == 'canceled'"
+      >
         Your order has been cancelled.
       </p>
-      <p class="mb-3 text-xl font-medium text-center text-green-500" *ngIf="orderData.status == 'completed'">
+      <p
+        class="mb-3 text-xl font-medium text-center text-green-500"
+        *ngIf="orderData.status == 'completed'"
+      >
         Your order has been delivered successfully.
       </p>
       <p>
@@ -291,44 +503,65 @@
         <span class="text-violet-700"> {{ orderData.order_code }}</span>
       </p>
       <p>
-        <span class="font-medium">Name:</span><span class="text-violet-700"> {{ orderData.name }}</span>
+        <span class="font-medium">Name:</span
+        ><span class="text-violet-700"> {{ orderData.name }}</span>
       </p>
       <p>
-        <span class="font-medium">Email:</span><span class="text-violet-700"> {{ orderData.email }}</span>
+        <span class="font-medium">Email:</span
+        ><span class="text-violet-700"> {{ orderData.email }}</span>
       </p>
       <p>
-        <span class="font-medium">Address:</span><span class="text-violet-700"> {{ orderData.address }}</span>
+        <span class="font-medium">Address:</span
+        ><span class="text-violet-700"> {{ orderData.address }}</span>
       </p>
       <p>
-        <span class="font-medium">Phone:</span><span class="text-violet-700"> {{ orderData.phone }}</span>
+        <span class="font-medium">Phone:</span
+        ><span class="text-violet-700"> {{ orderData.phone }}</span>
       </p>
       <p>
-        <span class="font-medium">Note:</span><span class="break-all text-violet-700"> {{ orderData.note }}</span>
+        <span class="font-medium">Note:</span
+        ><span class="break-all text-violet-700"> {{ orderData.note }}</span>
       </p>
       <p>
-        <span class="font-medium">Date:</span><span class="text-violet-700">
-          {{ orderData.created_at | date : "dd/MM/yyyy HH:mm:ss" }}</span>
+        <span class="font-medium">Date:</span
+        ><span class="text-violet-700">
+          {{ orderData.created_at | date : "dd/MM/yyyy HH:mm:ss" }}</span
+        >
       </p>
       <p>
-        <span class="font-medium">Total:</span><span class="text-violet-700">
-          ${{ orderData.total + deliveryFee }}</span>
+        <span class="font-medium">Total:</span
+        ><span class="text-violet-700">
+          ${{ orderData.total + deliveryFee }}</span
+        >
       </p>
       <p>
-        <span class="font-medium">Payment method:</span><span class="capitalize text-violet-700">
+        <span class="font-medium">Payment method:</span
+        ><span class="capitalize text-violet-700">
           {{
-          orderData.paymentMethod == "usdt"
-          ? "Metamask - USDT"
-          : orderData.paymentMethod
-          }}</span>
+            orderData.paymentMethod == "usdt"
+              ? "Metamask - USDT"
+              : orderData.paymentMethod
+          }}</span
+        >
       </p>
 
       <div class="flex flex-col items-center gap-3 sm:flex-row">
-        <button class="w-full mt-3 btn-primary" matRipple matRippleColor="#ffffff80" (click)="viewOrder()">
+        <button
+          class="w-full mt-3 btn-primary"
+          matRipple
+          matRippleColor="#ffffff80"
+          (click)="viewOrder()"
+        >
           View Order
         </button>
 
-        <button class="w-full mt-3 btn-outline-primary" *ngIf="orderData.paymentMethod == 'usdt'" matRipple
-          matRippleColor="#ffffff80" (click)="viewOnBSCScan(orderData.txhash)">
+        <button
+          class="w-full mt-3 btn-outline-primary"
+          *ngIf="orderData.paymentMethod == 'usdt'"
+          matRipple
+          matRippleColor="#ffffff80"
+          (click)="viewOnBSCScan(orderData.txhash)"
+        >
           View on BSCScan
         </button>
       </div>
