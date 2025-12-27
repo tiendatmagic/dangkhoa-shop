@@ -17,6 +17,12 @@ import { AuthService } from '../../services/auth.service';
 
 export class PlaceOrderComponent {
   choosePaymentMethod: number = 1;
+  coinbaseHostedUrl: string = '';
+  coinbaseQrUrl: string = '';
+  private coinbaseInterval: any = null;
+  coinbaseExpiresAt: Date | null = null;
+  coinbaseRemaining: string = '';
+  private coinbaseCountdownInterval: any = null;
   cartProducts: any[] = [];
   subtotal: number = 0;
   deliveryFee: number = 0;
@@ -89,6 +95,8 @@ export class PlaceOrderComponent {
           console.error(error);
         }
       )
+      // start polling order status after redirect from Coinbase
+      this.startOrderStatusPolling(this.id);
     }
 
 
@@ -218,6 +226,36 @@ export class PlaceOrderComponent {
 
       return;
     }
+    if (this.choosePaymentMethod == 3) {
+      this.isProccessing = true;
+      var data = {
+        data: orderData,
+        payment: 'coinbase'
+      };
+
+      this.auth.confirmOrder(data).subscribe(
+        (res: any) => {
+          this.isProccessing = false;
+          if (res.success && res.success === 'coinbase_charge_created') {
+            this.coinbaseHostedUrl = res.hosted_url;
+            this.coinbaseQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(res.hosted_url)}`;
+            if (res.expires_at) {
+              this.coinbaseExpiresAt = new Date(res.expires_at);
+              this.startCoinbaseCountdown();
+            }
+            this.startCoinbasePolling(res.order_id);
+          } else {
+            this.snackBar.open('Failed to create coinbase charge.', 'OK', { duration: 3000 });
+          }
+        },
+        (error: any) => {
+          this.isProccessing = false;
+          this.snackBar.open('Order failed.', 'OK', { duration: 3000 });
+        }
+      );
+
+      return;
+    }
     else {
       this.isProccessing = true;
       var data = {
@@ -262,6 +300,73 @@ export class PlaceOrderComponent {
 
   viewOnBSCScan(tx: string) {
     window.open(`https://bscscan.com/tx/${tx}`, '_blank');
+  }
+
+  startCoinbasePolling(orderId: string) {
+    if (this.coinbaseInterval) clearInterval(this.coinbaseInterval);
+    this.coinbaseInterval = setInterval(() => {
+      this.auth.getOrder({ id: orderId }).subscribe((res: any) => {
+        const status = res.order ? res.order.status : null;
+        if (status && status !== 'pending') {
+          clearInterval(this.coinbaseInterval);
+          this.router.navigate(['/checkout', orderId]);
+        }
+      }, (err) => {
+        // ignore
+      });
+    }, 5000);
+  }
+
+  startOrderStatusPolling(orderId: string) {
+    const interval = setInterval(() => {
+      this.auth.getOrder({ id: orderId }).subscribe((res: any) => {
+        if (!res.order) return;
+        const status = res.order.status;
+        this.orderData = {
+          "id": res.order.id,
+          "order_code": res.order.order_code,
+          "name": res.order.full_name || res.order.name,
+          "email": res.order.email,
+          "phone": res.order.phone,
+          "address": res.order.address,
+          "note": res.order.note,
+          "paymentMethod": res.order.payment,
+          "txhash": res.order.txhash,
+          "items": res.items,
+          "total": res.total,
+          "created_at": res.order.created_at,
+          "status": status
+        };
+
+        if (status && status !== 'pending') {
+          clearInterval(interval);
+        }
+      }, (err) => {
+        // ignore
+      });
+    }, 4000);
+  }
+
+  startCoinbaseCountdown() {
+    if (this.coinbaseCountdownInterval) clearInterval(this.coinbaseCountdownInterval);
+    const update = () => {
+      if (!this.coinbaseExpiresAt) return;
+      const now = new Date().getTime();
+      const exp = this.coinbaseExpiresAt.getTime();
+      let diff = Math.max(0, Math.floor((exp - now) / 1000));
+      if (diff <= 0) {
+        this.coinbaseRemaining = 'Expired';
+        this.coinbaseHostedUrl = '';
+        this.coinbaseQrUrl = '';
+        clearInterval(this.coinbaseCountdownInterval);
+        return;
+      }
+      const minutes = Math.floor(diff / 60);
+      const seconds = diff % 60;
+      this.coinbaseRemaining = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    };
+    update();
+    this.coinbaseCountdownInterval = setInterval(update, 1000);
   }
 
   handleImageError(event: any) {
