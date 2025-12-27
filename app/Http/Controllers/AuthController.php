@@ -629,13 +629,98 @@ class AuthController extends BaseController
         $orderId = $metadata['order_id'] ?? null;
 
         if ($orderId && $eventType === 'charge:confirmed') {
+            // Mark as completed when Coinbase confirms the charge
             Orders::where('id', $orderId)->update([
-                'status' => 'confirmed',
+                'status' => 'completed',
                 'coinbase_charge_id' => $chargeData['id'] ?? null,
                 'updated_at' => now(),
             ]);
         }
 
         return response()->json(['received' => true]);
+    }
+
+    public function checkCoinbaseStatus(Request $request)
+    {
+        $orderId = $request->id;
+        $order = Orders::where('id', $orderId)->first();
+        if (! $order) {
+            return response()->json(['error' => 'order_not_found'], 404);
+        }
+
+        if (! $order->coinbase_charge_id) {
+            return response()->json(['error' => 'no_charge_id'], 400);
+        }
+
+        $coinbaseApiKey = env('COINBASE_COMMERCE_API_KEY');
+        $coinbaseVersion = env('COINBASE_COMMERCE_API_VERSION', '2018-03-22');
+
+        try {
+            $resp = Http::withHeaders([
+                'X-CC-Api-Key' => $coinbaseApiKey,
+                'X-CC-Version' => $coinbaseVersion,
+            ])->get("https://api.commerce.coinbase.com/charges/{$order->coinbase_charge_id}")->json();
+
+            if (! isset($resp['data'])) {
+                return response()->json(['error' => 'coinbase_error', 'detail' => $resp], 500);
+            }
+
+            $data = $resp['data'];
+            // timeline contains status updates; look for COMPLETED
+            $timeline = $data['timeline'] ?? [];
+            $completed = false;
+
+            // 1) Standard timeline completion check
+            foreach ($timeline as $t) {
+                if (isset($t['status']) && strtolower($t['status']) === 'completed') {
+                    $completed = true;
+                    break;
+                }
+            }
+
+            // 2) Check payments array for confirmed/completed statuses
+            if (! $completed) {
+                $payments = $data['payments'] ?? [];
+                foreach ($payments as $p) {
+                    $pstatus = strtolower($p['status'] ?? '');
+                    if (in_array($pstatus, ['completed', 'confirmed', 'success'])) {
+                        $completed = true;
+                        break;
+                    }
+                }
+            }
+
+            // 3) For Web3 flows, Coinbase may emit a detected payment before finalization.
+            // If a transaction_id / payment_id exists and there are success_events we can
+            // treat it as completed for UX (optional: you can tighten this by verifying
+            // on-chain confirmations separately).
+            if (! $completed) {
+                $payments = $data['payments'] ?? [];
+                $web3Success = $data['web3_data']['success_events'] ?? [];
+                $hasTx = false;
+                foreach ($payments as $p) {
+                    if (! empty($p['transaction_id']) || ! empty($p['payment_id'])) {
+                        $hasTx = true;
+                        break;
+                    }
+                }
+                if ($hasTx && ! empty($web3Success)) {
+                    $completed = true;
+                }
+            }
+
+            if ($completed) {
+                Orders::where('id', $orderId)->update([
+                    'status' => 'completed',
+                    'updated_at' => now(),
+                ]);
+
+                return response()->json(['status' => 'completed']);
+            }
+
+            return response()->json(['status' => 'pending', 'detail' => $data]);
+        } catch (\Throwable $th) {
+            return response()->json(['error' => 'coinbase_request_failed', 'message' => $th->getMessage()], 500);
+        }
     }
 }

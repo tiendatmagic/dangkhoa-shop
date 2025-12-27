@@ -267,6 +267,12 @@ export class AuthService {
     );
   }
 
+  checkCoinbase(data: any) {
+    return this.http.post(`${this.urlEnv}api/order/check-coinbase`, data).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
   getOrderDetailAdmin(data: any) {
     return this.http.get(`${this.urlEnv}api/order/get-order-detail-admin`, { params: data }).pipe(
       catchError((error: any) => this.handleError(error))

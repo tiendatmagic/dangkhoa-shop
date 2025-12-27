@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../services/data.service';
@@ -23,6 +23,8 @@ export class PlaceOrderComponent {
   coinbaseExpiresAt: Date | null = null;
   coinbaseRemaining: string = '';
   private coinbaseCountdownInterval: any = null;
+  coinbaseActive: boolean = false;
+  private storageListener: any = null;
   cartProducts: any[] = [];
   subtotal: number = 0;
   deliveryFee: number = 0;
@@ -46,6 +48,14 @@ export class PlaceOrderComponent {
 
   constructor(private snackBar: MatSnackBar, private route: ActivatedRoute, private router: Router, private dataService: DataService, private web3Service: Web3Service, private http: HttpClient, private auth: AuthService) {
     this.deliveryFee = this.dataService.deliveryFee;
+  }
+
+  ngOnDestroy() {
+    try {
+      if (this.storageListener) window.removeEventListener('storage', this.storageListener);
+    } catch (e) { }
+    if (this.coinbaseCountdownInterval) clearInterval(this.coinbaseCountdownInterval);
+    if (this.coinbaseInterval) clearInterval(this.coinbaseInterval);
   }
 
   ngOnInit() {
@@ -90,13 +100,30 @@ export class PlaceOrderComponent {
             "created_at": res.order.created_at,
             "status": res.order.status
           }
+
+          // if still pending and payment method is coinbase, immediately ask server to check coinbase status
+          if (res.order && res.order.status === 'pending' && res.order.payment === 'coinbase') {
+            this.auth.checkCoinbase({ id: this.id }).subscribe((cres: any) => {
+              if (cres.status === 'completed') {
+                // refresh order and clear
+                this.startOrderStatusPolling(this.id);
+              } else {
+                // continue polling normally
+                this.startOrderStatusPolling(this.id);
+              }
+            }, (err) => {
+              // on error, still start polling
+              this.startOrderStatusPolling(this.id);
+            });
+          } else {
+            // start polling order status after redirect from Coinbase
+            this.startOrderStatusPolling(this.id);
+          }
         },
         (error: any) => {
           console.error(error);
         }
       )
-      // start polling order status after redirect from Coinbase
-      this.startOrderStatusPolling(this.id);
     }
 
 
@@ -127,6 +154,10 @@ export class PlaceOrderComponent {
       this.selectedNetwork = chainId;
     });
 
+    // Listen to storage events so other tabs can clear QR / cart when payment completed
+    this.storageListener = this.onStorageEvent.bind(this);
+    window.addEventListener('storage', this.storageListener);
+
   }
 
   calculateTotal() {
@@ -137,10 +168,53 @@ export class PlaceOrderComponent {
   }
 
   choosePayment(payment: number) {
+    // reset active coinbase QR when user intentionally switches payment method
+    if (this.choosePaymentMethod !== payment) {
+      this.coinbaseActive = false;
+      this.coinbaseHostedUrl = '';
+      this.coinbaseQrUrl = '';
+      this.coinbaseExpiresAt = null;
+      this.coinbaseRemaining = '';
+      if (this.coinbaseCountdownInterval) clearInterval(this.coinbaseCountdownInterval);
+    }
     this.choosePaymentMethod = payment;
     if (payment == 2) {
       this.web3Service.connectWallet();
     }
+  }
+
+  onStorageEvent(ev: StorageEvent) {
+    try {
+      if (!ev.key) return;
+      // other tab cleared cart or marked order completed
+      if (ev.key.startsWith('order_status_')) {
+        const val = ev.newValue;
+        if (val === 'completed') {
+          // clear local QR and countdown
+          this.coinbaseHostedUrl = '';
+          this.coinbaseQrUrl = '';
+          this.coinbaseExpiresAt = null;
+          this.coinbaseRemaining = '';
+          if (this.coinbaseCountdownInterval) clearInterval(this.coinbaseCountdownInterval);
+          this.coinbaseActive = false;
+        }
+      }
+
+      if (ev.key === 'cartItems') {
+        const cv = ev.newValue || '[]';
+        try {
+          const arr = JSON.parse(cv);
+          if (Array.isArray(arr) && arr.length === 0) {
+            this.coinbaseHostedUrl = '';
+            this.coinbaseQrUrl = '';
+            this.coinbaseExpiresAt = null;
+            this.coinbaseRemaining = '';
+            this.coinbaseActive = false;
+            if (this.coinbaseCountdownInterval) clearInterval(this.coinbaseCountdownInterval);
+          }
+        } catch (e) { }
+      }
+    } catch (e) { }
   }
 
   async proceedToPayment() {
@@ -158,6 +232,7 @@ export class PlaceOrderComponent {
     };
 
     if (this.isProccessing) return;
+    if (this.coinbaseActive) return;
 
     if (!orderData.name || !orderData.email || !orderData.address || !orderData.phone) {
       this.snackBar.open('Please fill in all the required fields.', 'OK', {
@@ -243,6 +318,8 @@ export class PlaceOrderComponent {
               this.coinbaseExpiresAt = new Date(res.expires_at);
               this.startCoinbaseCountdown();
             }
+            // mark that QR is active to prevent multiple creates
+            this.coinbaseActive = true;
             this.startCoinbasePolling(res.order_id);
           } else {
             this.snackBar.open('Failed to create coinbase charge.', 'OK', { duration: 3000 });
@@ -340,6 +417,21 @@ export class PlaceOrderComponent {
 
         if (status && status !== 'pending') {
           clearInterval(interval);
+          if (status === 'completed') {
+            // clear local cart and notify other tabs
+            try {
+              localStorage.setItem('cartItems', JSON.stringify([]));
+              localStorage.setItem('order_status_' + orderId, 'completed');
+            } catch (e) { }
+            this.dataService.cartCount = 0;
+            this.dataService.removeCart();
+            // clear coinbase UI
+            this.coinbaseHostedUrl = '';
+            this.coinbaseQrUrl = '';
+            this.coinbaseExpiresAt = null;
+            this.coinbaseRemaining = '';
+            this.coinbaseActive = false;
+          }
         }
       }, (err) => {
         // ignore
@@ -358,6 +450,7 @@ export class PlaceOrderComponent {
         this.coinbaseRemaining = 'Expired';
         this.coinbaseHostedUrl = '';
         this.coinbaseQrUrl = '';
+        this.coinbaseActive = false;
         clearInterval(this.coinbaseCountdownInterval);
         return;
       }
