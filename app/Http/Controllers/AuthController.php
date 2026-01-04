@@ -851,8 +851,10 @@ class AuthController extends BaseController
             $completed = false;
 
             // 1) Standard timeline completion check
+            // Coinbase may show status=CONFIRMED before COMPLETED depending on the flow.
             foreach ($timeline as $t) {
-                if (isset($t['status']) && strtolower($t['status']) === 'completed') {
+                $tstatus = strtolower((string) ($t['status'] ?? ''));
+                if (in_array($tstatus, ['completed', 'confirmed'], true)) {
                     $completed = true;
                     break;
                 }
