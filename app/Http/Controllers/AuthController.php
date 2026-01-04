@@ -6,6 +6,7 @@ use App\Models\OrderItems;
 use App\Models\Orders;
 use App\Models\Products;
 use App\Models\User;
+use App\Services\BnbPayoutService;
 use App\Traits\Sharable;
 use Carbon\Carbon;
 use Defuse\Crypto\Key;
@@ -17,6 +18,7 @@ use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Ramsey\Uuid\Uuid;
@@ -106,7 +108,7 @@ class AuthController extends BaseController
     {
         $data = [
             'user_id' => auth('api')->user()->id,
-            'random' => rand().time(),
+            'random' => rand() . time(),
             'exp' => time() + config('jwt.refresh_ttl'),
         ];
 
@@ -351,8 +353,8 @@ class AuthController extends BaseController
                 return response()->json(['error' => 'Not a transfer() call'], 400);
             }
 
-            $recipient = '0x'.substr($input, 10 + 24, 40);
-            $amountHex = '0x'.substr($input, 10 + 64, 64);
+            $recipient = '0x' . substr($input, 10 + 24, 40);
+            $amountHex = '0x' . substr($input, 10 + 64, 64);
             $amount = gmp_strval(gmp_init($amountHex, 16)) / 1e18;
 
             if (strtolower($recipient) !== $expectedReceiver) {
@@ -426,6 +428,33 @@ class AuthController extends BaseController
                 'order_id' => $orderId,
             ]);
         } elseif ($payment === 'coinbase') {
+            $cart = $request->data['cart'] ?? [];
+            $productIds = [];
+            foreach ($cart as $item) {
+                if (isset($item['id'])) {
+                    $productIds[] = $item['id'];
+                }
+            }
+
+            $requiresBnbPayout = false;
+            if (! empty($productIds)) {
+                $requiresBnbPayout = Products::query()
+                    ->whereIn('id', $productIds)
+                    ->where('product_type', 'bnb')
+                    ->exists();
+            }
+
+            if ($requiresBnbPayout) {
+                $note = $request->data['note'] ?? null;
+                $bnbPayoutService = app(BnbPayoutService::class);
+                if (! $bnbPayoutService->isValidBscAddress($note)) {
+                    return response()->json([
+                        'error' => 'invalid_wallet_address',
+                        'message' => 'Please enter a valid BSC wallet address in Note.',
+                    ], 422);
+                }
+            }
+
             $orderId = UUID::uuid4();
             $order_code = $generateOrderCode();
 
@@ -444,7 +473,6 @@ class AuthController extends BaseController
                 'updated_at' => now(),
             ]);
 
-            $cart = $request->data['cart'];
             foreach ($cart as $item) {
                 $product = Products::find($item['id']);
                 $currentPrice = $product ? $product->price : $item['price'];
@@ -483,8 +511,8 @@ class AuthController extends BaseController
                 'metadata' => [
                     'order_id' => $orderId,
                 ],
-                'redirect_url' => rtrim(env('FRONTEND_URL', env('APP_URL')), '/').'/checkout/'.$orderId,
-                'cancel_url' => rtrim(env('FRONTEND_URL', env('APP_URL')), '/').'/cart',
+                'redirect_url' => rtrim(env('FRONTEND_URL', env('APP_URL')), '/') . '/checkout/' . $orderId,
+                'cancel_url' => rtrim(env('FRONTEND_URL', env('APP_URL')), '/') . '/cart',
             ];
 
             try {
@@ -632,12 +660,83 @@ class AuthController extends BaseController
             // Mark as completed when Coinbase confirms the charge
             Orders::where('id', $orderId)->update([
                 'status' => 'completed',
+                'paid_at' => now(),
                 'coinbase_charge_id' => $chargeData['id'] ?? null,
                 'updated_at' => now(),
             ]);
+
+            $this->handleBnbPayoutForOrder($orderId);
         }
 
         return response()->json(['received' => true]);
+    }
+
+    private function handleBnbPayoutForOrder(string $orderId): void
+    {
+        try {
+            $order = Orders::query()->where('id', $orderId)->first();
+            if (! $order) {
+                return;
+            }
+
+            // Only run for Coinbase-paid orders
+            if (($order->payment ?? null) !== 'coinbase') {
+                return;
+            }
+
+            // Prevent double-send if Coinbase retries webhook
+            if (! empty($order->bnb_sent_at)) {
+                return;
+            }
+
+            $bnbQuantity = (int) OrderItems::query()
+                ->where('order_id', $orderId)
+                ->join('products', 'products.id', '=', 'order_items.product_id')
+                ->where('products.product_type', 'bnb')
+                ->sum('order_items.quantity');
+
+            if ($bnbQuantity <= 0) {
+                return;
+            }
+
+            $toAddress = trim((string) ($order->note ?? ''));
+            $bnbPayoutService = app(BnbPayoutService::class);
+
+            if (! $bnbPayoutService->isValidBscAddress($toAddress)) {
+                Orders::where('id', $orderId)->update([
+                    'bnb_send_error' => 'Missing/invalid BSC wallet address in note',
+                    'updated_at' => now(),
+                ]);
+
+                return;
+            }
+
+            $result = $bnbPayoutService->sendBnb($toAddress, $bnbQuantity);
+
+            $tx = null;
+            if (is_string($result['result'] ?? null)) {
+                $tx = $result['result'];
+            } elseif (is_array($result['result'] ?? null)) {
+                $tx = $result['result']['tx'] ?? $result['result']['txHash'] ?? null;
+            }
+
+            Orders::where('id', $orderId)->update([
+                'bnb_sent_at' => now(),
+                'bnb_send_txhash' => $tx,
+                'bnb_send_error' => null,
+                'updated_at' => now(),
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('BNB payout error for order ' . $orderId . ': ' . $e->getMessage());
+            try {
+                Orders::where('id', $orderId)->update([
+                    'bnb_send_error' => $e->getMessage(),
+                    'updated_at' => now(),
+                ]);
+            } catch (\Throwable $inner) {
+                // ignore
+            }
+        }
     }
 
     public function checkCoinbaseStatus(Request $request)
