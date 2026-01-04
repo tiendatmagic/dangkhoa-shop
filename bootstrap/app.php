@@ -15,6 +15,16 @@ $app = new Illuminate\Foundation\Application(
     $_ENV['APP_BASE_PATH'] ?? dirname(__DIR__)
 );
 
+// Force a safe ECC math adapter early, before any code instantiates Secp256k1
+// (which caches the adapter in its constructor). No secrets involved.
+try {
+    if (extension_loaded('gmp') && class_exists(\Mdanter\Ecc\Math\MathAdapterFactory::class) && class_exists(\App\Services\EccGmpMathAdapter::class)) {
+        \Mdanter\Ecc\Math\MathAdapterFactory::forceAdapter(new \App\Services\EccGmpMathAdapter());
+    }
+} catch (\Throwable $ignored) {
+    // ignore
+}
+
 /*
 |--------------------------------------------------------------------------
 | Bind Important Interfaces

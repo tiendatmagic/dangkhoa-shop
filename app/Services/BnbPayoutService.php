@@ -6,7 +6,6 @@ use App\Models\AdminWalletSetting;
 use Illuminate\Support\Facades\Log;
 use SWeb3\Accounts;
 use SWeb3\SWeb3;
-use SWeb3\Utils;
 
 class BnbPayoutService
 {
@@ -73,11 +72,15 @@ class BnbPayoutService
     $sweb3->setPersonalData($fromAddress, $privateKey);
     $sweb3->chainId = '56';
 
+    // Avoid Utils::toWei() to prevent any pow()/bcmath/gmp fallback issues.
+    // Amount is in whole BNB; value must be wei as an integer string.
+    $amountWei = (string) (app(PriceQuoteService::class)->decimalToUnits((string) $amountBnb, 18));
+
     $sendParams = [
       'from' => $sweb3->personal->address,
       'to' => $toAddress,
       'gasLimit' => 210000,
-      'value' => Utils::toWei((string) $amountBnb, 'ether'),
+      'value' => $amountWei,
       'nonce' => $sweb3->personal->getNonce(),
     ];
 

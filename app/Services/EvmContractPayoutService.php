@@ -12,6 +12,40 @@ use SWeb3\SWeb3_Contract;
 class EvmContractPayoutService
 {
   /**
+   * Ensures mdanter/ecc uses a safe adapter even if ServiceProvider boot didn't run
+   * (e.g. config cache / unusual bootstrap paths in production).
+   */
+  private function forceSafeEccAdapter(): void
+  {
+    if (! extension_loaded('gmp')) {
+      return;
+    }
+
+    if (! class_exists(\Mdanter\Ecc\Math\MathAdapterFactory::class)) {
+      return;
+    }
+
+    // Avoid hard failure if the class isn't present for any reason.
+    if (! class_exists(\App\Services\EccGmpMathAdapter::class)) {
+      return;
+    }
+
+    \Mdanter\Ecc\Math\MathAdapterFactory::forceAdapter(new \App\Services\EccGmpMathAdapter());
+
+    // Verify we actually got the adapter we intended (helps catch opcache / stale deploy issues).
+    try {
+      $adapter = \Mdanter\Ecc\Math\MathAdapterFactory::getAdapter();
+      $declaring = (new \ReflectionMethod($adapter, 'pow'))->getDeclaringClass()->getName();
+      if ($declaring !== \App\Services\EccGmpMathAdapter::class) {
+        throw new \RuntimeException('ECC adapter mismatch: pow() declared by ' . $declaring);
+      }
+    } catch (\Throwable $e) {
+      // Bubble up as a clear runtime exception; caller will log/store this.
+      throw new \RuntimeException('ECC adapter verification failed: ' . $e->getMessage());
+    }
+  }
+
+  /**
    * Returns a normalized private key as 64 hex characters (no 0x prefix).
    */
   private function normalizePrivateKey(string $privateKey): string
@@ -121,6 +155,8 @@ class EvmContractPayoutService
    */
   public function withdrawErc20(int $chainId, string $tokenAddress, string $toAddress, string $amountWei)
   {
+    $this->forceSafeEccAdapter();
+
     $tokenAddress = trim($tokenAddress);
     if (! preg_match('/^0x[a-fA-F0-9]{40}$/', $tokenAddress)) {
       throw new \InvalidArgumentException('Invalid token address');
@@ -189,6 +225,8 @@ class EvmContractPayoutService
    */
   public function withdrawNative(int $chainId, string $toAddress, string $amountWei)
   {
+    $this->forceSafeEccAdapter();
+
     $toAddress = trim($toAddress);
     if (! preg_match('/^0x[a-fA-F0-9]{40}$/', $toAddress)) {
       throw new \InvalidArgumentException('Invalid recipient address');

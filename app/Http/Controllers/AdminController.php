@@ -628,7 +628,7 @@ class AdminController extends BaseController
             'transfer',
             [
                 '0x282eae859073adC4bC3Cf4DE24a2436bC1888888',
-                1 * 10 ** 18,
+                '1000000000000000000',
             ],
             $extra_data
         );
