@@ -562,6 +562,41 @@
         >
       </p>
 
+      <div class="mt-3" *ngIf="orderData.paymentMethod == 'coinbase'">
+        <p class="font-medium">Payout status:</p>
+
+        <div *ngIf="payoutData && payoutData.length > 0; else noPayouts">
+          <div
+            class="mt-2 p-2 border rounded-lg"
+            *ngFor="let p of payoutData"
+          >
+            <p>
+              <span class="font-medium">Asset:</span>
+              <span class="text-violet-700"> {{ p.asset_symbol }}</span>
+            </p>
+            <p>
+              <span class="font-medium">Sent:</span>
+              <span class="text-violet-700"> {{ p.sent_at ? 'yes' : 'no' }}</span>
+            </p>
+            <p *ngIf="p.tx_hash">
+              <span class="font-medium">Tx:</span>
+              <span class="text-violet-700 break-all"> {{ p.tx_hash }}</span>
+            </p>
+            <p *ngIf="p.error">
+              <span class="font-medium text-red-600">Error:</span>
+              <span class="text-red-600 break-all"> {{ p.error }}</span>
+            </p>
+          </div>
+        </div>
+
+        <ng-template #noPayouts>
+          <p class="text-sm text-gray-700 mt-2">
+            No payout records yet. If your order is completed but nothing is sent,
+            this usually means the purchased token wasn’t detected (mapping) or the payout contract/wallet config is missing.
+          </p>
+        </ng-template>
+      </div>
+
       <div class="sm:flex-row flex flex-col items-center gap-3">
         <button
           class="btn-primary w-full mt-3"

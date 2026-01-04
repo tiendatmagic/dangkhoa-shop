@@ -44,6 +44,7 @@ export class PlaceOrderComponent {
   selectedNetwork: string = '0x38';
   isProccessing: boolean = false;
   orderData: any;
+  payoutData: any[] = [];
 
   get requiresBscWalletNote(): boolean {
     if (this.choosePaymentMethod !== 3) return false;
@@ -114,9 +115,25 @@ export class PlaceOrderComponent {
             "status": res.order.status
           }
 
+          this.payoutData = Array.isArray((res as any).payouts) ? (res as any).payouts : [];
+
+          // For Coinbase, attempt a payout status refresh once (even if already completed)
+          // so completed orders that missed payout can still be processed.
+          if (res.order && res.order.payment === 'coinbase') {
+            const needsPayoutRefresh = !this.payoutData || this.payoutData.length === 0 || this.payoutData.some((p: any) => !p?.sent_at);
+            if (needsPayoutRefresh) {
+              this.auth.checkCoinbase({ id: this.id }).subscribe((cres: any) => {
+                this.payoutData = Array.isArray(cres?.payouts) ? cres.payouts : this.payoutData;
+              }, () => {
+                // ignore
+              });
+            }
+          }
+
           // if still pending and payment method is coinbase, immediately ask server to check coinbase status
           if (res.order && res.order.status === 'pending' && res.order.payment === 'coinbase') {
             this.auth.checkCoinbase({ id: this.id }).subscribe((cres: any) => {
+              this.payoutData = Array.isArray(cres?.payouts) ? cres.payouts : this.payoutData;
               if (cres.status === 'completed') {
                 // refresh order and clear
                 this.startOrderStatusPolling(this.id);

@@ -434,19 +434,30 @@ class AuthController extends BaseController
         } elseif ($payment === 'coinbase') {
             $cart = $request->data['cart'] ?? [];
             $productIds = [];
+            $cartSizes = [];
             foreach ($cart as $item) {
                 if (isset($item['id'])) {
                     $productIds[] = $item['id'];
                 }
+                if (isset($item['size'])) {
+                    $cartSizes[] = strtoupper(trim((string) $item['size']));
+                }
             }
 
-            // If the cart contains any crypto-like product_type, require a wallet address in Note.
+            // If the cart contains any crypto-like product_type OR a token symbol stored in size, require a wallet address in Note.
             $requiresWalletAddress = false;
             if (! empty($productIds)) {
                 $requiresWalletAddress = Products::query()
                     ->whereIn('id', $productIds)
                     ->whereNotNull('product_type')
                     ->whereNotIn('product_type', ['none', 'gold', 'silver'])
+                    ->exists();
+            }
+
+            if (! $requiresWalletAddress && ! empty($cartSizes)) {
+                $requiresWalletAddress = TokenAsset::query()
+                    ->where('enabled', true)
+                    ->whereIn('symbol', array_values(array_unique($cartSizes)))
                     ->exists();
             }
 
@@ -567,10 +578,19 @@ class AuthController extends BaseController
             return $item->quantity * $item->price;
         });
 
+        $payouts = [];
+        if ($order && ($order->payment ?? null) === 'coinbase') {
+            $payouts = OrderPayout::query()
+                ->where('order_id', $request->id)
+                ->orderBy('asset_symbol')
+                ->get();
+        }
+
         return response()->json([
             'order' => $order,
             'items' => $orderItems,
             'total' => $total,
+            'payouts' => $payouts,
         ]);
     }
 
@@ -700,10 +720,9 @@ class AuthController extends BaseController
             $items = OrderItems::query()
                 ->where('order_id', $orderId)
                 ->join('products', 'products.id', '=', 'order_items.product_id')
-                ->whereNotNull('products.product_type')
-                ->whereNotIn('products.product_type', ['none', 'gold', 'silver'])
                 ->select([
                     'products.product_type as product_type',
+                    'order_items.size as size',
                     'order_items.quantity as quantity',
                     'order_items.price as price',
                 ])
@@ -713,13 +732,34 @@ class AuthController extends BaseController
                 return;
             }
 
+            // Enabled assets define which symbols are eligible for payout.
+            // Some existing products store the token selection in order_items.size (e.g., 'BNB'), not products.product_type.
+            $enabledAssets = TokenAsset::query()
+                ->where('enabled', true)
+                ->get()
+                ->keyBy(function ($a) {
+                    return strtoupper(trim((string) $a->symbol));
+                });
+
             $priceQuote = app(PriceQuoteService::class);
             $contractPayout = app(EvmContractPayoutService::class);
 
-            // Aggregate by symbol (product_type)
+            // Aggregate by symbol (prefer product_type; fallback to size if it matches an enabled TokenAsset)
             $grouped = [];
             foreach ($items as $row) {
-                $symbol = strtoupper(trim((string) $row->product_type));
+                $productType = strtoupper(trim((string) ($row->product_type ?? '')));
+                $size = strtoupper(trim((string) ($row->size ?? '')));
+
+                $symbol = '';
+                if ($productType !== '' && ! in_array($productType, ['NONE', 'GOLD', 'SILVER'], true)) {
+                    $symbol = $productType;
+                } elseif ($size !== '' && $enabledAssets->has($size)) {
+                    $symbol = $size;
+                }
+
+                if ($symbol === '') {
+                    continue;
+                }
                 $lineUsd = (string) ((float) $row->quantity * (float) $row->price);
                 if (! isset($grouped[$symbol])) {
                     $grouped[$symbol] = '0';
@@ -736,11 +776,12 @@ class AuthController extends BaseController
 
                 // Ensure one attempt per (order, symbol)
                 $existing = OrderPayout::query()->where('order_id', $orderId)->where('asset_symbol', $symbol)->first();
-                if ($existing && ($existing->sent_at || $existing->error)) {
+                // If a payout was already sent, do not resend. If it failed, allow retry after config fixes.
+                if ($existing && $existing->sent_at) {
                     continue;
                 }
 
-                $asset = TokenAsset::query()->where('symbol', $symbol)->where('enabled', true)->first();
+                $asset = $enabledAssets->get($symbol);
                 if (! $asset) {
                     OrderPayout::query()->updateOrCreate(
                         ['order_id' => $orderId, 'asset_symbol' => $symbol],
@@ -902,10 +943,12 @@ class AuthController extends BaseController
                 // If webhook delivery is missing, still attempt payout on completion.
                 $this->handleEvmPayoutForOrder((string) $orderId);
 
-                return response()->json(['status' => 'completed']);
+                $payouts = OrderPayout::query()->where('order_id', $orderId)->orderBy('asset_symbol')->get();
+                return response()->json(['status' => 'completed', 'payouts' => $payouts]);
             }
 
-            return response()->json(['status' => 'pending', 'detail' => $data]);
+            $payouts = OrderPayout::query()->where('order_id', $orderId)->orderBy('asset_symbol')->get();
+            return response()->json(['status' => 'pending', 'detail' => $data, 'payouts' => $payouts]);
         } catch (\Throwable $th) {
             return response()->json(['error' => 'coinbase_request_failed', 'message' => $th->getMessage()], 500);
         }
