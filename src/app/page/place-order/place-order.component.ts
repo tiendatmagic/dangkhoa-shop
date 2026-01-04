@@ -45,6 +45,19 @@ export class PlaceOrderComponent {
   isProccessing: boolean = false;
   orderData: any;
 
+  get requiresBscWalletNote(): boolean {
+    if (this.choosePaymentMethod !== 3) return false;
+    return (this.cartProducts || []).some((p: any) => {
+      const size = (p?.size || '').toString().toUpperCase();
+      return size === 'BNB';
+    });
+  }
+
+  isValidBscAddress(address: string): boolean {
+    const v = (address || '').trim();
+    return /^0x[a-fA-F0-9]{40}$/.test(v);
+  }
+
 
   constructor(private snackBar: MatSnackBar, private route: ActivatedRoute, private router: Router, private dataService: DataService, private web3Service: Web3Service, private http: HttpClient, private auth: AuthService) {
     this.deliveryFee = this.dataService.deliveryFee;
@@ -240,6 +253,15 @@ export class PlaceOrderComponent {
         horizontalPosition: 'right',
         verticalPosition: 'bottom',
       })
+      return;
+    }
+
+    if (this.requiresBscWalletNote && !this.isValidBscAddress(this.note)) {
+      this.snackBar.open('Please enter a valid BSC wallet address in Note (0x...).', 'OK', {
+        duration: 3500,
+        horizontalPosition: 'right',
+        verticalPosition: 'bottom',
+      });
       return;
     }
 

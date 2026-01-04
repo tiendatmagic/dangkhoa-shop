@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdminWalletSetting;
 use App\Models\OrderItems;
 use App\Models\Orders;
 use App\Models\Products;
+use App\Services\BnbPayoutService;
 use App\Traits\Sharable;
 use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -113,7 +115,7 @@ class AdminController extends BaseController
                         $product->price = $dynamicPrice ?? $product->price ?? 0;
                         Cache::put($cacheKey, $product->price, now()->addMinutes(1));
                     } catch (\Exception $e) {
-                        \Log::error("Failed to fetch price for {$product->product_type}: ".$e->getMessage());
+                        \Log::error("Failed to fetch price for {$product->product_type}: " . $e->getMessage());
                         $product->price = $product->price ?? 0;
                     }
                 }
@@ -201,7 +203,7 @@ class AdminController extends BaseController
         $symbol = $symbolMap[strtolower($productType)] ?? null;
 
         if (! $symbol) {
-            throw new \Exception('Invalid crypto symbol: '.$productType);
+            throw new \Exception('Invalid crypto symbol: ' . $productType);
         }
 
         $response = Http::get('https://api.binance.com/api/v3/ticker/price', [
@@ -256,7 +258,7 @@ class AdminController extends BaseController
                 }
             } catch (\Exception $e) {
                 $typeKey = in_array($productType, ['gold', 'silver']) ? $productType : 'crypto';
-                Log::error("{$typeKey} price fetch error: ".$e->getMessage());
+                Log::error("{$typeKey} price fetch error: " . $e->getMessage());
 
                 return response()->json(['error' => "Failed to fetch realtime {$typeKey} price"], 500);
             }
@@ -286,16 +288,16 @@ class AdminController extends BaseController
 
             $file = $request->file('image');
             $extension = $file->getClientOriginalExtension();
-            $filename = Str::uuid().'_'.time().'.'.$extension;
+            $filename = Str::uuid() . '_' . time() . '.' . $extension;
 
             $path = $file->storeAs('images', $filename, 'public');
-            $relativePath = '/storage/'.$path;
+            $relativePath = '/storage/' . $path;
 
             return response()->json(['url' => $relativePath], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json(['error' => 'Validation failed: '.$e->getMessage()], 422);
+            return response()->json(['error' => 'Validation failed: ' . $e->getMessage()], 422);
         } catch (\Exception $e) {
-            Log::error('Upload error: '.$e->getMessage());
+            Log::error('Upload error: ' . $e->getMessage());
 
             return response()->json(['error' => 'Upload failed'], 500);
         }
@@ -330,7 +332,7 @@ class AdminController extends BaseController
                 }
             } catch (\Exception $e) {
                 $typeKey = in_array($productType, ['gold', 'silver']) ? $productType : 'crypto';
-                Log::error("{$typeKey} price fetch error: ".$e->getMessage());
+                Log::error("{$typeKey} price fetch error: " . $e->getMessage());
 
                 return response()->json(['error' => "Failed to fetch realtime {$typeKey} price"], 500);
             }
@@ -381,7 +383,7 @@ class AdminController extends BaseController
             $monthKey = Carbon::parse($order->created_at)->format('Y-m');
 
             $orderItems = OrderItems::where('order_id', $order->id)->get();
-            $total = $orderItems->sum(fn ($item) => $item->quantity * $item->price);
+            $total = $orderItems->sum(fn($item) => $item->quantity * $item->price);
 
             if (isset($revenues[$monthKey])) {
                 $revenues[$monthKey] += $total;
@@ -432,25 +434,75 @@ class AdminController extends BaseController
         ]);
     }
 
-    public function sendBNB()
+    public function getWalletSettings()
     {
-        $sweb3 = new SWeb3('https://bsc-dataseed1.binance.org/');
-        $from_address = env('FROM_ADDRESS');
-        $from_address_private_key = env('PRIVATE_KEY');
+        $settings = AdminWalletSetting::query()->first();
 
-        $sweb3->setPersonalData($from_address, $from_address_private_key);
+        return response()->json([
+            'from_address' => $settings?->from_address,
+            'has_private_key' => (bool) ($settings?->private_key),
+        ]);
+    }
 
-        $sweb3->chainId = '56';
-        $sendParams = [
-            'from' => $sweb3->personal->address,
-            'to' => '0x282eae859073adC4bC3Cf4DE24a2436bC1888888',
-            'gasLimit' => 210000,
-            'value' => Utils::toWei('0.001', 'ether'),
-            'nonce' => $sweb3->personal->getNonce(),
-        ];
-        $result = $sweb3->send($sendParams);
+    public function updateWalletSettings(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'from_address' => ['required', 'string', 'regex:/^0x[a-fA-F0-9]{40}$/'],
+            'private_key' => ['required', 'string', 'min:32'],
+        ]);
 
-        return $result;
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
+        }
+
+        $settings = AdminWalletSetting::query()->first();
+        if (! $settings) {
+            $settings = new AdminWalletSetting;
+        }
+
+        $settings->from_address = trim($request->input('from_address'));
+        $settings->private_key = trim($request->input('private_key'));
+        $settings->save();
+
+        return response()->json([
+            'message' => 'Wallet settings updated',
+            'from_address' => $settings->from_address,
+            'has_private_key' => true,
+        ]);
+    }
+
+    public function getABI()
+    {
+        $path = base_path('app/abi/ABI.json');
+        if (! file_exists($path)) {
+            return response()->json(['error' => 'ABI file not found'], 404);
+        }
+
+        $abi = file_get_contents($path);
+        $decoded = json_decode($abi, true);
+
+        return response()->json([
+            'abi' => $decoded ?? $abi,
+        ]);
+    }
+
+    public function sendBNB(Request $request, BnbPayoutService $bnbPayoutService)
+    {
+        $validator = Validator::make($request->all(), [
+            'to' => ['required', 'string', 'regex:/^0x[a-fA-F0-9]{40}$/'],
+            'amount_bnb' => ['required', 'integer', 'min:1'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
+        }
+
+        $result = $bnbPayoutService->sendBnb(
+            $request->input('to'),
+            (int) $request->input('amount_bnb')
+        );
+
+        return response()->json($result);
     }
 
     public function deleteProduct(Request $request)

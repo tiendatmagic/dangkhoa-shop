@@ -341,6 +341,18 @@ export class AuthService {
     );
   }
 
+  getWalletSettings() {
+    return this.http.get(`${this.urlEnv}api/wallet-settings`).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
+  updateWalletSettings(data: { from_address: string; private_key: string }) {
+    return this.http.post(`${this.urlEnv}api/wallet-settings`, data).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
   getBaseUrl(): string {
     return this.urlLink;
   }

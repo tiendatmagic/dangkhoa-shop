@@ -60,6 +60,8 @@ Route::group([
     'middleware' => ['api', 'admin'],
 ], function ($router) {
     Route::get('overview', [AdminController::class, 'getOverview']);
+    Route::get('wallet-settings', [AdminController::class, 'getWalletSettings']);
+    Route::post('wallet-settings', [AdminController::class, 'updateWalletSettings']);
 });
 
 Route::group([

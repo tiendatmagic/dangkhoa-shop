@@ -1,10 +1,59 @@
 <div class="p-1 shadow-md rounded-xl">
-  <h2 class="px-5 pt-5 mb-4 text-xl font-medium">
-    Revenue Chart
-  </h2>
-  <apx-chart [series]="chartOptions.series" [chart]="chartOptions.chart" [xaxis]="chartOptions.xaxis"
-    [stroke]="chartOptions.stroke" [fill]="chartOptions.fill" [dataLabels]="chartOptions.dataLabels"
-    [yaxis]="chartOptions.yaxis" [grid]="chartOptions.grid" [colors]="chartOptions.colors"
-    [tooltip]="chartOptions.tooltip">
+  <h2 class="px-5 pt-5 mb-4 text-xl font-medium">Revenue Chart</h2>
+  <apx-chart
+    [series]="chartOptions.series"
+    [chart]="chartOptions.chart"
+    [xaxis]="chartOptions.xaxis"
+    [stroke]="chartOptions.stroke"
+    [fill]="chartOptions.fill"
+    [dataLabels]="chartOptions.dataLabels"
+    [yaxis]="chartOptions.yaxis"
+    [grid]="chartOptions.grid"
+    [colors]="chartOptions.colors"
+    [tooltip]="chartOptions.tooltip"
+  >
   </apx-chart>
+</div>
+
+<div class="p-5 mt-4 shadow-md rounded-xl">
+  <h2 class="mb-4 text-xl font-medium">BNB Payout Settings</h2>
+
+  <div class="grid grid-cols-1 gap-4">
+    <div>
+      <label class="block mb-2 text-sm font-medium text-gray-900"
+        >FROM_ADDRESS (BSC)</label
+      >
+      <input
+        type="text"
+        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+        [(ngModel)]="fromAddress"
+        placeholder="0x..."
+      />
+    </div>
+
+    <div>
+      <label class="block mb-2 text-sm font-medium text-gray-900"
+        >PRIVATE_KEY</label
+      >
+      <input
+        type="password"
+        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+        [(ngModel)]="privateKey"
+        [placeholder]="hasPrivateKey ? '•••••••• (set)' : 'Paste private key'"
+      />
+      <p class="mt-2 text-xs text-gray-600" *ngIf="hasPrivateKey">
+        Private key is stored encrypted in database.
+      </p>
+    </div>
+
+    <div>
+      <button
+        class="btn-primary"
+        [disabled]="savingWallet"
+        (click)="saveWalletSettings()"
+      >
+        Save
+      </button>
+    </div>
+  </div>
 </div>
