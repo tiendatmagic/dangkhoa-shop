@@ -62,6 +62,10 @@ Route::group([
     Route::get('overview', [AdminController::class, 'getOverview']);
     Route::get('wallet-settings', [AdminController::class, 'getWalletSettings']);
     Route::post('wallet-settings', [AdminController::class, 'updateWalletSettings']);
+
+    Route::get('token-assets', [AdminController::class, 'getTokenAssets']);
+    Route::post('token-assets', [AdminController::class, 'upsertTokenAsset']);
+    Route::post('token-assets/delete', [AdminController::class, 'deleteTokenAsset']);
 });
 
 Route::group([

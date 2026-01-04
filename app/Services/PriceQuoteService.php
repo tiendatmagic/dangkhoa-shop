@@ -61,4 +61,30 @@ class PriceQuoteService
     $val = (float) $totalUsd / (float) $tokenSpotUsd;
     return number_format($val, $scale, '.', '');
   }
+
+  /**
+   * Converts a decimal token amount into integer units (wei-like) based on decimals.
+   * Example: amountDecimal="0.1", decimals=18 => "100000000000000000".
+   */
+  public function decimalToUnits(string $amountDecimal, int $decimals): string
+  {
+    $amountDecimal = trim($amountDecimal);
+    if ($amountDecimal === '' || ! is_numeric($amountDecimal)) {
+      throw new \InvalidArgumentException('Invalid amountDecimal');
+    }
+    if ($decimals < 0 || $decimals > 36) {
+      throw new \InvalidArgumentException('Invalid decimals');
+    }
+
+    $multiplier = '1' . str_repeat('0', $decimals);
+
+    if (function_exists('bcmul')) {
+      // 0 scale => integer string
+      return bcmul($amountDecimal, $multiplier, 0);
+    }
+
+    // Fallback (less precise)
+    $val = (float) $amountDecimal * (10 ** $decimals);
+    return sprintf('%.0f', $val);
+  }
 }

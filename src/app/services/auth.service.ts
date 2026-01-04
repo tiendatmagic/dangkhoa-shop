@@ -347,8 +347,39 @@ export class AuthService {
     );
   }
 
-  updateWalletSettings(data: { from_address: string; private_key: string }) {
+  updateWalletSettings(data: {
+    from_address: string;
+    private_key: string;
+    chain_id?: number;
+    rpc_url?: string;
+    contract_address?: string;
+  }) {
     return this.http.post(`${this.urlEnv}api/wallet-settings`, data).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
+  getTokenAssets() {
+    return this.http.get(`${this.urlEnv}api/token-assets`).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
+  upsertTokenAsset(data: {
+    symbol: string;
+    chain_id?: number;
+    is_native: boolean;
+    token_address?: string | null;
+    decimals?: number;
+    enabled?: boolean;
+  }) {
+    return this.http.post(`${this.urlEnv}api/token-assets`, data).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
+  deleteTokenAsset(symbol: string) {
+    return this.http.post(`${this.urlEnv}api/token-assets/delete`, { symbol }).pipe(
       catchError((error: any) => this.handleError(error))
     );
   }
