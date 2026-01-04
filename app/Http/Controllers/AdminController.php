@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdminWalletSetting;
+use App\Models\TokenAsset;
 use App\Models\OrderItems;
 use App\Models\Orders;
 use App\Models\Products;
@@ -439,6 +440,9 @@ class AdminController extends BaseController
         $settings = AdminWalletSetting::query()->first();
 
         return response()->json([
+            'chain_id' => $settings?->chain_id,
+            'rpc_url' => $settings?->rpc_url,
+            'contract_address' => $settings?->contract_address,
             'from_address' => $settings?->from_address,
             'has_private_key' => (bool) ($settings?->private_key),
         ]);
@@ -447,6 +451,9 @@ class AdminController extends BaseController
     public function updateWalletSettings(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'chain_id' => ['nullable', 'integer', 'min:1'],
+            'rpc_url' => ['nullable', 'string', 'max:2048', 'url'],
+            'contract_address' => ['nullable', 'string', 'regex:/^0x[a-fA-F0-9]{40}$/'],
             'from_address' => ['required', 'string', 'regex:/^0x[a-fA-F0-9]{40}$/'],
             'private_key' => ['required', 'string', 'min:32'],
         ]);
@@ -462,13 +469,84 @@ class AdminController extends BaseController
 
         $settings->from_address = trim($request->input('from_address'));
         $settings->private_key = trim($request->input('private_key'));
+        $settings->chain_id = $request->input('chain_id', $settings->chain_id);
+        $settings->rpc_url = $request->input('rpc_url', $settings->rpc_url);
+        $settings->contract_address = $request->input('contract_address', $settings->contract_address);
         $settings->save();
 
         return response()->json([
             'message' => 'Wallet settings updated',
+            'chain_id' => $settings->chain_id,
+            'rpc_url' => $settings->rpc_url,
+            'contract_address' => $settings->contract_address,
             'from_address' => $settings->from_address,
             'has_private_key' => true,
         ]);
+    }
+
+    public function getTokenAssets()
+    {
+        $assets = TokenAsset::query()
+            ->orderBy('symbol')
+            ->get();
+
+        return response()->json([
+            'data' => $assets,
+        ]);
+    }
+
+    public function upsertTokenAsset(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'symbol' => ['required', 'string', 'max:32'],
+            'chain_id' => ['nullable', 'integer', 'min:1'],
+            'is_native' => ['required', 'boolean'],
+            'token_address' => ['nullable', 'string', 'regex:/^0x[a-fA-F0-9]{40}$/'],
+            'decimals' => ['nullable', 'integer', 'min:0', 'max:36'],
+            'enabled' => ['nullable', 'boolean'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
+        }
+
+        $symbol = strtoupper(trim($request->input('symbol')));
+        $isNative = (bool) $request->boolean('is_native');
+        $tokenAddress = $request->input('token_address');
+        if ($isNative) {
+            $tokenAddress = null;
+        }
+
+        $asset = TokenAsset::query()->updateOrCreate(
+            ['symbol' => $symbol],
+            [
+                'chain_id' => (int) ($request->input('chain_id', 56)),
+                'is_native' => $isNative,
+                'token_address' => $tokenAddress ? trim((string) $tokenAddress) : null,
+                'decimals' => (int) ($request->input('decimals', 18)),
+                'enabled' => $request->has('enabled') ? (bool) $request->boolean('enabled') : true,
+            ]
+        );
+
+        return response()->json([
+            'message' => 'Token asset saved',
+            'asset' => $asset,
+        ]);
+    }
+
+    public function deleteTokenAsset(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'symbol' => ['required', 'string', 'max:32'],
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
+        }
+
+        $symbol = strtoupper(trim($request->input('symbol')));
+        TokenAsset::query()->where('symbol', $symbol)->delete();
+
+        return response()->json(['message' => 'Token asset deleted']);
     }
 
     public function getABI()

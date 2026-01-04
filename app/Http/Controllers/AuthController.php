@@ -6,7 +6,11 @@ use App\Models\OrderItems;
 use App\Models\Orders;
 use App\Models\Products;
 use App\Models\User;
+use App\Models\OrderPayout;
+use App\Models\TokenAsset;
 use App\Services\BnbPayoutService;
+use App\Services\EvmContractPayoutService;
+use App\Services\PriceQuoteService;
 use App\Traits\Sharable;
 use Carbon\Carbon;
 use Defuse\Crypto\Key;
@@ -436,21 +440,23 @@ class AuthController extends BaseController
                 }
             }
 
-            $requiresBnbPayout = false;
+            // If the cart contains any crypto-like product_type, require a wallet address in Note.
+            $requiresWalletAddress = false;
             if (! empty($productIds)) {
-                $requiresBnbPayout = Products::query()
+                $requiresWalletAddress = Products::query()
                     ->whereIn('id', $productIds)
-                    ->where('product_type', 'bnb')
+                    ->whereNotNull('product_type')
+                    ->whereNotIn('product_type', ['none', 'gold', 'silver'])
                     ->exists();
             }
 
-            if ($requiresBnbPayout) {
+            if ($requiresWalletAddress) {
                 $note = $request->data['note'] ?? null;
                 $bnbPayoutService = app(BnbPayoutService::class);
                 if (! $bnbPayoutService->isValidBscAddress($note)) {
                     return response()->json([
                         'error' => 'invalid_wallet_address',
-                        'message' => 'Please enter a valid BSC wallet address in Note.',
+                        'message' => 'Please enter a valid wallet address (0x...) in Note.',
                     ], 422);
                 }
             }
@@ -665,13 +671,13 @@ class AuthController extends BaseController
                 'updated_at' => now(),
             ]);
 
-            $this->handleBnbPayoutForOrder($orderId);
+            $this->handleEvmPayoutForOrder((string) $orderId);
         }
 
         return response()->json(['received' => true]);
     }
 
-    private function handleBnbPayoutForOrder(string $orderId): void
+    private function handleEvmPayoutForOrder(string $orderId): void
     {
         try {
             $order = Orders::query()->where('id', $orderId)->first();
@@ -684,58 +690,133 @@ class AuthController extends BaseController
                 return;
             }
 
-            // Prevent double-send if Coinbase retries webhook
-            if (! empty($order->bnb_sent_at)) {
-                return;
-            }
-
-            $bnbQuantity = (int) OrderItems::query()
-                ->where('order_id', $orderId)
-                ->join('products', 'products.id', '=', 'order_items.product_id')
-                ->where('products.product_type', 'bnb')
-                ->sum('order_items.quantity');
-
-            if ($bnbQuantity <= 0) {
-                return;
-            }
-
             $toAddress = trim((string) ($order->note ?? ''));
             $bnbPayoutService = app(BnbPayoutService::class);
-
             if (! $bnbPayoutService->isValidBscAddress($toAddress)) {
-                Orders::where('id', $orderId)->update([
-                    'bnb_send_error' => 'Missing/invalid BSC wallet address in note',
-                    'updated_at' => now(),
-                ]);
-
+                // No valid address to pay out to
                 return;
             }
 
-            $result = $bnbPayoutService->sendBnb($toAddress, $bnbQuantity);
+            $items = OrderItems::query()
+                ->where('order_id', $orderId)
+                ->join('products', 'products.id', '=', 'order_items.product_id')
+                ->whereNotNull('products.product_type')
+                ->whereNotIn('products.product_type', ['none', 'gold', 'silver'])
+                ->select([
+                    'products.product_type as product_type',
+                    'order_items.quantity as quantity',
+                    'order_items.price as price',
+                ])
+                ->get();
 
-            $tx = null;
-            if (is_string($result['result'] ?? null)) {
-                $tx = $result['result'];
-            } elseif (is_array($result['result'] ?? null)) {
-                $tx = $result['result']['tx'] ?? $result['result']['txHash'] ?? null;
+            if ($items->isEmpty()) {
+                return;
             }
 
-            Orders::where('id', $orderId)->update([
-                'bnb_sent_at' => now(),
-                'bnb_send_txhash' => $tx,
-                'bnb_send_error' => null,
-                'updated_at' => now(),
-            ]);
+            $priceQuote = app(PriceQuoteService::class);
+            $contractPayout = app(EvmContractPayoutService::class);
+
+            // Aggregate by symbol (product_type)
+            $grouped = [];
+            foreach ($items as $row) {
+                $symbol = strtoupper(trim((string) $row->product_type));
+                $lineUsd = (string) ((float) $row->quantity * (float) $row->price);
+                if (! isset($grouped[$symbol])) {
+                    $grouped[$symbol] = '0';
+                }
+                if (function_exists('bcadd')) {
+                    $grouped[$symbol] = bcadd($grouped[$symbol], $lineUsd, 8);
+                } else {
+                    $grouped[$symbol] = (string) ((float) $grouped[$symbol] + (float) $lineUsd);
+                }
+            }
+
+            foreach ($grouped as $symbol => $totalUsd) {
+                $symbol = strtoupper($symbol);
+
+                // Ensure one attempt per (order, symbol)
+                $existing = OrderPayout::query()->where('order_id', $orderId)->where('asset_symbol', $symbol)->first();
+                if ($existing && ($existing->sent_at || $existing->error)) {
+                    continue;
+                }
+
+                $asset = TokenAsset::query()->where('symbol', $symbol)->where('enabled', true)->first();
+                if (! $asset) {
+                    OrderPayout::query()->updateOrCreate(
+                        ['order_id' => $orderId, 'asset_symbol' => $symbol],
+                        [
+                            'chain_id' => 56,
+                            'is_native' => false,
+                            'token_address' => null,
+                            'to_address' => $toAddress,
+                            'total_usd' => $totalUsd,
+                            'error' => 'Missing token asset configuration for ' . $symbol,
+                        ]
+                    );
+                    continue;
+                }
+
+                $chainId = (int) ($asset->chain_id ?? 56);
+                $decimals = (int) ($asset->decimals ?? 18);
+                $tokenAddress = $asset->token_address;
+
+                try {
+                    $spotUsd = $priceQuote->getSpotUsdt($symbol);
+                    $amountDecimal = $priceQuote->usdToTokenAmount((string) $totalUsd, (string) $spotUsd, $decimals);
+                    $amountWei = $priceQuote->decimalToUnits($amountDecimal, $decimals);
+
+                    $payout = OrderPayout::query()->updateOrCreate(
+                        ['order_id' => $orderId, 'asset_symbol' => $symbol],
+                        [
+                            'chain_id' => $chainId,
+                            'is_native' => (bool) $asset->is_native,
+                            'token_address' => $tokenAddress,
+                            'to_address' => $toAddress,
+                            'total_usd' => $totalUsd,
+                            'price_usd' => $spotUsd,
+                            'amount_decimal' => $amountDecimal,
+                            'amount_wei' => $amountWei,
+                            'error' => null,
+                        ]
+                    );
+
+                    $result = null;
+                    if ($asset->is_native) {
+                        $result = $contractPayout->withdrawNative($chainId, $toAddress, $amountWei);
+                    } else {
+                        if (! $tokenAddress || ! preg_match('/^0x[a-fA-F0-9]{40}$/', (string) $tokenAddress)) {
+                            throw new \RuntimeException('Missing/invalid token_address for ' . $symbol);
+                        }
+                        $result = $contractPayout->withdrawErc20($chainId, (string) $tokenAddress, $toAddress, $amountWei);
+                    }
+
+                    $tx = null;
+                    if (is_string($result)) {
+                        $tx = $result;
+                    } elseif (is_array($result)) {
+                        $tx = $result['tx'] ?? $result['txHash'] ?? $result['result'] ?? null;
+                    }
+
+                    $payout->tx_hash = is_string($tx) ? $tx : null;
+                    $payout->sent_at = now();
+                    $payout->error = null;
+                    $payout->save();
+                } catch (\Throwable $e) {
+                    OrderPayout::query()->updateOrCreate(
+                        ['order_id' => $orderId, 'asset_symbol' => $symbol],
+                        [
+                            'chain_id' => $chainId,
+                            'is_native' => (bool) $asset->is_native,
+                            'token_address' => $tokenAddress,
+                            'to_address' => $toAddress,
+                            'total_usd' => $totalUsd,
+                            'error' => $e->getMessage(),
+                        ]
+                    );
+                }
+            }
         } catch (\Throwable $e) {
-            Log::error('BNB payout error for order ' . $orderId . ': ' . $e->getMessage());
-            try {
-                Orders::where('id', $orderId)->update([
-                    'bnb_send_error' => $e->getMessage(),
-                    'updated_at' => now(),
-                ]);
-            } catch (\Throwable $inner) {
-                // ignore
-            }
+            Log::error('Payout error for order ' . $orderId . ': ' . $e->getMessage());
         }
     }
 
@@ -811,8 +892,13 @@ class AuthController extends BaseController
             if ($completed) {
                 Orders::where('id', $orderId)->update([
                     'status' => 'completed',
+                    'paid_at' => $order->paid_at ?? now(),
+                    'coinbase_charge_id' => $data['id'] ?? $order->coinbase_charge_id,
                     'updated_at' => now(),
                 ]);
+
+                // If webhook delivery is missing, still attempt payout on completion.
+                $this->handleEvmPayoutForOrder((string) $orderId);
 
                 return response()->json(['status' => 'completed']);
             }
