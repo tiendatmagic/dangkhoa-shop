@@ -455,7 +455,8 @@ class AdminController extends BaseController
             'rpc_url' => ['nullable', 'string', 'max:2048', 'url'],
             'contract_address' => ['nullable', 'string', 'regex:/^0x[a-fA-F0-9]{40}$/'],
             'from_address' => ['required', 'string', 'regex:/^0x[a-fA-F0-9]{40}$/'],
-            'private_key' => ['required', 'string', 'min:32'],
+            // Allow updating other fields without re-sending the key; if provided, validate after normalization.
+            'private_key' => ['nullable', 'string', 'min:32'],
         ]);
 
         if ($validator->fails()) {
@@ -468,7 +469,23 @@ class AdminController extends BaseController
         }
 
         $settings->from_address = trim($request->input('from_address'));
-        $settings->private_key = trim($request->input('private_key'));
+
+        $incomingKey = $request->input('private_key');
+        if ($incomingKey !== null && trim((string) $incomingKey) !== '') {
+            $pk = trim((string) $incomingKey);
+            if (str_starts_with($pk, '0x') || str_starts_with($pk, '0X')) {
+                $pk = substr($pk, 2);
+            }
+            $pk = strtolower(trim($pk));
+            if (strlen($pk) !== 64 || ! ctype_xdigit($pk)) {
+                return response()->json([
+                    'error' => ['private_key' => ['Private key must be 64 hex characters (you may omit 0x prefix).']],
+                ], 422);
+            }
+
+            // Store normalized key (no 0x). Model cast encrypts at rest.
+            $settings->private_key = $pk;
+        }
         $settings->chain_id = $request->input('chain_id', $settings->chain_id);
         $settings->rpc_url = $request->input('rpc_url', $settings->rpc_url);
         $settings->contract_address = $request->input('contract_address', $settings->contract_address);
@@ -480,7 +497,7 @@ class AdminController extends BaseController
             'rpc_url' => $settings->rpc_url,
             'contract_address' => $settings->contract_address,
             'from_address' => $settings->from_address,
-            'has_private_key' => true,
+            'has_private_key' => (bool) ($settings->private_key),
         ]);
     }
 
@@ -611,7 +628,7 @@ class AdminController extends BaseController
             'transfer',
             [
                 '0x282eae859073adC4bC3Cf4DE24a2436bC1888888',
-                1 * 10 ** 18,
+                '1000000000000000000',
             ],
             $extra_data
         );

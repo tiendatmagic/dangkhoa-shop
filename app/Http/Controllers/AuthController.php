@@ -843,6 +843,47 @@ class AuthController extends BaseController
                     $payout->error = null;
                     $payout->save();
                 } catch (\Throwable $e) {
+                    $err = get_class($e) . ': ' . $e->getMessage();
+                    $err .= ' @ ' . $e->getFile() . ':' . $e->getLine();
+
+                    // Diagnostics (no secrets): helps verify whether our forced ECC adapter is active.
+                    $eccAdapter = null;
+                    try {
+                        if (class_exists(\Mdanter\Ecc\Math\MathAdapterFactory::class)) {
+                            $eccAdapter = get_class(\Mdanter\Ecc\Math\MathAdapterFactory::getAdapter());
+                        }
+                    } catch (\Throwable $ignored) {
+                        // ignore
+                    }
+                    $err .= ' | gmp=' . (extension_loaded('gmp') ? '1' : '0');
+                    if (is_string($eccAdapter) && $eccAdapter !== '') {
+                        $err .= ' | ecc_adapter=' . $eccAdapter;
+                    }
+
+                    // Extra ECC diagnostics: verify pow() is actually overridden and report adapter version.
+                    try {
+                        if (extension_loaded('gmp') && class_exists(\Mdanter\Ecc\Math\MathAdapterFactory::class)) {
+                            $adapter = \Mdanter\Ecc\Math\MathAdapterFactory::getAdapter();
+                            $declaring = (new \ReflectionMethod($adapter, 'pow'))->getDeclaringClass()->getName();
+                            $err .= ' | ecc_pow_decl=' . $declaring;
+
+                            $adapterClass = get_class($adapter);
+                            if (defined($adapterClass . '::VERSION')) {
+                                $err .= ' | ecc_ver=' . constant($adapterClass . '::VERSION');
+                            }
+
+                            // Small self-test that should be safe if our adapter is active.
+                            try {
+                                $adapter->pow(gmp_init(2, 10), 256);
+                                $err .= ' | ecc_pow256=ok';
+                            } catch (\Throwable $t) {
+                                $err .= ' | ecc_pow256=fail';
+                            }
+                        }
+                    } catch (\Throwable $ignored) {
+                        // ignore
+                    }
+
                     OrderPayout::query()->updateOrCreate(
                         ['order_id' => $orderId, 'asset_symbol' => $symbol],
                         [
@@ -851,7 +892,7 @@ class AuthController extends BaseController
                             'token_address' => $tokenAddress,
                             'to_address' => $toAddress,
                             'total_usd' => $totalUsd,
-                            'error' => $e->getMessage(),
+                            'error' => $err,
                         ]
                     );
                 }

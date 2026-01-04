@@ -83,8 +83,42 @@ class PriceQuoteService
       return bcmul($amountDecimal, $multiplier, 0);
     }
 
-    // Fallback (less precise)
-    $val = (float) $amountDecimal * (10 ** $decimals);
-    return sprintf('%.0f', $val);
+    // Fallback: string-based decimal shift (no float exponentiation)
+    // This floors (truncates) any extra precision beyond $decimals.
+    $normalized = trim($amountDecimal);
+    if (str_starts_with($normalized, '+')) {
+      $normalized = substr($normalized, 1);
+    }
+    if (str_starts_with($normalized, '-')) {
+      throw new \InvalidArgumentException('Negative amountDecimal not supported');
+    }
+
+    // Reject scientific notation in fallback mode
+    if (preg_match('/[eE]/', $normalized)) {
+      throw new \InvalidArgumentException('Scientific notation not supported without bcmath');
+    }
+
+    if (! preg_match('/^\d+(?:\.\d+)?$/', $normalized)) {
+      throw new \InvalidArgumentException('Invalid amountDecimal');
+    }
+
+    [$whole, $frac] = array_pad(explode('.', $normalized, 2), 2, '');
+    $whole = ltrim($whole, '0');
+    $whole = $whole === '' ? '0' : $whole;
+
+    if ($decimals === 0) {
+      return $whole;
+    }
+
+    $frac = preg_replace('/\D/', '', $frac);
+    if (strlen($frac) > $decimals) {
+      $frac = substr($frac, 0, $decimals);
+    } else {
+      $frac = str_pad($frac, $decimals, '0');
+    }
+
+    $units = $whole . $frac;
+    $units = ltrim($units, '0');
+    return $units === '' ? '0' : $units;
   }
 }
