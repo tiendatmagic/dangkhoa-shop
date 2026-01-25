@@ -4,7 +4,7 @@
 
 export const environment = {
   production: true,
-  apiUrl: 'https://apidev.miuxmmo.com/dangkhoashop/',
+  apiUrl: 'https://apidev.miummo.com/dangkhoashop/',
   apiUrlLocal: 'http://localhost:8000/',
 };
 
