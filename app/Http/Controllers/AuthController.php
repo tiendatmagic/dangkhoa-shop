@@ -883,6 +883,40 @@ class AuthController extends BaseController
         return response()->json(['success' => true], 200);
     }
 
+    public function cancelOrder(Request $request)
+    {
+        $orderId = $request->input('id') ?? $request->input('order_id') ?? null;
+        if (! $orderId) {
+            return response()->json(['error' => 'missing_order_id'], 400);
+        }
+
+        $order = Orders::where('id', $orderId)->first();
+        if (! $order) {
+            return response()->json(['error' => 'order_not_found'], 404);
+        }
+
+        // only allow cancelling pending Sepay orders by the owner (or admin via admin routes)
+        $user = $request->user();
+        if ($user && $order->user_id !== $user->id) {
+            return response()->json(['error' => 'forbidden'], 403);
+        }
+
+        if (($order->payment ?? null) !== 'sepay') {
+            return response()->json(['error' => 'not_sepay_order'], 400);
+        }
+
+        if ($order->status !== 'pending') {
+            return response()->json(['error' => 'cannot_cancel_non_pending'], 400);
+        }
+
+        Orders::where('id', $order->id)->update([
+            'status' => 'canceled',
+            'updated_at' => now(),
+        ]);
+
+        return response()->json(['success' => true], 200);
+    }
+
     private function isValidSepayAuthHeader(string $apiKey, string $authHeader, string $xApiKey): bool
     {
         if ($xApiKey && hash_equals($apiKey, $xApiKey)) {

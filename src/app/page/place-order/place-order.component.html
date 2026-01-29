@@ -640,12 +640,15 @@
                           <button
                             type="button"
                             class="bg-slate-100 text-slate-900 px-4 py-2 text-sm font-medium rounded-md"
+                            (click)="checkSepayPayment()"
+                            [disabled]="sepayCheckInFlight"
                           >
-                            Kiểm tra thanh toán
+                            {{ sepayCheckInFlight ? 'Đang kiểm tra...' : 'Kiểm tra thanh toán' }}
                           </button>
                           <button
                             type="button"
                             class="bg-red-50 px-4 py-2 text-sm font-medium text-red-700 rounded-md"
+                            (click)="cancelSepayOrder()"
                           >
                             Hủy lệnh nạp tiền
                           </button>
@@ -688,6 +691,7 @@
                   !phone ||
                   (requiresBscWalletNote && !isValidBscAddress(note)) ||
                   coinbaseActive ||
+                  sepayActive ||
                   isProccessing
                 "
               >

@@ -1,5 +1,7 @@
 import { Component, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../services/data.service';
 import { Web3Service } from '../../services/web3.service';
@@ -7,6 +9,8 @@ import { combineLatest } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { FormGroup } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { NotifyModalComponent } from '../../modal/notify-modal/notify-modal.component';
+import { ConfirmModalComponent } from '../../modal/confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-place-order',
@@ -28,6 +32,7 @@ export class PlaceOrderComponent {
   sepayHostedUrl: string = '';
   sepayQrUrl: string = '';
   private sepayInterval: any = null;
+  private sepayOrderId: string | null = null;
   sepayExpiresAt: Date | null = null;
   sepayRemaining: string = '';
   private sepayCountdownInterval: any = null;
@@ -37,6 +42,8 @@ export class PlaceOrderComponent {
   sepayAmountVnd: number | null = null;
   sepayBank: any = null;
   private storageListener: any = null;
+  private currentCheckSub: Subscription | null = null;
+  sepayCheckInFlight: boolean = false;
   cartProducts: any[] = [];
   subtotal: number = 0;
   deliveryFee: number = 0;
@@ -72,7 +79,7 @@ export class PlaceOrderComponent {
   }
 
 
-  constructor(private snackBar: MatSnackBar, private route: ActivatedRoute, private router: Router, private dataService: DataService, private web3Service: Web3Service, private http: HttpClient, private auth: AuthService) {
+  constructor(private snackBar: MatSnackBar, private route: ActivatedRoute, private router: Router, private dataService: DataService, private web3Service: Web3Service, private http: HttpClient, private auth: AuthService, private dialog: MatDialog) {
     this.deliveryFee = this.dataService.deliveryFee;
   }
 
@@ -431,6 +438,7 @@ export class PlaceOrderComponent {
               this.startSepayCountdown();
             }
             this.sepayActive = true;
+            this.sepayOrderId = res.order_id || null;
             this.startSepayPolling(res.order_id);
           } else {
             this.snackBar.open('Failed to create Sepay checkout.', 'OK', { duration: 3000 });
@@ -592,6 +600,68 @@ export class PlaceOrderComponent {
         // ignore
       });
     }, 5000);
+  }
+
+  checkSepayPayment() {
+    if (!this.sepayOrderId) return;
+    // cancel previous check request if any
+    if (this.currentCheckSub) {
+      try { this.currentCheckSub.unsubscribe(); } catch (e) { }
+      this.currentCheckSub = null;
+    }
+
+    this.sepayCheckInFlight = true;
+    this.currentCheckSub = this.auth.getOrder({ id: this.sepayOrderId }).subscribe((res: any) => {
+      this.sepayCheckInFlight = false;
+      this.currentCheckSub = null;
+      const status = res.order ? res.order.status : null;
+      if (status && status !== 'pending') {
+        // stop polling and redirect
+        if (this.sepayInterval) { clearInterval(this.sepayInterval); this.sepayInterval = null; }
+        this.router.navigate(['/checkout', this.sepayOrderId]);
+      } else {
+        this.snackBar.open('Payment still pending.', 'OK', { duration: 2000 });
+      }
+    }, (err) => {
+      this.sepayCheckInFlight = false;
+      this.currentCheckSub = null;
+      this.snackBar.open('Check failed.', 'OK', { duration: 2000 });
+    });
+  }
+
+  cancelSepayOrder() {
+    if (!this.sepayOrderId) return;
+
+    const dialogRef = this.dialog.open(ConfirmModalComponent, {
+      data: {
+        title: 'Xác nhận hủy',
+        message: 'Bạn có chắc muốn hủy lệnh nạp tiền này?'
+      },
+      disableClose: true,
+      width: '420px'
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed: any) => {
+      if (!confirmed) return;
+      this.auth.cancelOrder({ id: this.sepayOrderId }).subscribe((res: any) => {
+      if (res && res.success) {
+        this.snackBar.open('Order cancelled.', 'OK', { duration: 2000 });
+        // clear UI
+        this.sepayHostedUrl = '';
+        this.sepayQrUrl = '';
+        this.sepayExpiresAt = null;
+        this.sepayRemaining = '';
+        this.sepayActive = false;
+        this.sepayOrderId = null;
+        this.isProccessing = false;
+        if (this.sepayInterval) { clearInterval(this.sepayInterval); this.sepayInterval = null; }
+      } else {
+        this.snackBar.open('Cancel failed.', 'OK', { duration: 2000 });
+      }
+    }, (err) => {
+      this.snackBar.open('Cancel failed.', 'OK', { duration: 2000 });
+      });
+    });
   }
 
   startSepayCountdown() {
