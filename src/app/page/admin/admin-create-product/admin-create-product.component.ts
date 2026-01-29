@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../services/auth.service';
 import { DataService } from '../../../services/data.service';
+import { ApiCacheService } from '../../../services/api-cache.service';
 
 @Component({
   selector: 'app-admin-create-product',
@@ -32,6 +33,7 @@ export class AdminCreateProductComponent {
     private router: Router,
     private auth: AuthService,
     private dataService: DataService,
+    private apiCache: ApiCacheService,
     private http: HttpClient
   ) {
     this.productName = new FormControl('', [Validators.required, Validators.minLength(1), Validators.maxLength(30)]);
@@ -113,6 +115,7 @@ export class AdminCreateProductComponent {
     this.auth.createProduct(payload).subscribe(
       (res: any) => {
         this.isUploading = false;
+        try { this.apiCache.invalidate('admin_products_page1'); } catch { }
         this.dataService.showNotify('Success', 'Create product successfully', 'success', true, true, false);
         this.router.navigate(['/admin/']);
       },
