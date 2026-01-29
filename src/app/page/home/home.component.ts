@@ -24,6 +24,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   homeCollections: any[] = [];
   private homeProductsSub: Subscription | null = null;
   private customizationSub: Subscription | null = null;
+  private cacheInvalidSub: Subscription | null = null;
 
   constructor(
     private web3Service: Web3Service,
@@ -38,6 +39,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.callLoadHomeProducts();
     this.startAutoplay();
     this.loadCustomization();
+    // listen for cache invalidation events and reload customization when updated
+    this.cacheInvalidSub = this.apiCache.cacheInvalidated$.subscribe((key: string | null) => {
+      if (!key || key === 'public_customization' || key === 'customization') {
+        // Clear any existing customization subscription then reload
+        try { if (this.customizationSub) { this.customizationSub.unsubscribe(); this.customizationSub = null; } } catch {}
+        this.loadCustomization();
+      }
+    });
   }
 
   prevSlide() {
@@ -77,6 +86,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.customizationSub) {
       this.customizationSub.unsubscribe();
       this.customizationSub = null;
+    }
+    if (this.cacheInvalidSub) {
+      this.cacheInvalidSub.unsubscribe();
+      this.cacheInvalidSub = null;
     }
   }
 
