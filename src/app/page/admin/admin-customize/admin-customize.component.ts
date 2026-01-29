@@ -168,6 +168,8 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
       this._savedTimer = setTimeout(() => this.lastSavedAt = null, 3000);
       // update cache so public endpoint is fresh
       this.apiCache.put('customization', { slides: payload.slides, collections: payload.collections });
+      // ensure home uses the newest public customization key
+      try { this.apiCache.invalidate('public_customization'); } catch {}
     }, (err) => {
       this.saving = false;
       this.data.showNotify('Error', 'Failed to save customization', 'error');
