@@ -24,6 +24,18 @@ export class PlaceOrderComponent {
   coinbaseRemaining: string = '';
   private coinbaseCountdownInterval: any = null;
   coinbaseActive: boolean = false;
+  // Sepay (bank transfer) UI/state
+  sepayHostedUrl: string = '';
+  sepayQrUrl: string = '';
+  private sepayInterval: any = null;
+  sepayExpiresAt: Date | null = null;
+  sepayRemaining: string = '';
+  private sepayCountdownInterval: any = null;
+  sepayActive: boolean = false;
+  sepayTransferCode: string = '';
+  sepayAmountDisplay: string = '';
+  sepayAmountVnd: number | null = null;
+  sepayBank: any = null;
   private storageListener: any = null;
   cartProducts: any[] = [];
   subtotal: number = 0;
@@ -70,6 +82,8 @@ export class PlaceOrderComponent {
     } catch (e) { }
     if (this.coinbaseCountdownInterval) clearInterval(this.coinbaseCountdownInterval);
     if (this.coinbaseInterval) clearInterval(this.coinbaseInterval);
+    if (this.sepayCountdownInterval) clearInterval(this.sepayCountdownInterval);
+    if (this.sepayInterval) clearInterval(this.sepayInterval);
   }
 
   ngOnInit() {
@@ -200,12 +214,20 @@ export class PlaceOrderComponent {
   choosePayment(payment: number) {
     // reset active coinbase QR when user intentionally switches payment method
     if (this.choosePaymentMethod !== payment) {
+      // clear coinbase state
       this.coinbaseActive = false;
       this.coinbaseHostedUrl = '';
       this.coinbaseQrUrl = '';
       this.coinbaseExpiresAt = null;
       this.coinbaseRemaining = '';
       if (this.coinbaseCountdownInterval) clearInterval(this.coinbaseCountdownInterval);
+      // clear sepay state
+      this.sepayActive = false;
+      this.sepayHostedUrl = '';
+      this.sepayQrUrl = '';
+      this.sepayExpiresAt = null;
+      this.sepayRemaining = '';
+      if (this.sepayCountdownInterval) clearInterval(this.sepayCountdownInterval);
     }
     this.choosePaymentMethod = payment;
     if (payment == 2) {
@@ -227,6 +249,13 @@ export class PlaceOrderComponent {
           this.coinbaseRemaining = '';
           if (this.coinbaseCountdownInterval) clearInterval(this.coinbaseCountdownInterval);
           this.coinbaseActive = false;
+          // clear sepay UI as well
+          this.sepayHostedUrl = '';
+          this.sepayQrUrl = '';
+          this.sepayExpiresAt = null;
+          this.sepayRemaining = '';
+          if (this.sepayCountdownInterval) clearInterval(this.sepayCountdownInterval);
+          this.sepayActive = false;
         }
       }
 
@@ -241,6 +270,12 @@ export class PlaceOrderComponent {
             this.coinbaseRemaining = '';
             this.coinbaseActive = false;
             if (this.coinbaseCountdownInterval) clearInterval(this.coinbaseCountdownInterval);
+            this.sepayHostedUrl = '';
+            this.sepayQrUrl = '';
+            this.sepayExpiresAt = null;
+            this.sepayRemaining = '';
+            this.sepayActive = false;
+            if (this.sepayCountdownInterval) clearInterval(this.sepayCountdownInterval);
           }
         } catch (e) { }
       }
@@ -372,6 +407,43 @@ export class PlaceOrderComponent {
 
       return;
     }
+    // Sepay (bank transfer) option
+    if (this.choosePaymentMethod == 4) {
+      this.isProccessing = true;
+      var data = {
+        data: orderData,
+        payment: 'sepay'
+      };
+
+      this.auth.confirmOrder(data).subscribe(
+        (res: any) => {
+          this.isProccessing = false;
+          if (res && (res.hosted_url || res.success === 'sepay_charge_created')) {
+            this.sepayHostedUrl = res.hosted_url || res.hostedUrl || res.qr_url || '';
+            // backend already returns a direct Sepay QR image URL (`qr_url`), use it directly
+            this.sepayQrUrl = res.qr_url || this.sepayHostedUrl;
+            this.sepayTransferCode = res.transfer_code || '';
+            this.sepayAmountVnd = res.amount_vnd || null;
+            this.sepayAmountDisplay = res.amount_display || '';
+            this.sepayBank = res.bank || null;
+            if (res.expires_at) {
+              this.sepayExpiresAt = new Date(res.expires_at);
+              this.startSepayCountdown();
+            }
+            this.sepayActive = true;
+            this.startSepayPolling(res.order_id);
+          } else {
+            this.snackBar.open('Failed to create Sepay checkout.', 'OK', { duration: 3000 });
+          }
+        },
+        (error: any) => {
+          this.isProccessing = false;
+          this.snackBar.open('Order failed.', 'OK', { duration: 3000 });
+        }
+      );
+
+      return;
+    }
     else {
       this.isProccessing = true;
       var data = {
@@ -470,6 +542,12 @@ export class PlaceOrderComponent {
             this.coinbaseExpiresAt = null;
             this.coinbaseRemaining = '';
             this.coinbaseActive = false;
+            // clear sepay UI
+            this.sepayHostedUrl = '';
+            this.sepayQrUrl = '';
+            this.sepayExpiresAt = null;
+            this.sepayRemaining = '';
+            this.sepayActive = false;
           }
         }
       }, (err) => {
@@ -499,6 +577,44 @@ export class PlaceOrderComponent {
     };
     update();
     this.coinbaseCountdownInterval = setInterval(update, 1000);
+  }
+
+  startSepayPolling(orderId: string) {
+    if (this.sepayInterval) clearInterval(this.sepayInterval);
+    this.sepayInterval = setInterval(() => {
+      this.auth.getOrder({ id: orderId }).subscribe((res: any) => {
+        const status = res.order ? res.order.status : null;
+        if (status && status !== 'pending') {
+          clearInterval(this.sepayInterval);
+          this.router.navigate(['/checkout', orderId]);
+        }
+      }, (err) => {
+        // ignore
+      });
+    }, 5000);
+  }
+
+  startSepayCountdown() {
+    if (this.sepayCountdownInterval) clearInterval(this.sepayCountdownInterval);
+    const update = () => {
+      if (!this.sepayExpiresAt) return;
+      const now = new Date().getTime();
+      const exp = this.sepayExpiresAt.getTime();
+      let diff = Math.max(0, Math.floor((exp - now) / 1000));
+      if (diff <= 0) {
+        this.sepayRemaining = 'Expired';
+        this.sepayHostedUrl = '';
+        this.sepayQrUrl = '';
+        this.sepayActive = false;
+        clearInterval(this.sepayCountdownInterval);
+        return;
+      }
+      const minutes = Math.floor(diff / 60);
+      const seconds = diff % 60;
+      this.sepayRemaining = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    };
+    update();
+    this.sepayCountdownInterval = setInterval(update, 1000);
   }
 
   handleImageError(event: any) {

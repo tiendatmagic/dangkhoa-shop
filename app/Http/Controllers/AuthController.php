@@ -13,6 +13,7 @@ use App\Services\EvmContractPayoutService;
 use App\Services\PriceQuoteService;
 use App\Traits\Sharable;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 use Defuse\Crypto\Key;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
@@ -34,7 +35,7 @@ class AuthController extends BaseController
 
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login', 'refresh', 'coinbaseWebhook']]);
+        $this->middleware('auth:api', ['except' => ['login', 'refresh', 'coinbaseWebhook', 'sepayWebhook']]);
     }
 
     public function systemSetting(Request $request)
@@ -566,6 +567,133 @@ class AuthController extends BaseController
             } catch (\Throwable $th) {
                 return response()->json(['error' => 'coinbase_request_failed', 'message' => $th->getMessage()], 500);
             }
+        } elseif ($payment === 'sepay') {
+            $cart = $request->data['cart'] ?? [];
+
+            $orderId = UUID::uuid4();
+            $order_code = $generateOrderCode();
+
+            Orders::insert([
+                'id' => $orderId,
+                'order_code' => $order_code,
+                'user_id' => $request->user()->id,
+                'payment' => $payment,
+                'status' => 'pending',
+                'name' => $request->data['name'],
+                'email' => $request->data['email'],
+                'phone' => $request->data['phone'],
+                'address' => $request->data['address'],
+                'note' => $request->data['note'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            foreach ($cart as $item) {
+                $product = Products::find($item['id']);
+                $currentPrice = $product ? $product->price : $item['price'];
+
+                OrderItems::insert([
+                    'id' => UUID::uuid4(),
+                    'order_id' => $orderId,
+                    'product_id' => $item['id'],
+                    'size' => $item['size'],
+                    'quantity' => $item['quantity'] <= 0 ? 1 : $item['quantity'],
+                    'price' => $currentPrice,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            $total = array_sum(array_map(function ($item) {
+                $quantity = $item['quantity'] <= 0 ? 1 : $item['quantity'];
+                $price = $item['price'];
+
+                return $quantity * $price;
+            }, $cart));
+            // Build Sepay transfer code and QR URL using configured bank details
+            $bankCode = env('SEPAY_BANK_CODE');
+            $bankAccount = env('SEPAY_BANK_ACCOUNT');
+            $bankOwner = env('SEPAY_BANK_OWNER');
+
+            if (! $bankCode || ! $bankAccount) {
+                return response()->json(['error' => 'sepay_not_configured'], 500);
+            }
+
+            // Generate a numeric transfer code (6 digits). If collision, lengthen to 7 or 8.
+            $generateNumericCode = function (int $initialLength = 6) {
+                $length = $initialLength;
+                $maxLength = 8;
+
+                while ($length <= $maxLength) {
+                    $min = (int) pow(10, $length - 1);
+                    $max = (int) (pow(10, $length) - 1);
+                    try {
+                        $num = random_int($min, $max);
+                    } catch (\Throwable $e) {
+                        // fallback to mt_rand
+                        $num = mt_rand($min, $max);
+                    }
+
+                    $digits = (string) $num;
+                    $code = 'DK' . $digits;
+                    // check uniqueness in orders table
+                    $exists = Orders::where('sepay_code', $code)->exists();
+                    if (! $exists) {
+                        return $code;
+                    }
+
+                    $length++;
+                }
+
+                // Fallback: create less structured but unique code with DK prefix
+                do {
+                    $code = 'DK' . strtoupper(Str::random(6));
+                } while (Orders::where('sepay_code', $code)->exists());
+
+                return $code;
+            };
+
+            $transferCode = $generateNumericCode(6);
+
+            // Convert order total (assumed USD) to VND for Sepay QR. Use env rate or default 23000.
+            $rate = (float) env('SEPAY_EXCHANGE_RATE', 23000);
+            $amountVnd = (int) round((float) $total * $rate);
+
+            $params = http_build_query([
+                'acc' => $bankAccount,
+                'bank' => $bankCode,
+                'amount' => $amountVnd,
+                'des' => $transferCode,
+            ]);
+
+            $qrUrl = 'https://qr.sepay.vn/img?' . $params;
+
+            // store hosted url and expires using existing coinbase fields to avoid new migration
+            $dbExpires = Carbon::now()->addMinutes(15)->toDateTimeString();
+            $returnExpires = Carbon::parse($dbExpires)->toIso8601String();
+
+            Orders::where('id', $orderId)->update([
+                'coinbase_hosted_url' => $qrUrl,
+                'coinbase_expires_at' => $dbExpires,
+                'sepay_code' => $transferCode,
+                'updated_at' => now(),
+            ]);
+
+            return response()->json([
+                'success' => 'sepay_charge_created',
+                'hosted_url' => $qrUrl,
+                'qr_url' => $qrUrl,
+                'expires_at' => $returnExpires,
+                'order_id' => $orderId,
+                'transfer_code' => $transferCode,
+                'amount_vnd' => $amountVnd,
+                'amount_display' => number_format($amountVnd, 0, ',', '.') . ' VND',
+                'bank' => [
+                    'code' => $bankCode,
+                    'account' => $bankAccount,
+                    'owner' => $bankOwner,
+                ],
+            ]);
         }
     }
 
@@ -695,6 +823,162 @@ class AuthController extends BaseController
         }
 
         return response()->json(['received' => true]);
+    }
+
+    public function sepayWebhook(Request $request)
+    {
+        $apiKey = env('SEPAY_TOKEN');
+        $authHeader = (string) $request->header('Authorization');
+        $xApiKey = (string) $request->header('X-Api-Key');
+
+        if ($apiKey && ! $this->isValidSepayAuthHeader($apiKey, $authHeader, $xApiKey)) {
+            return response()->json(['success' => false], 401);
+        }
+
+        $data = $request->all();
+
+        $code = $this->extractOrderCodeFromPayload($data);
+
+        if (! $code) {
+            return response()->json(['success' => true], 200);
+        }
+
+        $order = Orders::where('order_code', $code)->first();
+
+        if (! $order) {
+            return response()->json(['success' => true], 200);
+        }
+
+        if ($order->status === 'completed') {
+            return response()->json(['success' => true], 200);
+        }
+
+        $transferAmount = $this->extractTransferAmountFromPayload($data);
+
+        $orderItems = OrderItems::where('order_id', $order->id)->get();
+        $total = $orderItems->sum(function ($item) {
+            return $item->quantity * $item->price;
+        });
+
+        // If received amount is less than expected, mark as mismatch but do not complete
+        if ($transferAmount < (int) round($total)) {
+            // optional: log mismatch
+            return response()->json(['success' => true], 200);
+        }
+
+        Orders::where('id', $order->id)->update([
+            'status' => 'completed',
+            'paid_at' => now(),
+            'txhash' => $data['id'] ?? null,
+            'updated_at' => now(),
+        ]);
+
+        // If EVM payout is needed (e.g., coinbase flow), call the handler
+        try {
+            $this->handleEvmPayoutForOrder((string) $order->id);
+        } catch (\Throwable $th) {
+            // ignore payout errors
+        }
+
+        return response()->json(['success' => true], 200);
+    }
+
+    private function isValidSepayAuthHeader(string $apiKey, string $authHeader, string $xApiKey): bool
+    {
+        if ($xApiKey && hash_equals($apiKey, $xApiKey)) {
+            return true;
+        }
+
+        if (! $authHeader) {
+            return false;
+        }
+
+        $normalized = strtolower(trim($authHeader));
+        $expected = strtolower('Apikey ' . $apiKey);
+        $expectedApiKey = strtolower('ApiKey ' . $apiKey);
+        $expectedBearer = strtolower('Bearer ' . $apiKey);
+
+        return hash_equals($expected, $normalized)
+            || hash_equals($expectedApiKey, $normalized)
+            || hash_equals($expectedBearer, $normalized);
+    }
+
+    private function extractOrderCodeFromPayload(array $data): ?string
+    {
+        // Search payload text for a NAP transfer code like NAP{...}
+        $haystack = $this->collectPayloadText($data);
+
+        if (! $haystack) return null;
+
+        if (preg_match('/NAP[0-9A-Z]+/i', $haystack, $matches)) {
+            return strtoupper($matches[0]);
+        }
+
+        // Fallback: 8-digit numeric order_code
+        if (preg_match('/\b[0-9]{8}\b/', $haystack, $matches)) {
+            return $matches[0];
+        }
+
+        return null;
+    }
+
+    private function extractTransferAmountFromPayload(array $data): int
+    {
+        $preferredKeys = [
+            'transferAmount',
+            'amount',
+            'amountIn',
+            'amount_in',
+            'creditAmount',
+            'credit_amount',
+            'receivedAmount',
+            'received_amount',
+        ];
+
+        $queue = [$data];
+
+        while ($queue) {
+            $current = array_shift($queue);
+
+            foreach ($current as $key => $value) {
+                if (is_array($value)) {
+                    $queue[] = $value;
+                    continue;
+                }
+
+                if (in_array((string) $key, $preferredKeys, true)) {
+                    if (is_numeric($value)) return (int) $value;
+                    $digits = preg_replace('/[^0-9]/', '', (string) $value);
+                    return $digits ? (int) $digits : 0;
+                }
+            }
+        }
+
+        return 0;
+    }
+
+    private function collectPayloadText(array $data): string
+    {
+        $parts = [];
+
+        $queue = [$data];
+
+        while ($queue) {
+            $current = array_shift($queue);
+
+            foreach ($current as $value) {
+                if (is_array($value)) {
+                    $queue[] = $value;
+                    continue;
+                }
+
+                if (is_string($value) || is_numeric($value)) {
+                    $parts[] = (string) $value;
+                }
+            }
+        }
+
+        return trim(implode(' ', $parts));
     }
 
     private function handleEvmPayoutForOrder(string $orderId): void
