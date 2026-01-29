@@ -28,6 +28,10 @@ export class AdminComponent {
     } else if (this.menu == 'customize') {
       this.isChoose = 4
     }
+    // publish the active tab so child components will fetch (and cancel previous requests)
+    if (this.menu) {
+      this.adminTab.select(this.menu);
+    }
   }
 
   isChooseMenu(menu: number) {
