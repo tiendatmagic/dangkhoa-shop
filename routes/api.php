@@ -69,6 +69,9 @@ Route::group([
     Route::get('token-assets', [AdminController::class, 'getTokenAssets']);
     Route::post('token-assets', [AdminController::class, 'upsertTokenAsset']);
     Route::post('token-assets/delete', [AdminController::class, 'deleteTokenAsset']);
+    // Admin customization endpoints
+    Route::get('admin/customization', [AdminController::class, 'getCustomization']);
+    Route::post('admin/customization', [AdminController::class, 'saveCustomization']);
 });
 
 Route::group([
@@ -90,6 +93,8 @@ Route::group(
     function ($router) {
         Route::post('register', [RegisterController::class, 'register']);
         Route::get('home', [HomeController::class, 'getHomeProducts']);
+        Route::get('customization', [AdminController::class, 'getCustomization']);
+        Route::get('collections', [HomeController::class, 'getCollections']);
         Route::get('products', [HomeController::class, 'getProducts']);
         Route::get('products/{id}', [HomeController::class, 'getProductById']);
     }

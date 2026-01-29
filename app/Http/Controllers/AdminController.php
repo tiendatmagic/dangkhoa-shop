@@ -23,6 +23,7 @@ use Illuminate\Support\Str;
 use SWeb3\SWeb3;
 use SWeb3\SWeb3_Contract;
 use SWeb3\Utils;
+use App\Models\Customization;
 
 class AdminController extends BaseController
 {
@@ -405,6 +406,44 @@ class AdminController extends BaseController
         return response()->json([
             'chart' => $chart,
         ]);
+    }
+
+    // Get admin customization (latest)
+    public function getCustomization()
+    {
+        $custom = Customization::orderBy('id', 'desc')->first();
+        if (!$custom) {
+            return response()->json(['slides' => [], 'collections' => []], 200);
+        }
+        return response()->json(['slides' => $custom->slides ?? [], 'collections' => $custom->collections ?? []], 200);
+    }
+
+    // Save customization (create or update latest)
+    public function saveCustomization(Request $request)
+    {
+        $data = $request->only(['slides', 'collections']);
+
+        $validator = Validator::make($data, [
+            'slides' => 'nullable|array',
+            'slides.*' => 'nullable|string',
+            'collections' => 'nullable|array',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
+        }
+
+        try {
+            $custom = Customization::create([
+                'slides' => $data['slides'] ?? [],
+                'collections' => $data['collections'] ?? [],
+            ]);
+
+            return response()->json(['message' => 'Customization saved', 'data' => $custom], 200);
+        } catch (\Exception $e) {
+            \Log::error('Save customization error: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to save customization'], 500);
+        }
     }
 
     public function getOrderDetailAdmin(Request $request)

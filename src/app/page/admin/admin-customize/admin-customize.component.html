@@ -1,0 +1,103 @@
+<div class="p-4">
+  <h3 class="mb-3 text-xl font-medium">Homepage Customization</h3>
+
+  <section class="mb-6">
+    <h4 class="mb-2 font-medium">Slider images</h4>
+    <div
+      class="sm:flex-row sm:items-center flex flex-col items-start gap-4 mb-4"
+    >
+      <div class="sm:w-auto flex items-center w-full gap-2">
+        <input
+          id="slideUpload"
+          type="file"
+          (change)="onFileChange($event)"
+          class="hidden"
+        />
+        <label
+          for="slideUpload"
+          class="btn-outline inline-flex items-center gap-2 cursor-pointer"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-4 h-4 text-gray-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3 15a4 4 0 004 4h10a4 4 0 004-4V7a4 4 0 00-4-4H7a4 4 0 00-4 4v8z"
+            />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 11l4-4 4 4"
+            />
+          </svg>
+          <span class="text-sm text-gray-700">Upload slide</span>
+        </label>
+        <div *ngIf="uploading" class="text-sm text-gray-600">Uploading...</div>
+      </div>
+
+      <div class="sm:w-auto flex items-center w-full gap-3">
+        <button
+          class="btn-primary sm:w-auto w-full text-center"
+          (click)="save()"
+          [disabled]="saving || uploading"
+        >
+          <span *ngIf="!saving">Save</span>
+          <span *ngIf="saving">Saving...</span>
+        </button>
+        <div *ngIf="lastSavedAt" class="text-sm text-green-600">Saved</div>
+      </div>
+    </div>
+
+    <div
+      class="sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grid grid-cols-1 gap-3"
+    >
+      <div
+        *ngFor="let s of slides; let i = index"
+        class="relative overflow-hidden border rounded-lg"
+      >
+        <img
+          [src]="toFullUrl(s)"
+          alt="slide"
+          class="sm:h-32 object-cover w-full h-24"
+        />
+        <div class="flex gap-1 p-2">
+          <button class="btn-outline" (click)="moveSlideUp(i)">Up</button>
+          <button class="btn-outline" (click)="moveSlideDown(i)">Down</button>
+          <button class="btn-outline text-red-500" (click)="removeSlide(i)">
+            Remove
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h4 class="mb-2 font-medium">Shop By Category (select collections)</h4>
+    <div class="sm:grid-cols-2 md:grid-cols-3 grid grid-cols-1 gap-3">
+      <div
+        *ngFor="let col of collections"
+        class="flex items-center gap-2 p-2 border rounded-lg"
+      >
+        <input
+          type="checkbox"
+          [checked]="isSelected(col)"
+          (change)="toggleCollection(col)"
+        />
+        <img
+          *ngIf="col.image"
+          [src]="toFullUrl(col.image)"
+          alt="col"
+          class="object-cover w-12 h-12 rounded"
+        />
+        <div>{{ col.name }}</div>
+      </div>
+    </div>
+  </section>
+</div>

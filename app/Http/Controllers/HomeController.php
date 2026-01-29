@@ -103,6 +103,43 @@ class HomeController extends BaseController
     }
 
     /**
+     * Get collections / categories list for frontend/admin selection
+     */
+    public function getCollections(Request $request)
+    {
+        try {
+            $rows = \DB::table('products')
+                ->select('category')
+                ->whereNotNull('category')
+                ->where('category', '!=', '')
+                ->distinct()
+                ->get()
+                ->pluck('category')
+                ->toArray();
+
+            $collections = [];
+            foreach ($rows as $cat) {
+                $first = \DB::table('products')->where('category', $cat)->first();
+                $image = null;
+                if ($first && isset($first->image)) {
+                    $img = json_decode($first->image, true);
+                    if (is_array($img) && count($img) > 0) $image = $img[0];
+                }
+                $collections[] = [
+                    'id' => $cat,
+                    'name' => $cat,
+                    'image' => $image,
+                ];
+            }
+
+            return response()->json($collections, 200);
+        } catch (\Exception $e) {
+            \Log::error('Get collections error: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to fetch collections'], 500);
+        }
+    }
+
+    /**
      * Cập nhật toàn bộ giá sản phẩm và lưu vào DB nếu thay đổi
      */
     public function updateAllProductsPrices()

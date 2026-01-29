@@ -24,6 +24,8 @@ export class AdminComponent {
       this.isChoose = 2
     } else if (this.menu == 'overview') {
       this.isChoose = 3
+    } else if (this.menu == 'customize') {
+      this.isChoose = 4
     }
   }
 
@@ -35,6 +37,8 @@ export class AdminComponent {
       this.router.navigate(['/admin/orders']);
     } else if (menu == 3) {
       this.router.navigate(['/admin/overview']);
+    } else if (menu == 4) {
+      this.router.navigate(['/admin/customize']);
     }
   }
 

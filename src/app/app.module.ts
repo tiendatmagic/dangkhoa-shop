@@ -39,6 +39,7 @@ import { AdminOrderDetailComponent } from './page/admin/admin-order-detail/admin
 import { AdminProductDetailComponent } from './page/admin/admin-product-detail/admin-product-detail.component';
 import { AdminCreateProductComponent } from './page/admin/admin-create-product/admin-create-product.component';
 import { AdminOverviewComponent } from './page/admin/admin-overview/admin-overview.component';
+import { AdminCustomizeComponent } from './page/admin/admin-customize/admin-customize.component';
 import { CommonModule } from '@angular/common';
 import { NgApexchartsModule } from 'ng-apexcharts';
 
@@ -93,6 +94,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     MatTabsModule,
     MatIconModule,
     CommonModule,
+    AdminCustomizeComponent,
     FormsModule,
     NgApexchartsModule,
     TranslateModule.forRoot({

@@ -15,6 +15,18 @@ export class HomeComponent implements OnInit, OnDestroy {
   bestSellerProducts: any[] = [];
   isLoading: boolean = false;
   isIntervalActive: any;
+  slides: string[] = [
+    'https://picsum.photos/id/1018/1200/600',
+    'https://picsum.photos/id/1025/1200/600',
+    'https://picsum.photos/id/1035/1200/600',
+    'https://picsum.photos/id/1043/1200/600',
+    'https://picsum.photos/id/1050/1200/600',
+    'https://picsum.photos/id/1062/1200/600'
+  ];
+  currentSlide: number = 0;
+  sliderInterval: any = null;
+  autoplayDelay: number = 4000;
+  homeCollections: any[] = [];
 
   constructor(
     private web3Service: Web3Service,
@@ -26,6 +38,25 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.loadHomeProducts();
     this.callLoadHomeProducts();
+    this.startAutoplay();
+    this.loadCustomization();
+  }
+
+  prevSlide() {
+    this.currentSlide = (this.currentSlide - 1 + this.slides.length) % this.slides.length;
+    this.restartAutoplay();
+  }
+
+  nextSlide() {
+    this.currentSlide = (this.currentSlide + 1) % this.slides.length;
+    this.restartAutoplay();
+  }
+
+  goToSlide(index: number) {
+    if (index >= 0 && index < this.slides.length) {
+      this.currentSlide = index;
+      this.restartAutoplay();
+    }
   }
 
   callLoadHomeProducts() {
@@ -37,6 +68,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     clearTimeout(this.isIntervalActive);
+    this.stopAutoplay();
   }
 
   loadHomeProducts() {
@@ -51,6 +83,21 @@ export class HomeComponent implements OnInit, OnDestroy {
       (error: any) => {
         console.error('Lỗi load products:', error);
         this.isLoading = false;
+      }
+    );
+  }
+
+  loadCustomization() {
+    this.auth.getPublicCustomization().subscribe(
+      (res: any) => {
+        console.log('public customization response:', res);
+        if (res && Array.isArray(res.slides)) {
+          this.slides = res.slides.map((p: string) => p && p.startsWith('http') ? p : (p ? this.auth.getBaseUrl() + p : p)).filter(Boolean);
+        }
+        this.homeCollections = Array.isArray(res.collections) ? res.collections : (res.collections || []);
+      },
+      (err: any) => {
+        console.error('Failed to load public customization:', err);
       }
     );
   }
@@ -80,5 +127,24 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   test() {
     this.web3Service.getBalanceFunc('0x18E215E111aa8877266E9F8CDeDf21f605777777');
+  }
+
+  startAutoplay() {
+    this.stopAutoplay();
+    this.sliderInterval = setInterval(() => {
+      this.nextSlide();
+    }, this.autoplayDelay);
+  }
+
+  stopAutoplay() {
+    if (this.sliderInterval) {
+      clearInterval(this.sliderInterval);
+      this.sliderInterval = null;
+    }
+  }
+
+  restartAutoplay() {
+    this.stopAutoplay();
+    this.startAutoplay();
   }
 }
