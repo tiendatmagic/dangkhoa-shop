@@ -903,9 +903,13 @@ class AuthController extends BaseController
             return $item->quantity * $item->price;
         });
 
-        // If received amount is less than expected, mark as mismatch but do not complete
-        if ($transferAmount < (int) round($total)) {
-            // optional: log mismatch
+        // Compute expected VND using configured exchange rate (same logic as order creation)
+        $rate = (float) env('SEPAY_EXCHANGE_RATE', 23000);
+        $expectedVnd = (int) round((float) $total * $rate);
+
+        // Accept payment if transfer amount is greater than or equal to expected VND
+        if ($transferAmount < $expectedVnd) {
+            // optional: log mismatch for review
             return response()->json(['success' => true], 200);
         }
 
