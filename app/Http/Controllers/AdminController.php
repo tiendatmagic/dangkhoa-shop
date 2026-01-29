@@ -411,11 +411,16 @@ class AdminController extends BaseController
     // Get admin customization (latest)
     public function getCustomization()
     {
-        $custom = Customization::orderBy('id', 'desc')->first();
-        if (!$custom) {
-            return response()->json(['slides' => [], 'collections' => []], 200);
-        }
-        return response()->json(['slides' => $custom->slides ?? [], 'collections' => $custom->collections ?? []], 200);
+        $cacheKey = 'customization_public';
+        $data = Cache::remember($cacheKey, now()->addMinutes(5), function () {
+            $custom = Customization::orderBy('id', 'desc')->first();
+            if (!$custom) {
+                return ['slides' => [], 'collections' => []];
+            }
+            return ['slides' => $custom->slides ?? [], 'collections' => $custom->collections ?? []];
+        });
+
+        return response()->json($data, 200);
     }
 
     // Save customization (create or update latest)
@@ -438,6 +443,10 @@ class AdminController extends BaseController
                 'slides' => $data['slides'] ?? [],
                 'collections' => $data['collections'] ?? [],
             ]);
+
+            // Refresh cache so public endpoint returns latest immediately
+            $cacheKey = 'customization_public';
+            Cache::put($cacheKey, ['slides' => $custom->slides ?? [], 'collections' => $custom->collections ?? []], now()->addMinutes(5));
 
             return response()->json(['message' => 'Customization saved', 'data' => $custom], 200);
         } catch (\Exception $e) {

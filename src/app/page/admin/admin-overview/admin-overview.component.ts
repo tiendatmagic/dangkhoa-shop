@@ -1,6 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AuthService } from '../../../services/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { AdminTabService } from '../../../services/admin-tab.service';
+import { ApiCacheService } from '../../../services/api-cache.service';
+import { Subject, forkJoin, of } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, switchMap, takeUntil } from 'rxjs/operators';
 import {
   ApexAxisChartSeries,
   ApexChart,
@@ -20,7 +24,7 @@ import {
   templateUrl: './admin-overview.component.html',
   styleUrls: ['./admin-overview.component.scss']
 })
-export class AdminOverviewComponent implements OnInit {
+export class AdminOverviewComponent implements OnInit, OnDestroy {
   chartOptions: {
     series: ApexAxisChartSeries;
     chart: ApexChart;
@@ -35,21 +39,7 @@ export class AdminOverviewComponent implements OnInit {
     tooltip: ApexTooltip;
   };
 
-  constructor(private auth: AuthService, private snackBar: MatSnackBar) {
-    this.chartOptions = {
-      series: [],
-      chart: { type: 'area', height: 350 },
-      colors: ['#7c3aed'],
-      stroke: { curve: 'smooth', width: 2 },
-      fill: { opacity: 0.3, colors: ['#7c3aed'] },
-      dataLabels: { enabled: true, formatter: (val: number) => val.toLocaleString() },
-      grid: { show: true },
-      legend: { show: false },
-      xaxis: { categories: [], labels: { style: { colors: '#000' } } },
-      yaxis: { labels: { style: { colors: '#000' }, formatter: (val: number) => val.toLocaleString() } },
-      tooltip: { enabled: false },
-    };
-  }
+
 
   fromAddress: string = '';
   privateKey: string = '';
@@ -69,44 +59,142 @@ export class AdminOverviewComponent implements OnInit {
   savingToken: boolean = false;
 
   ngOnInit() {
-    this.loadChartData();
-    this.loadWalletSettings();
-    this.loadTokenAssets();
+    this.adminTab.activeTab$.pipe(
+      distinctUntilChanged(),
+      debounceTime(150),
+      switchMap(tab => {
+        if (tab === 'overview') {
+          return forkJoin({
+            overview: this.apiCache.getCached('admin_overview_chart', this.auth.getOverview().pipe(catchError(() => of({ chart: null })))),
+            wallet: this.apiCache.getCached('admin_wallet_settings', this.auth.getWalletSettings().pipe(catchError(() => of({})))),
+            tokens: this.apiCache.getCached('admin_token_assets', this.auth.getTokenAssets().pipe(catchError(() => of({ data: [] }))))
+          });
+        }
+        return of(null);
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe((res: any) => {
+      if (!res) return;
+      const { overview, wallet, tokens } = res;
+      if (overview && overview.chart) {
+        this.chartOptions = {
+          ...this.chartOptions,
+          xaxis: { ...this.chartOptions.xaxis, categories: [...overview.chart.categories] },
+          series: [...overview.chart.series]
+        };
+      }
+      if (wallet) {
+        this.fromAddress = wallet?.from_address || '';
+        this.hasPrivateKey = !!wallet?.has_private_key;
+        this.chainId = typeof wallet?.chain_id === 'number' ? wallet.chain_id : (wallet?.chain_id ? Number(wallet.chain_id) : 56);
+        this.rpcUrl = wallet?.rpc_url || '';
+        this.contractAddress = wallet?.contract_address || '';
+      }
+      if (tokens) {
+        this.tokenAssets = tokens?.data || [];
+      }
+    }, (err) => {
+      console.error('Overview load error', err);
+    });
   }
 
   loadChartData() {
-    this.auth.getOverview().subscribe((res: any) => {
-      if (res.chart) {
-        this.chartOptions = {
-          ...this.chartOptions,
-          xaxis: { ...this.chartOptions.xaxis, categories: [...res.chart.categories] },
-          series: [...res.chart.series]
-        };
-      }
-    }, (err) => {
-      console.error('Lỗi khi load chart:', err);
-    });
+    this.fetchOverviewData();
   }
 
   loadWalletSettings() {
-    this.auth.getWalletSettings().subscribe((res: any) => {
-      this.fromAddress = res?.from_address || '';
-      this.hasPrivateKey = !!res?.has_private_key;
-
-      this.chainId = typeof res?.chain_id === 'number' ? res.chain_id : (res?.chain_id ? Number(res.chain_id) : 56);
-      this.rpcUrl = res?.rpc_url || '';
-      this.contractAddress = res?.contract_address || '';
-    }, (err) => {
-      console.error('Failed to load wallet settings', err);
-    });
+    this.fetchWalletSettings();
   }
 
   loadTokenAssets() {
-    this.auth.getTokenAssets().subscribe((res: any) => {
-      this.tokenAssets = res?.data || [];
+    this.fetchTokenAssets();
+  }
+
+  private destroy$ = new Subject<void>();
+
+  constructor(private auth: AuthService, private snackBar: MatSnackBar, private adminTab: AdminTabService, private apiCache: ApiCacheService) {
+    this.chartOptions = {
+      series: [],
+      chart: { type: 'area', height: 350 },
+      colors: ['#7c3aed'],
+      stroke: { curve: 'smooth', width: 2 },
+      fill: { opacity: 0.3, colors: ['#7c3aed'] },
+      dataLabels: { enabled: true, formatter: (val: number) => val.toLocaleString() },
+      grid: { show: true },
+      legend: { show: false },
+      xaxis: { categories: [], labels: { style: { colors: '#000' } } },
+      yaxis: { labels: { style: { colors: '#000' }, formatter: (val: number) => val.toLocaleString() } },
+      tooltip: { enabled: false },
+    };
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private overviewSub: any = null;
+  private walletSub: any = null;
+  private tokensSub: any = null;
+
+  fetchOverviewData() {
+    // cancel previous combined overview request
+    if (this.overviewSub) {
+      try { this.overviewSub.unsubscribe(); } catch { }
+      this.overviewSub = null;
+    }
+    // use cached calls where appropriate
+    const o$ = this.apiCache.getCached('admin_overview_chart', this.auth.getOverview().pipe(catchError(() => of({ chart: null }))));
+    const w$ = this.apiCache.getCached('admin_wallet_settings', this.auth.getWalletSettings().pipe(catchError(() => of({}))));
+    const t$ = this.apiCache.getCached('admin_token_assets', this.auth.getTokenAssets().pipe(catchError(() => of({ data: [] }))));
+
+    this.overviewSub = forkJoin({ overview: o$, wallet: w$, tokens: t$ }).pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
+      if (!res) return;
+      const { overview, wallet, tokens } = res;
+      if (overview && overview.chart) {
+        this.chartOptions = {
+          ...this.chartOptions,
+          xaxis: { ...this.chartOptions.xaxis, categories: [...overview.chart.categories] },
+          series: [...overview.chart.series]
+        };
+      }
+      if (wallet) {
+        this.fromAddress = wallet?.from_address || '';
+        this.hasPrivateKey = !!wallet?.has_private_key;
+        this.chainId = typeof wallet?.chain_id === 'number' ? wallet.chain_id : (wallet?.chain_id ? Number(wallet.chain_id) : 56);
+        this.rpcUrl = wallet?.rpc_url || '';
+        this.contractAddress = wallet?.contract_address || '';
+      }
+      if (tokens) {
+        this.tokenAssets = tokens?.data || [];
+      }
     }, (err) => {
-      console.error('Failed to load token assets', err);
+      console.error('Overview load error', err);
     });
+  }
+
+  fetchWalletSettings() {
+    if (this.walletSub) {
+      try { this.walletSub.unsubscribe(); } catch { }
+      this.walletSub = null;
+    }
+    this.walletSub = this.auth.getWalletSettings().pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
+      this.fromAddress = res?.from_address || '';
+      this.hasPrivateKey = !!res?.has_private_key;
+      this.chainId = typeof res?.chain_id === 'number' ? res.chain_id : (res?.chain_id ? Number(res.chain_id) : 56);
+      this.rpcUrl = res?.rpc_url || '';
+      this.contractAddress = res?.contract_address || '';
+    }, (err) => console.error('Failed to load wallet settings', err));
+  }
+
+  fetchTokenAssets() {
+    if (this.tokensSub) {
+      try { this.tokensSub.unsubscribe(); } catch { }
+      this.tokensSub = null;
+    }
+    this.tokensSub = this.auth.getTokenAssets().pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
+      this.tokenAssets = res?.data || [];
+    }, (err) => console.error('Failed to load token assets', err));
   }
 
   isValidBscAddress(address: string): boolean {

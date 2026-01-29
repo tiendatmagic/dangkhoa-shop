@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../services/data.service';
 import { HttpClient } from '@angular/common/http';
+import { AdminTabService } from '../../services/admin-tab.service';
 
 @Component({
   selector: 'app-admin',
@@ -14,7 +15,7 @@ export class AdminComponent {
   isChoose: number = 1;
   menu: string | null = null;
 
-  constructor(private route: ActivatedRoute, private router: Router, private dataService: DataService, private http: HttpClient) {
+  constructor(private route: ActivatedRoute, private router: Router, private dataService: DataService, private http: HttpClient, private adminTab: AdminTabService) {
   }
   ngOnInit() {
     this.menu = this.route.snapshot.paramMap.get('menu');
@@ -33,12 +34,16 @@ export class AdminComponent {
     this.isChoose = menu;
     if (menu == 1) {
       this.router.navigate(['/admin/product']);
+      this.adminTab.select('product');
     } else if (menu == 2) {
       this.router.navigate(['/admin/orders']);
+      this.adminTab.select('orders');
     } else if (menu == 3) {
       this.router.navigate(['/admin/overview']);
+      this.adminTab.select('overview');
     } else if (menu == 4) {
       this.router.navigate(['/admin/customize']);
+      this.adminTab.select('customize');
     }
   }
 

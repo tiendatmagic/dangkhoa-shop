@@ -12,6 +12,7 @@
           type="file"
           (change)="onFileChange($event)"
           class="hidden"
+          [disabled]="saving || uploading || isLoading.get('customize')"
         />
         <label
           for="slideUpload"
@@ -46,7 +47,7 @@
         <button
           class="btn-primary sm:w-auto w-full text-center"
           (click)="save()"
-          [disabled]="saving || uploading"
+          [disabled]="saving || uploading || isLoading.get('customize')"
         >
           <span *ngIf="!saving">Save</span>
           <span *ngIf="saving">Saving...</span>
@@ -148,7 +149,7 @@
       <button
         class="btn-primary w-full text-center"
         (click)="save()"
-        [disabled]="saving || uploading"
+        [disabled]="saving || uploading || isLoading.get('customize')"
       >
         <span *ngIf="!saving">Save</span>
         <span *ngIf="saving">Saving...</span>
