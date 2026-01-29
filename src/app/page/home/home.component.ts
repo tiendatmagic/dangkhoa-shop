@@ -3,6 +3,7 @@ import { Web3Service } from '../../services/web3.service';
 import { DataService } from '../../services/data.service';
 import { AuthService } from '../../services/auth.service';
 import { Subscription } from 'rxjs';
+import { ApiCacheService } from '../../services/api-cache.service';
 
 @Component({
   selector: 'app-home',
@@ -15,17 +16,48 @@ export class HomeComponent implements OnInit, OnDestroy {
   bestSellerProducts: any[] = [];
   isLoading: boolean = false;
   isIntervalActive: any;
+  // default empty — admin-provided slides will populate this via API
+  slides: string[] = [];
+  currentSlide: number = 0;
+  sliderInterval: any = null;
+  autoplayDelay: number = 4000;
+  homeCollections: any[] = [];
+  private homeProductsSub: Subscription | null = null;
+  private customizationSub: Subscription | null = null;
 
   constructor(
     private web3Service: Web3Service,
     private dataService: DataService,
     private auth: AuthService
+    , private apiCache: ApiCacheService
   ) { }
 
   ngOnInit() {
     this.isLoading = true;
     this.loadHomeProducts();
     this.callLoadHomeProducts();
+    this.startAutoplay();
+    this.loadCustomization();
+  }
+
+  prevSlide() {
+    if (!this.slides || this.slides.length === 0) return;
+    this.currentSlide = (this.currentSlide - 1 + this.slides.length) % this.slides.length;
+    this.restartAutoplay();
+  }
+
+  nextSlide() {
+    if (!this.slides || this.slides.length === 0) return;
+    this.currentSlide = (this.currentSlide + 1) % this.slides.length;
+    this.restartAutoplay();
+  }
+
+  goToSlide(index: number) {
+    if (!this.slides || this.slides.length === 0) return;
+    if (index >= 0 && index < this.slides.length) {
+      this.currentSlide = index;
+      this.restartAutoplay();
+    }
   }
 
   callLoadHomeProducts() {
@@ -37,26 +69,54 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     clearTimeout(this.isIntervalActive);
+    this.stopAutoplay();
+    if (this.homeProductsSub) {
+      this.homeProductsSub.unsubscribe();
+      this.homeProductsSub = null;
+    }
+    if (this.customizationSub) {
+      this.customizationSub.unsubscribe();
+      this.customizationSub = null;
+    }
   }
 
   loadHomeProducts() {
     clearTimeout(this.isIntervalActive);
-    this.auth.getHomeProducts().subscribe(
-      (res: any) => {
-        this.productList = res.latest_collection || [];
-        this.bestSellerProducts = res.best_sellers || [];
-        this.callLoadHomeProducts();
-        this.isLoading = false;
-      },
-      (error: any) => {
-        console.error('Lỗi load products:', error);
-        this.isLoading = false;
-      }
-    );
+    // Cancel previous pending home products request, keep only the latest
+    if (this.homeProductsSub) {
+      try { this.homeProductsSub.unsubscribe(); } catch {}
+      this.homeProductsSub = null;
+    }
+    this.isLoading = true;
+    // use cache for home products to avoid repeated calls within TTL
+    this.homeProductsSub = this.apiCache.getCached('home_products', this.auth.getHomeProducts()).subscribe((res: any) => {
+      this.productList = res.latest_collection || [];
+      this.bestSellerProducts = res.best_sellers || [];
+      this.callLoadHomeProducts();
+      this.isLoading = false;
+    }, (error: any) => {
+      console.error('Lỗi load products:', error);
+      this.isLoading = false;
+    });
   }
 
-
-
+  loadCustomization() {
+    // Cancel previous pending customization request
+    if (this.customizationSub) {
+      try { this.customizationSub.unsubscribe(); } catch {}
+      this.customizationSub = null;
+    }
+    // cache customization for short TTL to reduce repeated calls
+    this.customizationSub = this.apiCache.getCached('public_customization', this.auth.getPublicCustomization()).subscribe((res: any) => {
+      console.log('public customization response:', res);
+      if (res && Array.isArray(res.slides)) {
+        this.slides = res.slides.map((p: string) => p && p.startsWith('http') ? p : (p ? this.auth.getBaseUrl() + p : p)).filter(Boolean);
+      }
+      this.homeCollections = Array.isArray(res.collections) ? res.collections : (res.collections || []);
+    }, (err: any) => {
+      console.error('Failed to load public customization:', err);
+    });
+  }
 
 
   getImageUrl(imagePath: string | string[]): string {
@@ -80,5 +140,25 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   test() {
     this.web3Service.getBalanceFunc('0x18E215E111aa8877266E9F8CDeDf21f605777777');
+  }
+
+  startAutoplay() {
+    this.stopAutoplay();
+    if (!this.slides || this.slides.length <= 1) return;
+    this.sliderInterval = setInterval(() => {
+      this.nextSlide();
+    }, this.autoplayDelay);
+  }
+
+  stopAutoplay() {
+    if (this.sliderInterval) {
+      clearInterval(this.sliderInterval);
+      this.sliderInterval = null;
+    }
+  }
+
+  restartAutoplay() {
+    this.stopAutoplay();
+    this.startAutoplay();
   }
 }

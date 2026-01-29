@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Web3Service } from '../../services/web3.service';
 import { DataService } from '../../services/data.service';
 import { AuthService } from '../../services/auth.service';  // Import AuthService
+import { ApiCacheService } from '../../services/api-cache.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-collection',
@@ -20,15 +22,34 @@ export class CollectionComponent implements OnInit {
   hasMorePages: boolean = true;
   isLoading: boolean = false;
   isLoadingMore: boolean = false;
+  private productsSub: any = null;
 
   constructor(
     private web3Service: Web3Service,
     private dataService: DataService,
-    private auth: AuthService
+    private auth: AuthService,
+    private route: ActivatedRoute,
+    private apiCache: ApiCacheService
   ) { }
 
+  ngOnDestroy(): void {
+    if (this.productsSub) {
+      try { this.productsSub.unsubscribe(); } catch { }
+      this.productsSub = null;
+    }
+  }
+
   ngOnInit() {
-    this.loadProducts();
+    // read query params (e.g., ?category=men)
+    // and initialize filters accordingly
+    // then load products
+    this.route.queryParams.subscribe((params: any) => {
+      if (params && params.category) {
+        const cats = String(params.category).split(',').map((c: string) => c.trim()).filter(Boolean);
+        this.filterArray = cats;
+      }
+      this.loadProducts(true);
+    });
   }
 
   loadProducts(reset: boolean = false) {
@@ -55,20 +76,23 @@ export class CollectionComponent implements OnInit {
     }
 
 
-    this.auth.getProducts(params).subscribe(
-      (res: any) => {
-        const newProducts = res.data || res;
-        this.productList.push(...newProducts);
-        this.totalPages = res.last_page || Math.ceil((res.total || 0) / 12);
-        this.hasMorePages = this.currentPage < this.totalPages;
-        this.isLoading = false;
-        this.isLoadingMore = false;
-      },
-      (error: any) => {
-        this.isLoading = false;
-        this.isLoadingMore = false;
-      }
-    );
+    // cancel previous pending products request
+    if (this.productsSub) {
+      try { this.productsSub.unsubscribe(); } catch {}
+      this.productsSub = null;
+    }
+    const key = 'products_' + JSON.stringify(params || {});
+    this.productsSub = this.apiCache.getCached(key, this.auth.getProducts(params)).subscribe((res: any) => {
+      const newProducts = res.data || res;
+      this.productList.push(...newProducts);
+      this.totalPages = res.last_page || Math.ceil((res.total || 0) / 12);
+      this.hasMorePages = this.currentPage < this.totalPages;
+      this.isLoading = false;
+      this.isLoadingMore = false;
+    }, (error: any) => {
+      this.isLoading = false;
+      this.isLoadingMore = false;
+    });
   }
 
   loadMoreProducts() {

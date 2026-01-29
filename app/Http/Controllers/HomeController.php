@@ -48,8 +48,13 @@ class HomeController extends BaseController
             $query = Products::query();
 
             if ($request->filled('category')) {
-                $categories = explode(',', $request->category);
-                $query->whereIn('category', $categories);
+                $categories = array_map('trim', explode(',', $request->category));
+                // perform case-insensitive match against category
+                $lowerCats = array_map('strtolower', $categories);
+                $query->whereIn(
+                    \DB::raw('LOWER(category)'),
+                    $lowerCats
+                );
             }
             if ($request->filled('min_price')) {
                 $query->where('price', '>=', $request->min_price);
@@ -99,6 +104,43 @@ class HomeController extends BaseController
                 return response()->json(['error' => 'Product not found'], 404);
             }
             return response()->json(['error' => 'Failed to fetch product'], 500);
+        }
+    }
+
+    /**
+     * Get collections / categories list for frontend/admin selection
+     */
+    public function getCollections(Request $request)
+    {
+        try {
+            $rows = \DB::table('products')
+                ->select('category')
+                ->whereNotNull('category')
+                ->where('category', '!=', '')
+                ->distinct()
+                ->get()
+                ->pluck('category')
+                ->toArray();
+
+            $collections = [];
+            foreach ($rows as $cat) {
+                $first = \DB::table('products')->where('category', $cat)->first();
+                $image = null;
+                if ($first && isset($first->image)) {
+                    $img = json_decode($first->image, true);
+                    if (is_array($img) && count($img) > 0) $image = $img[0];
+                }
+                $collections[] = [
+                    'id' => $cat,
+                    'name' => $cat,
+                    'image' => $image,
+                ];
+            }
+
+            return response()->json($collections, 200);
+        } catch (\Exception $e) {
+            \Log::error('Get collections error: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to fetch collections'], 500);
         }
     }
 

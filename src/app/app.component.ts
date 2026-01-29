@@ -3,6 +3,7 @@ import { initFlowbite } from 'flowbite';
 import { TranslateService } from '@ngx-translate/core';
 import { DataService } from './services/data.service';
 import { AuthService } from './services/auth.service';
+import { ApiCacheService } from './services/api-cache.service';
 import { NavigationEnd, Router } from '@angular/router';
 
 @Component({
@@ -15,7 +16,7 @@ export class AppComponent {
   title = 'dangkhoa_shop';
   cartItems: any[] = [];
 
-  constructor(public translate: TranslateService, private router: Router, private dataService: DataService, private auth: AuthService) {
+  constructor(public translate: TranslateService, private router: Router, private dataService: DataService, private auth: AuthService, private apiCache: ApiCacheService) {
     this.auth.onLoad$.subscribe((value) => {
       if (value) {
         var token = localStorage.getItem('dangkhoa-token');
@@ -39,6 +40,8 @@ export class AppComponent {
     });
   }
   ngOnInit(): void {
+    // ensure cache cleared on app bootstrap (handles reloads / dev HMR)
+    try { this.apiCache.invalidateAll(); } catch {}
     var token = localStorage.getItem('dangkhoa-token');
     const accessPaths = ['my', 'account', 'dashboard', 'admin', 'deposit', 'withdraw', 'event', 'wallet', 'profile', 'order', 'checkout', 'order-detail'];
 

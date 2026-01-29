@@ -23,6 +23,7 @@ use Illuminate\Support\Str;
 use SWeb3\SWeb3;
 use SWeb3\SWeb3_Contract;
 use SWeb3\Utils;
+use App\Models\Customization;
 
 class AdminController extends BaseController
 {
@@ -405,6 +406,53 @@ class AdminController extends BaseController
         return response()->json([
             'chart' => $chart,
         ]);
+    }
+
+    // Get admin customization (latest)
+    public function getCustomization()
+    {
+        $cacheKey = 'customization_public';
+        $data = Cache::remember($cacheKey, now()->addMinutes(5), function () {
+            $custom = Customization::orderBy('id', 'desc')->first();
+            if (!$custom) {
+                return ['slides' => [], 'collections' => []];
+            }
+            return ['slides' => $custom->slides ?? [], 'collections' => $custom->collections ?? []];
+        });
+
+        return response()->json($data, 200);
+    }
+
+    // Save customization (create or update latest)
+    public function saveCustomization(Request $request)
+    {
+        $data = $request->only(['slides', 'collections']);
+
+        $validator = Validator::make($data, [
+            'slides' => 'nullable|array',
+            'slides.*' => 'nullable|string',
+            'collections' => 'nullable|array',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
+        }
+
+        try {
+            $custom = Customization::create([
+                'slides' => $data['slides'] ?? [],
+                'collections' => $data['collections'] ?? [],
+            ]);
+
+            // Refresh cache so public endpoint returns latest immediately
+            $cacheKey = 'customization_public';
+            Cache::put($cacheKey, ['slides' => $custom->slides ?? [], 'collections' => $custom->collections ?? []], now()->addMinutes(5));
+
+            return response()->json(['message' => 'Customization saved', 'data' => $custom], 200);
+        } catch (\Exception $e) {
+            \Log::error('Save customization error: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to save customization'], 500);
+        }
     }
 
     public function getOrderDetailAdmin(Request $request)

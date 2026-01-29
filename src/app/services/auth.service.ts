@@ -390,6 +390,32 @@ export class AuthService {
     );
   }
 
+  // Admin customization endpoints
+  getCustomization() {
+    return this.http.get(`${this.urlEnv}api/admin/customization`).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
+  saveCustomization(data: any) {
+    return this.http.post(`${this.urlEnv}api/admin/customization`, data).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
+  getCollections(query: any = {}) {
+    return this.http.get(`${this.urlEnv}api/collections`, { params: query }).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
+  // Public customization (frontend)
+  getPublicCustomization() {
+    return this.http.get(`${this.urlEnv}api/customization`).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
   getBaseUrl(): string {
     return this.urlLink;
   }

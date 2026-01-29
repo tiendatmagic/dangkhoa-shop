@@ -1,22 +1,44 @@
-<ul class="flex items-center gap-4">
+<ul class="flex items-center gap-4 overflow-auto">
   <li>
-    <button [ngClass]="isChoose == 1 ? 'btn-primary' : 'btn-outline-primary'" matRipple matRippleColor="#ffffff80"
-      (click)="isChooseMenu(1)">
+    <button
+      [ngClass]="isChoose == 1 ? 'btn-primary' : 'btn-outline-primary'"
+      matRipple
+      matRippleColor="#ffffff80"
+      (click)="isChooseMenu(1)"
+    >
       Product
     </button>
   </li>
 
   <li>
-    <button [ngClass]="isChoose == 2 ? 'btn-primary' : 'btn-outline-primary'" matRipple matRippleColor="#ffffff80"
-      (click)="isChooseMenu(2)">
+    <button
+      [ngClass]="isChoose == 2 ? 'btn-primary' : 'btn-outline-primary'"
+      matRipple
+      matRippleColor="#ffffff80"
+      (click)="isChooseMenu(2)"
+    >
       Orders
     </button>
   </li>
 
   <li>
-    <button [ngClass]="isChoose == 3 ? 'btn-primary' : 'btn-outline-primary'" matRipple matRippleColor="#ffffff80"
-      (click)="isChooseMenu(3)">
+    <button
+      [ngClass]="isChoose == 3 ? 'btn-primary' : 'btn-outline-primary'"
+      matRipple
+      matRippleColor="#ffffff80"
+      (click)="isChooseMenu(3)"
+    >
       Overview
+    </button>
+  </li>
+  <li>
+    <button
+      [ngClass]="isChoose == 4 ? 'btn-primary' : 'btn-outline-primary'"
+      matRipple
+      matRippleColor="#ffffff80"
+      (click)="isChooseMenu(4)"
+    >
+      Customize
     </button>
   </li>
 </ul>
@@ -30,5 +52,8 @@
   </ng-container>
   <ng-container *ngIf="isChoose == 3">
     <app-admin-overview></app-admin-overview>
+  </ng-container>
+  <ng-container *ngIf="isChoose == 4">
+    <app-admin-customize></app-admin-customize>
   </ng-container>
 </div>

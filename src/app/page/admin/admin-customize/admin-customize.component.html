@@ -1,0 +1,160 @@
+<div class="p-4">
+  <h3 class="mb-3 text-xl font-medium">Homepage Customization</h3>
+
+  <section class="mb-6">
+    <h4 class="mb-2 font-medium">Slider images</h4>
+    <div
+      class="sm:flex-row sm:items-center flex flex-col items-start gap-4 mb-4"
+    >
+      <div class="sm:w-auto flex items-center w-full gap-2">
+        <input
+          id="slideUpload"
+          type="file"
+          (change)="onFileChange($event)"
+          class="hidden"
+          [disabled]="saving || uploading || isLoading.get('customize')"
+        />
+        <label
+          for="slideUpload"
+          class="btn-outline inline-flex items-center gap-2 cursor-pointer"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-4 h-4 text-gray-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3 15a4 4 0 004 4h10a4 4 0 004-4V7a4 4 0 00-4-4H7a4 4 0 00-4 4v8z"
+            />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 11l4-4 4 4"
+            />
+          </svg>
+          <span class="text-sm text-gray-700">Upload slide</span>
+        </label>
+        <div *ngIf="uploading" class="text-sm text-gray-600">Uploading...</div>
+      </div>
+
+      <div class="sm:w-auto flex items-center w-full gap-3">
+        <button
+          class="btn-primary sm:w-auto w-full text-center"
+          (click)="save()"
+          [disabled]="saving || uploading || isLoading.get('customize')"
+        >
+          <span *ngIf="!saving">Save</span>
+          <span *ngIf="saving">Saving...</span>
+        </button>
+        <div *ngIf="lastSavedAt" class="text-sm text-green-600">Saved</div>
+      </div>
+    </div>
+
+    <div
+      class="sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grid grid-cols-1 gap-3"
+    >
+      <div
+        *ngFor="let s of slides; let i = index"
+        class="relative overflow-hidden border rounded-lg"
+      >
+        <img
+          [src]="toFullUrl(s)"
+          alt="slide"
+          class="sm:h-32 object-cover w-full h-24"
+        />
+        <div class="flex gap-1 p-2">
+          <button class="btn-outline" (click)="moveSlideUp(i)">Up</button>
+          <button class="btn-outline" (click)="moveSlideDown(i)">Down</button>
+          <button class="btn-outline text-red-500" (click)="removeSlide(i)">
+            Remove
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h4 class="mb-2 font-medium">Shop By Category (select collections)</h4>
+    <div class="sm:grid-cols-2 md:grid-cols-3 grid grid-cols-1 gap-3">
+      <div
+        *ngFor="let cat of categories"
+        class="flex items-center gap-3 p-2 border rounded-lg"
+      >
+        <input
+          type="checkbox"
+          [checked]="isSelected(cat)"
+          (change)="toggleCollection(cat)"
+        />
+        <div
+          class="flex items-center justify-center w-12 h-12 overflow-hidden bg-gray-100 rounded"
+        >
+          <img
+            *ngIf="cat.image"
+            [src]="toFullUrl(cat.image)"
+            alt="cat"
+            class="object-cover w-full h-full"
+          />
+          <span *ngIf="!cat.image" class="text-xs text-gray-500">No image</span>
+        </div>
+        <div class="flex-1">
+          <div class="font-medium">{{ cat.name }}</div>
+          <div class="flex items-center gap-2 mt-1">
+            <label
+              [for]="'catUpload-' + cat.id"
+              class="btn-outline inline-flex items-center gap-2 text-sm text-gray-600 cursor-pointer"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 15a4 4 0 004 4h10a4 4 0 004-4V7a4 4 0 00-4-4H7a4 4 0 00-4 4v8z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 11l4-4 4 4"
+                />
+              </svg>
+              <span class="text-xs">Upload image</span>
+            </label>
+            <input
+              id="catUpload-{{ cat.id }}"
+              type="file"
+              class="hidden"
+              (change)="onCategoryFileChange($event, cat)"
+            />
+            <span *ngIf="cat.image" class="text-xs text-gray-500"
+              >Image set</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sm:w-auto flex items-center w-full gap-3 mt-3">
+      <button
+        class="btn-primary w-full text-center"
+        (click)="save()"
+        [disabled]="saving || uploading || isLoading.get('customize')"
+      >
+        <span *ngIf="!saving">Save</span>
+        <span *ngIf="saving">Saving...</span>
+      </button>
+      <div *ngIf="lastSavedAt" class="text-sm text-green-600">Saved</div>
+    </div>
+  </section>
+</div>
