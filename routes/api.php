@@ -55,6 +55,8 @@ Route::group([
 
 // Coinbase webhook (no auth)
 Route::post('coinbase/webhook', [AuthController::class, 'coinbaseWebhook']);
+// Sepay webhook (no auth)
+Route::post('sepay/webhook', [AuthController::class, 'sepayWebhook']);
 
 Route::group([
     'middleware' => ['api', 'admin'],
