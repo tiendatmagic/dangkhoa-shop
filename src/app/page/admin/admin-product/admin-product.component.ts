@@ -48,6 +48,20 @@ export class AdminProductComponent implements OnInit, OnDestroy {
       console.error(err);
       this.isLoading = false;
     });
+
+    this.apiCache.cacheInvalidated$.pipe(takeUntil(this.destroy$)).subscribe((key: string | null) => {
+      if (key === 'admin_products_page1' || key === null) {
+        this.isLoading = true;
+        this.auth.getAllProduct({ page: 1 }).pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
+          this.productData = res.data;
+          this.totalProducts = res.total;
+          this.isLoading = false;
+        }, (err: any) => {
+          console.error(err);
+          this.isLoading = false;
+        });
+      }
+    });
   }
 
   viewMore() {

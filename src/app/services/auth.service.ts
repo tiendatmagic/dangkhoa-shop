@@ -5,6 +5,7 @@ import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { DatePipe, Location } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { ApiCacheService } from './api-cache.service';
 @Injectable({
   providedIn: 'root'
 })
@@ -37,7 +38,7 @@ export class AuthService {
   private destroyOnMe$: Subject<void> = new Subject<void>();
   private destroyRefreshing$: Subject<void> = new Subject<void>();
 
-  constructor(private http: HttpClient, private route: ActivatedRoute, private router: Router, private location: Location) {
+  constructor(private http: HttpClient, private route: ActivatedRoute, private router: Router, private location: Location, private apiCache: ApiCacheService) {
   }
   get isAdmin(): number {
     return this.isAdminSubject.value;
@@ -295,6 +296,14 @@ export class AuthService {
     return this.http.get(`${this.urlEnv}api/product/get-all-product`, { params: query }).pipe(
       catchError((error: any) => this.handleError(error))
     );
+  }
+
+  /**
+   * Invalidate related product cache then fetch fresh list from backend.
+   */
+  getAllProductFresh(query: any) {
+    try { this.apiCache.invalidate('admin_products_page1'); } catch { }
+    return this.getAllProduct(query);
   }
 
   uploadImage(file: File): Observable<{ url: string }> {
