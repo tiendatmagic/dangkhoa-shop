@@ -84,7 +84,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     clearTimeout(this.isIntervalActive);
     // Cancel previous pending home products request, keep only the latest
     if (this.homeProductsSub) {
-      try { this.homeProductsSub.unsubscribe(); } catch {}
+      try { this.homeProductsSub.unsubscribe(); } catch { }
       this.homeProductsSub = null;
     }
     this.isLoading = true;
@@ -103,7 +103,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   loadCustomization() {
     // Cancel previous pending customization request
     if (this.customizationSub) {
-      try { this.customizationSub.unsubscribe(); } catch {}
+      try { this.customizationSub.unsubscribe(); } catch { }
       this.customizationSub = null;
     }
     // cache customization for short TTL to reduce repeated calls
