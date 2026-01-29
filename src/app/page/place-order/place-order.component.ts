@@ -634,8 +634,8 @@ export class PlaceOrderComponent {
 
     const dialogRef = this.dialog.open(ConfirmModalComponent, {
       data: {
-        title: 'Xác nhận hủy',
-        message: 'Bạn có chắc muốn hủy lệnh nạp tiền này?'
+        title: 'Confirm cancellation',
+        message: 'Are you sure you want to cancel this transfer order?'
       },
       disableClose: true,
       width: '420px'
