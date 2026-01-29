@@ -48,8 +48,13 @@ class HomeController extends BaseController
             $query = Products::query();
 
             if ($request->filled('category')) {
-                $categories = explode(',', $request->category);
-                $query->whereIn('category', $categories);
+                $categories = array_map('trim', explode(',', $request->category));
+                // perform case-insensitive match against category
+                $lowerCats = array_map('strtolower', $categories);
+                $query->whereIn(
+                    \DB::raw('LOWER(category)'),
+                    $lowerCats
+                );
             }
             if ($request->filled('min_price')) {
                 $query->where('price', '>=', $request->min_price);

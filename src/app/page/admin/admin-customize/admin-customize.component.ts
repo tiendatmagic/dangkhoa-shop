@@ -14,6 +14,14 @@ export class AdminCustomizeComponent implements OnInit {
   slides: string[] = [];
   collections: any[] = [];
   selectedCollections: any[] = [];
+  // Fixed categories for Shop By Category
+  categories: Array<{ id: string; name: string; image?: string }> = [
+    { id: 'men', name: 'Men' },
+    { id: 'women', name: 'Women' },
+    { id: 'crypto', name: 'Crypto' },
+    { id: 'gold_silver', name: 'Gold/Silver' },
+    { id: 'other', name: 'Other' },
+  ];
   uploading = false;
   saving = false;
   lastSavedAt: number | null = null;
@@ -31,6 +39,15 @@ export class AdminCustomizeComponent implements OnInit {
       if (res) {
         this.slides = res.slides || [];
         this.selectedCollections = res.collections || [];
+        // Map saved collections to our categories (if image exists)
+        if (Array.isArray(res.collections)) {
+          res.collections.forEach((c: any) => {
+            const cat = this.categories.find(x => x.id === (c.id || String(c.name).toLowerCase().replace(/[^a-z0-9]+/g, '_')));
+            if (cat && c.image) {
+              cat.image = c.image;
+            }
+          });
+        }
       }
     }, () => { });
   }
@@ -49,6 +66,20 @@ export class AdminCustomizeComponent implements OnInit {
       if (r && r.url) {
         this.slides.push(r.url);
         // After successful upload, persist customization immediately
+        this.save();
+      }
+      this.uploading = false;
+    }, () => { this.uploading = false; });
+  }
+
+  onCategoryFileChange(event: any, category: any) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    this.uploading = true;
+    this.auth.uploadImage(file).subscribe((r: any) => {
+      if (r && r.url) {
+        category.image = r.url;
+        // persist change immediately
         this.save();
       }
       this.uploading = false;
@@ -78,7 +109,7 @@ export class AdminCustomizeComponent implements OnInit {
     if (found) {
       this.selectedCollections = this.selectedCollections.filter((c: any) => c.id !== col.id);
     } else {
-      this.selectedCollections.push(col);
+      this.selectedCollections.push({ id: col.id, name: col.name, image: col.image });
     }
   }
 

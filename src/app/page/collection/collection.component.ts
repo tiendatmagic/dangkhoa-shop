@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Web3Service } from '../../services/web3.service';
 import { DataService } from '../../services/data.service';
 import { AuthService } from '../../services/auth.service';  // Import AuthService
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-collection',
@@ -24,11 +25,21 @@ export class CollectionComponent implements OnInit {
   constructor(
     private web3Service: Web3Service,
     private dataService: DataService,
-    private auth: AuthService
+    private auth: AuthService,
+    private route: ActivatedRoute
   ) { }
 
   ngOnInit() {
-    this.loadProducts();
+    // read query params (e.g., ?category=men)
+    // and initialize filters accordingly
+    // then load products
+    this.route.queryParams.subscribe((params: any) => {
+      if (params && params.category) {
+        const cats = String(params.category).split(',').map((c: string) => c.trim()).filter(Boolean);
+        this.filterArray = cats;
+      }
+      this.loadProducts(true);
+    });
   }
 
   loadProducts(reset: boolean = false) {

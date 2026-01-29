@@ -15,14 +15,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   bestSellerProducts: any[] = [];
   isLoading: boolean = false;
   isIntervalActive: any;
-  slides: string[] = [
-    'https://picsum.photos/id/1018/1200/600',
-    'https://picsum.photos/id/1025/1200/600',
-    'https://picsum.photos/id/1035/1200/600',
-    'https://picsum.photos/id/1043/1200/600',
-    'https://picsum.photos/id/1050/1200/600',
-    'https://picsum.photos/id/1062/1200/600'
-  ];
+  // default empty — admin-provided slides will populate this via API
+  slides: string[] = [];
   currentSlide: number = 0;
   sliderInterval: any = null;
   autoplayDelay: number = 4000;
@@ -43,16 +37,19 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   prevSlide() {
+    if (!this.slides || this.slides.length === 0) return;
     this.currentSlide = (this.currentSlide - 1 + this.slides.length) % this.slides.length;
     this.restartAutoplay();
   }
 
   nextSlide() {
+    if (!this.slides || this.slides.length === 0) return;
     this.currentSlide = (this.currentSlide + 1) % this.slides.length;
     this.restartAutoplay();
   }
 
   goToSlide(index: number) {
+    if (!this.slides || this.slides.length === 0) return;
     if (index >= 0 && index < this.slides.length) {
       this.currentSlide = index;
       this.restartAutoplay();
@@ -131,6 +128,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   startAutoplay() {
     this.stopAutoplay();
+    if (!this.slides || this.slides.length <= 1) return;
     this.sliderInterval = setInterval(() => {
       this.nextSlide();
     }, this.autoplayDelay);
