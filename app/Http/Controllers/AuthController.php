@@ -843,7 +843,7 @@ class AuthController extends BaseController
             return response()->json(['success' => true], 200);
         }
 
-        $order = Orders::where('order_code', $code)->first();
+        $order = Orders::where('order_code', $code)->orWhere('sepay_code', $code)->first();
 
         if (! $order) {
             return response()->json(['success' => true], 200);
@@ -860,9 +860,13 @@ class AuthController extends BaseController
             return $item->quantity * $item->price;
         });
 
-        // If received amount is less than expected, mark as mismatch but do not complete
-        if ($transferAmount < (int) round($total)) {
-            // optional: log mismatch
+        // Compute expected VND using configured exchange rate (same logic as order creation)
+        $rate = (float) env('SEPAY_EXCHANGE_RATE', 23000);
+        $expectedVnd = (int) round((float) $total * $rate);
+
+        // Accept payment if transfer amount is greater than or equal to expected VND
+        if ($transferAmount < $expectedVnd) {
+            // optional: log mismatch for review
             return response()->json(['success' => true], 200);
         }
 
@@ -943,6 +947,10 @@ class AuthController extends BaseController
         $haystack = $this->collectPayloadText($data);
 
         if (! $haystack) return null;
+
+        if (preg_match('/\bDK[0-9]{6,8}\b/i', $haystack, $matches)) {
+            return strtoupper($matches[0]);
+        }
 
         if (preg_match('/NAP[0-9A-Z]+/i', $haystack, $matches)) {
             return strtoupper($matches[0]);
