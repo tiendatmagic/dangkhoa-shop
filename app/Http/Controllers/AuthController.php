@@ -843,53 +843,10 @@ class AuthController extends BaseController
             return response()->json(['success' => true], 200);
         }
 
-        $order = Orders::where('order_code', $code)->first();
-        if (! $order && str_starts_with(strtoupper($code), 'DK')) {
-            $order = Orders::where('sepay_code', strtoupper($code))->first();
-        }
+        $order = Orders::where('order_code', $code)->orWhere('sepay_code', $code)->first();
 
         if (! $order) {
-            $transferAmount = $this->extractTransferAmountFromPayload($data);
-            $haystack = $this->collectPayloadText($data);
-
-            $accountMatch = null;
-            if (preg_match('/\b0[0-9]{6,11}\b/', $haystack, $m)) {
-                $accountMatch = $m[0];
-            }
-
-            $candidates = Orders::where('payment', 'sepay')->where('status', 'pending')->get();
-            $rate = (float) env('SEPAY_EXCHANGE_RATE', 23000);
-            $best = null;
-            $bestScore = 0;
-
-            foreach ($candidates as $cand) {
-                $items = OrderItems::where('order_id', $cand->id)->get();
-                $total = $items->sum(function ($item) {
-                    return $item->quantity * $item->price;
-                });
-                $calcVnd = (int) round((float) $total * $rate);
-
-                $parsed = [];
-                if (! empty($cand->coinbase_hosted_url)) {
-                    $qpos = strpos($cand->coinbase_hosted_url, '?');
-                    if ($qpos !== false) parse_str(substr($cand->coinbase_hosted_url, $qpos + 1), $parsed);
-                }
-
-                $score = 0;
-                if ($calcVnd === $transferAmount) $score += 5;
-                if (! empty($parsed['amount']) && (int)$parsed['amount'] === $transferAmount) $score += 8;
-                if ($accountMatch && ! empty($parsed['acc']) && str_replace(['+', ' '], '', $parsed['acc']) === str_replace(['+', ' '], '', $accountMatch)) $score += 10;
-                if ($score > $bestScore) {
-                    $bestScore = $score;
-                    $best = $cand;
-                }
-            }
-
-            if ($best && $bestScore > 0) {
-                $order = $best;
-            } else {
-                return response()->json(['success' => true], 200);
-            }
+            return response()->json(['success' => true], 200);
         }
 
         if ($order->status === 'completed') {
@@ -986,11 +943,12 @@ class AuthController extends BaseController
 
     private function extractOrderCodeFromPayload(array $data): ?string
     {
+        // Search payload text for a NAP transfer code like NAP{...}
         $haystack = $this->collectPayloadText($data);
 
         if (! $haystack) return null;
 
-        if (preg_match('/DK[0-9]{6,8}/i', $haystack, $matches)) {
+        if (preg_match('/\bDK[0-9]{6,8}\b/i', $haystack, $matches)) {
             return strtoupper($matches[0]);
         }
 
