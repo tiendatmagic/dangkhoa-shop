@@ -42,6 +42,7 @@ Route::group([
     Route::get('get-my-order', [AuthController::class, 'getMyOrder']);
     Route::get('get-order-detail', [AuthController::class, 'getOrderDetail']);
     Route::post('check-coinbase', [AuthController::class, 'checkCoinbaseStatus']);
+    Route::post('cancel', [AuthController::class, 'cancelOrder']);
 });
 
 Route::group([

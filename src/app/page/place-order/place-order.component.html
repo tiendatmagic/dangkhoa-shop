@@ -503,14 +503,14 @@
                   >
                     <div class="flex flex-col gap-4">
                       <div class="flex-1">
-                        <p class="text-slate-700 text-sm">Mã giao dịch:</p>
+                        <p class="text-slate-700 text-sm">Transaction code:</p>
                         <div class="flex items-center gap-2 mt-1">
                           <p class="text-slate-900 text-sm font-semibold">
                             {{ sepayTransferCode }}
                           </p>
                           <button
                             type="button"
-                            aria-label="Sao chép mã giao dịch"
+                            aria-label="Copy transaction code"
                             class="text-slate-500 hover:text-slate-700 rounded"
                             (click)="copyAddress(sepayTransferCode)"
                           >
@@ -528,7 +528,7 @@
                           </button>
                         </div>
                         <p class="text-slate-700 mt-3 text-sm">
-                          Số tiền cần nạp:
+                          Amount to transfer:
                         </p>
                         <div class="flex items-center gap-2 mt-1">
                           <p class="text-slate-900 text-sm font-semibold">
@@ -536,7 +536,7 @@
                           </p>
                           <button
                             type="button"
-                            aria-label="Sao chép số tiền nạp"
+                            aria-label="Copy amount"
                             class="text-slate-500 hover:text-slate-700 rounded"
                             (click)="copyAddress(sepayAmountDisplay)"
                           >
@@ -554,7 +554,7 @@
                           </button>
                         </div>
                         <p class="text-slate-700 mt-3 text-sm">
-                          Ngân hàng thụ hưởng:
+                          Beneficiary bank:
                         </p>
                         <div class="flex items-center gap-2 mt-1">
                           <p class="text-slate-900 text-sm font-semibold">
@@ -562,7 +562,7 @@
                           </p>
                           <button
                             type="button"
-                            aria-label="Sao chép ngân hàng thụ hưởng"
+                            aria-label="Copy beneficiary bank"
                             class="text-slate-500 hover:text-slate-700 rounded"
                             (click)="
                               copyAddress(
@@ -585,11 +585,11 @@
                         </div>
                         <div class="flex items-center gap-2 mt-1">
                           <p class="text-slate-900 text-sm font-semibold">
-                            Số tài khoản: {{ sepayBank?.account }}
+                            Account number: {{ sepayBank?.account }}
                           </p>
                           <button
                             type="button"
-                            aria-label="Sao chép số tài khoản"
+                            aria-label="Copy account number"
                             class="text-slate-500 hover:text-slate-700 rounded"
                             (click)="copyAddress(sepayBank?.account)"
                           >
@@ -607,7 +607,7 @@
                           </button>
                         </div>
                         <p class="text-slate-700 mt-3 text-sm">
-                          Nội dung chuyển khoản:
+                          Transfer memo:
                         </p>
                         <div class="flex items-center gap-2 mt-1">
                           <p class="text-slate-900 text-sm font-semibold">
@@ -615,7 +615,7 @@
                           </p>
                           <button
                             type="button"
-                            aria-label="Sao chép nội dung chuyển khoản"
+                            aria-label="Copy transfer memo"
                             class="text-slate-500 hover:text-slate-700 rounded"
                             (click)="copyAddress(sepayTransferCode)"
                           >
@@ -632,7 +632,7 @@
                             </svg>
                           </button>
                         </div>
-                        <p class="text-slate-700 mt-3 text-sm">Trạng thái:</p>
+                        <p class="text-slate-700 mt-3 text-sm">Status:</p>
                         <p class="text-slate-900 mt-1 text-sm font-semibold">
                           PENDING
                         </p>
@@ -640,29 +640,32 @@
                           <button
                             type="button"
                             class="bg-slate-100 text-slate-900 px-4 py-2 text-sm font-medium rounded-md"
+                            (click)="checkSepayPayment()"
+                            [disabled]="sepayCheckInFlight"
                           >
-                            Kiểm tra thanh toán
+                            {{ sepayCheckInFlight ? 'Checking...' : 'Check payment' }}
                           </button>
                           <button
                             type="button"
                             class="bg-red-50 px-4 py-2 text-sm font-medium text-red-700 rounded-md"
+                            (click)="cancelSepayOrder()"
                           >
-                            Hủy lệnh nạp tiền
+                            Cancel transfer order
                           </button>
                         </div>
                       </div>
 
                       <div class="flex flex-col items-center">
                         <img
-                          alt="Mã QR nạp tiền"
+                          alt="Payment QR code"
                           class="border-slate-200 w-56 h-56 border rounded-md"
                           [src]="sepayQrUrl"
                         />
                         <p class="text-slate-600 mt-2 text-xs text-center">
-                          Quét mã để chuyển khoản đúng số tiền và nội dung.
+                          Scan the QR to transfer the correct amount and memo.
                         </p>
                         <p class="text-slate-700 mt-3 text-sm">
-                          Thời gian còn lại:
+                          Time remaining:
                         </p>
                         <p class="text-slate-900 mt-1 text-sm font-semibold">
                           {{ sepayRemaining }}
@@ -688,6 +691,7 @@
                   !phone ||
                   (requiresBscWalletNote && !isValidBscAddress(note)) ||
                   coinbaseActive ||
+                  sepayActive ||
                   isProccessing
                 "
               >
