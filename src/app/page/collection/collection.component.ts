@@ -78,7 +78,7 @@ export class CollectionComponent implements OnInit {
 
     // cancel previous pending products request
     if (this.productsSub) {
-      try { this.productsSub.unsubscribe(); } catch {}
+      try { this.productsSub.unsubscribe(); } catch { }
       this.productsSub = null;
     }
     const key = 'products_' + JSON.stringify(params || {});
