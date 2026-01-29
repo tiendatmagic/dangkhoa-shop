@@ -6,7 +6,7 @@ import { DataService } from '../../../services/data.service';
 import { ApiCacheService } from '../../../services/api-cache.service';
 import { AdminTabService } from '../../../services/admin-tab.service';
 import { forkJoin, of, Subject } from 'rxjs';
-import { catchError, debounceTime, distinctUntilChanged, switchMap, takeUntil } from 'rxjs/operators';
+import { catchError, debounceTime, distinctUntilChanged, switchMap, takeUntil, finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-admin-customize',
@@ -90,28 +90,28 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
     this.uploading = true;
-    const sub = this.auth.uploadImage(file).pipe(takeUntil(this.destroy$)).subscribe((r: any) => {
+    this.auth.uploadImage(file).pipe(takeUntil(this.destroy$), finalize(() => { this.uploading = false; })).subscribe((r: any) => {
       if (r && r.url) {
         this.slides.push(r.url);
         this.save();
       }
-      this.uploading = false;
-      sub.unsubscribe();
-    }, () => { this.uploading = false; sub.unsubscribe(); });
+    }, (err) => {
+      console.error('Slide upload error', err);
+    });
   }
 
   onCategoryFileChange(event: any, category: any) {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
     this.uploading = true;
-    const sub = this.auth.uploadImage(file).pipe(takeUntil(this.destroy$)).subscribe((r: any) => {
+    this.auth.uploadImage(file).pipe(takeUntil(this.destroy$), finalize(() => { this.uploading = false; })).subscribe((r: any) => {
       if (r && r.url) {
         category.image = r.url;
         this.save();
       }
-      this.uploading = false;
-      sub.unsubscribe();
-    }, () => { this.uploading = false; sub.unsubscribe(); });
+    }, (err) => {
+      console.error('Category upload error', err);
+    });
   }
 
   removeSlide(index: number) {
@@ -156,9 +156,24 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
   save() {
     if (this.saving) return;
     this.saving = true;
+    // include selected collections and any category images (Shop By Category)
+    const collectionsPayload: any[] = this.selectedCollections.map(c => ({ id: c.id, name: c.name, image: c.image }));
+    // merge category images (use category id like 'men','women' etc.)
+    this.categories.forEach(cat => {
+      if (cat.image) {
+        // if exists in selected collections, update image; otherwise push as standalone entry
+        const found = collectionsPayload.find(x => x.id === cat.id);
+        if (found) {
+          found.image = cat.image;
+        } else {
+          collectionsPayload.push({ id: cat.id, name: cat.name, image: cat.image });
+        }
+      }
+    });
+
     const payload = {
       slides: this.slides,
-      collections: this.selectedCollections.map(c => ({ id: c.id, name: c.name, image: c.image }))
+      collections: collectionsPayload
     };
     this.auth.saveCustomization(payload).subscribe(() => {
       this.saving = false;
@@ -169,10 +184,12 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
       // update cache so public endpoint is fresh
       this.apiCache.put('customization', { slides: payload.slides, collections: payload.collections });
       // ensure home uses the newest public customization key
-      try { this.apiCache.invalidate('public_customization'); } catch {}
+      try { this.apiCache.invalidate('public_customization'); } catch { }
     }, (err) => {
       this.saving = false;
-      this.data.showNotify('Error', 'Failed to save customization', 'error');
+      console.error('Save customization error', err);
+      const msg = err?.error?.error || err?.error?.message || JSON.stringify(err?.error) || 'Failed to save customization';
+      this.data.showNotify('Error', msg, 'error');
     });
   }
 
