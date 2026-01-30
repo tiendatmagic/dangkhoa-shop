@@ -31,7 +31,7 @@ class AdminController extends BaseController
 
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login', 'refresh']]);
+        $this->middleware('auth:api', ['except' => ['login', 'refresh', 'getCustomization']]);
     }
 
     public function getAllOrder(Request $request)
