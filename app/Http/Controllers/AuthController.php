@@ -645,7 +645,7 @@ class AuthController extends BaseController
                     $length++;
                 }
 
-                // Fallback: create less structured but unique code with DK prefix
+                // Fallback: create less structured but unique code with SEVQR prefix
                 do {
                     $code = 'SEVQR' . strtoupper(Str::random(6));
                 } while (Orders::where('sepay_code', $code)->exists());
