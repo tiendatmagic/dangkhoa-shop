@@ -635,7 +635,7 @@ class AuthController extends BaseController
                     }
 
                     $digits = (string) $num;
-                    $code = 'DK' . $digits;
+                    $code = 'SEVQR' . $digits;
                     // check uniqueness in orders table
                     $exists = Orders::where('sepay_code', $code)->exists();
                     if (! $exists) {
@@ -647,7 +647,7 @@ class AuthController extends BaseController
 
                 // Fallback: create less structured but unique code with DK prefix
                 do {
-                    $code = 'DK' . strtoupper(Str::random(6));
+                    $code = 'SEVQR' . strtoupper(Str::random(6));
                 } while (Orders::where('sepay_code', $code)->exists());
 
                 return $code;
@@ -948,7 +948,12 @@ class AuthController extends BaseController
 
         if (! $haystack) return null;
 
-        if (preg_match('/\bDK[0-9]{6,8}\b/i', $haystack, $matches)) {
+        // Match new SEVQR prefix (numeric codes and fallback alphanumeric)
+        if (preg_match('/\bSEVQR[0-9]{6,8}\b/i', $haystack, $matches)) {
+            return strtoupper($matches[0]);
+        }
+
+        if (preg_match('/\bSEVQR[0-9A-Z]+\b/i', $haystack, $matches)) {
             return strtoupper($matches[0]);
         }
 

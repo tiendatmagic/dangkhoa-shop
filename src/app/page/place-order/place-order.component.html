@@ -632,6 +632,10 @@
                             </svg>
                           </button>
                         </div>
+                        <p class="text-slate-500 mt-1 text-xs">
+                          Please enter the transfer memo in UPPERCASE only (do
+                          not use lowercase)
+                        </p>
                         <p class="text-slate-700 mt-3 text-sm">Status:</p>
                         <p class="text-slate-900 mt-1 text-sm font-semibold">
                           PENDING
@@ -643,7 +647,11 @@
                             (click)="checkSepayPayment()"
                             [disabled]="sepayCheckInFlight"
                           >
-                            {{ sepayCheckInFlight ? 'Checking...' : 'Check payment' }}
+                            {{
+                              sepayCheckInFlight
+                                ? "Checking..."
+                                : "Check payment"
+                            }}
                           </button>
                           <button
                             type="button"
