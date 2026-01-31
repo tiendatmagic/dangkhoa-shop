@@ -1,6 +1,7 @@
 <div
-  class="rounded-lg w-full overflow-auto border-[#ececec] dark:border-[#46525f] border-[1px] glass-effect not-bg-glass shadow-md relative max-w-screen-4xl p-3">
-  <div class="pt-3 lg:px-3">
+  class="rounded-lg w-full overflow-auto border-[#ececec] dark:border-[#46525f] border-[1px] glass-effect not-bg-glass shadow-md relative max-w-screen-4xl p-3"
+>
+  <div class="lg:px-3 pt-3">
     <div class="mb-3 text-2xl">
       <div class="flex justify-between">
         <div class="inline-flex items-center gap-2 mb-3">
@@ -10,72 +11,26 @@
       </div>
     </div>
 
-    <ng-container>
+    <div class="mb-4">
+      <nav
+        class="flex items-center gap-2 bg-white/60 dark:bg-[#07121a] p-1 border border-[#ececec] dark:border-[#22303a] shadow-sm"
+      >
+        <a
+          routerLink="information"
+          routerLinkActive="text-indigo-600 font-semibold border-b-2 border-indigo-600"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="hover:text-gray-800 px-4 py-2 text-sm text-gray-600 transition-colors"
+          >Information</a
+        >
+        <a
+          routerLink="password"
+          routerLinkActive="text-indigo-600 font-semibold border-b-2 border-indigo-600"
+          class="hover:text-gray-800 px-4 py-2 text-sm text-gray-600 transition-colors"
+          >Password</a
+        >
+      </nav>
+    </div>
 
-      <div
-        class="overflow-auto border-[1px] border-[#ececec] dark:border-[#46525f] glass-effect not-bg-glass shadow-md rounded-xl px-4 py-4">
-        <form [formGroup]="profileForm">
-          <div class="flex flex-col gap-2 sm:gap-5 sm:flex-row">
-            <div class="flex flex-col items-start w-full mb-3 gap-y-1 sm:w-1/2">
-              <label class="block mb-2 text-sm font-medium text-gray-900">
-                Full name
-              </label>
-              <div class="relative w-full">
-                <input autocomplete="off" type="text"
-                  class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
-                  placeholder="Enter full name" name="fullName" minlength="4" maxlength="30" [formControl]="fullName"
-                  required>
-              </div>
-            </div>
-
-            <div class="flex flex-col items-start w-full mb-3 gap-y-1 sm:w-1/2">
-              <div class="flex">
-                <label class="block mb-2 text-sm font-medium text-gray-900">
-                  Email
-                </label>
-              </div>
-              <div class="relative w-full">
-                <input autocomplete="off" type="email"
-                  class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
-                  placeholder="Enter email" value="" [formControl]="email" name="email" maxlength="30" required>
-              </div>
-            </div>
-          </div>
-
-          <div class="flex flex-col gap-2 mt-2 sm:gap-5 sm:mt-0 sm:flex-row">
-            <div class="flex flex-col items-start w-full mb-3 gap-y-1 sm:w-1/2">
-              <label class="block mb-2 text-sm font-medium text-gray-900">
-                Address
-              </label>
-              <div class="relative w-full">
-                <input autocomplete="off" type="text"
-                  class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
-                  placeholder="Enter address" name="address" maxlength="12" [formControl]="address" required>
-              </div>
-            </div>
-
-            <div class="flex flex-col items-start w-full mb-3 gap-y-1 sm:w-1/2">
-              <label class="block mb-2 text-sm font-medium text-gray-900">
-                Phone
-              </label>
-              <div class="relative w-full">
-                <input autocomplete="off" type="text"
-                  class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
-                  placeholder="Enter phone" name="phone" minlength="9" maxlength="12" [formControl]="phone" required>
-              </div>
-            </div>
-          </div>
-
-          <div class="w-full mt-3 text-center">
-            <button class="w-full btn-primary" (click)="onSubmitForm()" [disabled]="!profileForm.valid || isDisabled"
-              matRipple matRippleColor="#ffffff66">
-              Update
-            </button>
-          </div>
-
-        </form>
-      </div>
-
-    </ng-container>
+    <router-outlet></router-outlet>
   </div>
 </div>

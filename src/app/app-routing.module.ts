@@ -11,6 +11,8 @@ import { RegisterComponent } from './page/register/register.component';
 import { CollectionComponent } from './page/collection/collection.component';
 import { AboutComponent } from './page/about/about.component';
 import { ProfileComponent } from './page/profile/profile.component';
+import { ProfileInformationComponent } from './page/profile/profile-information.component';
+import { ProfilePasswordComponent } from './page/profile/profile-password.component';
 import { OrderComponent } from './page/order/order.component';
 import { OrderDetailComponent } from './page/order-detail/order-detail.component';
 import { AdminComponent } from './page/admin/admin.component';
@@ -42,6 +44,11 @@ const routes: Routes = [
   {
     path: 'profile',
     component: ProfileComponent,
+    children: [
+      { path: '', redirectTo: 'information', pathMatch: 'full' },
+      { path: 'information', component: ProfileInformationComponent },
+      { path: 'password', component: ProfilePasswordComponent }
+    ]
   },
   {
     path: 'tutorial',

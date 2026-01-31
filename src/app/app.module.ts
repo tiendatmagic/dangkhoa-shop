@@ -30,6 +30,8 @@ import { CollectionComponent } from './page/collection/collection.component';
 import { AboutComponent } from './page/about/about.component';
 import { HttpInterceptorService } from './services/http-logger.service';
 import { ProfileComponent } from './page/profile/profile.component';
+import { ProfileInformationComponent } from './page/profile/profile-information.component';
+import { ProfilePasswordComponent } from './page/profile/profile-password.component';
 import { OrderComponent } from './page/order/order.component';
 import { OrderDetailComponent } from './page/order-detail/order-detail.component';
 import { AdminComponent } from './page/admin/admin.component';
@@ -93,6 +95,8 @@ export function HttpLoaderFactory(http: HttpClient) {
     FormsModule,
     MatTabsModule,
     MatIconModule,
+    ProfileInformationComponent,
+    ProfilePasswordComponent,
     CommonModule,
     AdminCustomizeComponent,
     FormsModule,
