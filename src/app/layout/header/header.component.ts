@@ -6,7 +6,7 @@ import { combineLatest } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { DataService } from '../../services/data.service';
 import { AuthService } from '../../services/auth.service';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 
 @Component({
   selector: 'app-header',
@@ -28,6 +28,7 @@ export class HeaderComponent implements OnInit {
   isLogin: boolean = false;
   cartCount: number = 0;
   isAdmin: number = 0;
+  homeActive: boolean = false;
 
   constructor(public web3Service: Web3Service, private router: Router, private snackBar: MatSnackBar, public translate: TranslateService, private dataService: DataService, private auth: AuthService) {
     this.web3Service.chainId$.subscribe((networkId: any) => {
@@ -43,6 +44,13 @@ export class HeaderComponent implements OnInit {
     });
     this.auth.isAdmin$.subscribe((value) => {
       this.isAdmin = Number(value);
+    });
+
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        const url = (event as NavigationEnd).urlAfterRedirects || (event as NavigationEnd).url;
+        this.homeActive = url === '/' || url.startsWith('/home');
+      }
     });
   }
 

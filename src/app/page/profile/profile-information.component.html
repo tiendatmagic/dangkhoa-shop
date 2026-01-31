@@ -1,0 +1,108 @@
+<div
+  class="rounded-lg w-full overflow-auto border-[#ececec] dark:border-[#46525f] border-[1px] glass-effect not-bg-glass shadow-md relative max-w-screen-4xl p-3"
+>
+  <div class="lg:px-3 pt-3">
+    <div class="mb-3 text-2xl">
+      <div class="flex justify-between">
+        <div class="inline-flex items-center gap-2 mb-3">
+          <p class="font-medium">Profile</p>
+          <p class="w-8 sm:w-12 h-[1px] sm:h-[2px] bg-gray-700"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="">
+      <form [formGroup]="profileForm">
+        <div class="sm:gap-5 sm:flex-row flex flex-col gap-2">
+          <div class="gap-y-1 sm:w-1/2 flex flex-col items-start w-full mb-3">
+            <label class="block mb-2 text-sm font-medium text-gray-900"
+              >Full name</label
+            >
+            <div class="relative w-full">
+              <input
+                autocomplete="off"
+                type="text"
+                placeholder="Enter full name"
+                name="fullName"
+                minlength="4"
+                maxlength="30"
+                [formControl]="fullName"
+                class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="gap-y-1 sm:w-1/2 flex flex-col items-start w-full mb-3">
+            <label class="block mb-2 text-sm font-medium text-gray-900"
+              >Email</label
+            >
+            <div class="relative w-full">
+              <input
+                autocomplete="off"
+                type="email"
+                placeholder="Enter email"
+                [formControl]="email"
+                name="email"
+                maxlength="30"
+                required
+                class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="sm:gap-5 sm:mt-0 sm:flex-row flex flex-col gap-2 mt-2">
+          <div class="gap-y-1 sm:w-1/2 flex flex-col items-start w-full mb-3">
+            <label class="block mb-2 text-sm font-medium text-gray-900"
+              >Address</label
+            >
+            <div class="relative w-full">
+              <input
+                autocomplete="off"
+                type="text"
+                placeholder="Enter address"
+                name="address"
+                maxlength="12"
+                [formControl]="address"
+                required
+                class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+              />
+            </div>
+          </div>
+
+          <div class="gap-y-1 sm:w-1/2 flex flex-col items-start w-full mb-3">
+            <label class="block mb-2 text-sm font-medium text-gray-900"
+              >Phone</label
+            >
+            <div class="relative w-full">
+              <input
+                autocomplete="off"
+                type="text"
+                placeholder="Enter phone"
+                name="phone"
+                minlength="9"
+                maxlength="12"
+                [formControl]="phone"
+                required
+                class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="w-full mt-3 text-center">
+          <button
+            class="btn-primary w-full"
+            (click)="onSubmitForm()"
+            [disabled]="!profileForm.valid || isDisabled"
+            matRipple
+            matRippleColor="#ffffff66"
+          >
+            Update
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
