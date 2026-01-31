@@ -66,10 +66,17 @@ export class PlaceOrderComponent {
   payoutData: any[] = [];
 
   get requiresBscWalletNote(): boolean {
-    if (this.choosePaymentMethod !== 3) return false;
+    // Require BSC wallet note for Coinbase (3) or Sepay (4) when cart contains crypto-like products
+    if (this.choosePaymentMethod !== 3 && this.choosePaymentMethod !== 4) return false;
     return (this.cartProducts || []).some((p: any) => {
+      const productType = (p?.product_type || '').toString().toUpperCase();
+      if (productType && !['NONE', 'GOLD', 'SILVER'].includes(productType)) return true;
+
       const size = (p?.size || '').toString().toUpperCase();
-      return size === 'BNB';
+      // Heuristic: treat short alphanumeric SIZE values (e.g. BNB, USDT, BUSD) as token symbols
+      if (size && /^[A-Z0-9]{2,8}$/.test(size)) return true;
+
+      return false;
     });
   }
 
