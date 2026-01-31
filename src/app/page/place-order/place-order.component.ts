@@ -601,6 +601,12 @@ export class PlaceOrderComponent {
         const status = res.order ? res.order.status : null;
         if (status && status !== 'pending') {
           clearInterval(this.sepayInterval);
+          try {
+            localStorage.setItem('cartItems', JSON.stringify([]));
+            this.dataService.cartCount = 0;
+            this.dataService.removeCart();
+            localStorage.setItem('order_status_' + orderId, status);
+          } catch (e) { }
           this.router.navigate(['/checkout', orderId]);
         }
       }, (err) => {
@@ -651,22 +657,22 @@ export class PlaceOrderComponent {
     dialogRef.afterClosed().subscribe((confirmed: any) => {
       if (!confirmed) return;
       this.auth.cancelOrder({ id: this.sepayOrderId }).subscribe((res: any) => {
-      if (res && res.success) {
-        this.snackBar.open('Order cancelled.', 'OK', { duration: 2000 });
-        // clear UI
-        this.sepayHostedUrl = '';
-        this.sepayQrUrl = '';
-        this.sepayExpiresAt = null;
-        this.sepayRemaining = '';
-        this.sepayActive = false;
-        this.sepayOrderId = null;
-        this.isProccessing = false;
-        if (this.sepayInterval) { clearInterval(this.sepayInterval); this.sepayInterval = null; }
-      } else {
+        if (res && res.success) {
+          this.snackBar.open('Order cancelled.', 'OK', { duration: 2000 });
+          // clear UI
+          this.sepayHostedUrl = '';
+          this.sepayQrUrl = '';
+          this.sepayExpiresAt = null;
+          this.sepayRemaining = '';
+          this.sepayActive = false;
+          this.sepayOrderId = null;
+          this.isProccessing = false;
+          if (this.sepayInterval) { clearInterval(this.sepayInterval); this.sepayInterval = null; }
+        } else {
+          this.snackBar.open('Cancel failed.', 'OK', { duration: 2000 });
+        }
+      }, (err) => {
         this.snackBar.open('Cancel failed.', 'OK', { duration: 2000 });
-      }
-    }, (err) => {
-      this.snackBar.open('Cancel failed.', 'OK', { duration: 2000 });
       });
     });
   }
