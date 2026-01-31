@@ -86,6 +86,33 @@ class AdminController extends BaseController
         $order->status = $request->input('status');
         $order->save();
 
+        // If order marked completed and payment requires crypto payout, trigger payout handler
+        if ($order->status === 'completed') {
+            try {
+                $paymentType = $order->payment ?? null;
+                if (in_array($paymentType, ['coinbase', 'sepay'], true)) {
+                    $bnbPayoutService = app(\App\Services\BnbPayoutService::class);
+                    $toAddress = trim((string) ($order->note ?? ''));
+                    if (! $bnbPayoutService->isValidBscAddress($toAddress)) {
+                        return response()->json([
+                            'error' => 'invalid_wallet_address',
+                            'message' => 'Order note must contain a valid BSC wallet address for crypto payouts.',
+                        ], 422);
+                    }
+
+                    // Trigger payout via AuthController handler
+                    try {
+                        $auth = app(\App\Http\Controllers\AuthController::class);
+                        $auth->handleEvmPayoutForOrder((string) $order->id);
+                    } catch (\Throwable $e) {
+                        Log::error('Payout trigger failed for order ' . $order->id . ': ' . $e->getMessage());
+                    }
+                }
+            } catch (\Throwable $e) {
+                Log::error('Post-update payout check failed for order ' . $order->id . ': ' . $e->getMessage());
+            }
+        }
+
         return response()->json(['message' => 'Order status updated successfully', 'order' => $order]);
     }
 

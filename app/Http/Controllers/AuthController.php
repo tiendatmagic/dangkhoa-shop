@@ -570,6 +570,45 @@ class AuthController extends BaseController
         } elseif ($payment === 'sepay') {
             $cart = $request->data['cart'] ?? [];
 
+            // If the cart contains any crypto-like product_type OR a token symbol stored in size, require a wallet address in Note (same as coinbase)
+            $productIds = [];
+            $cartSizes = [];
+            foreach ($cart as $item) {
+                if (isset($item['id'])) {
+                    $productIds[] = $item['id'];
+                }
+                if (isset($item['size'])) {
+                    $cartSizes[] = strtoupper(trim((string) $item['size']));
+                }
+            }
+
+            $requiresWalletAddress = false;
+            if (! empty($productIds)) {
+                $requiresWalletAddress = Products::query()
+                    ->whereIn('id', $productIds)
+                    ->whereNotNull('product_type')
+                    ->whereNotIn('product_type', ['none', 'gold', 'silver'])
+                    ->exists();
+            }
+
+            if (! $requiresWalletAddress && ! empty($cartSizes)) {
+                $requiresWalletAddress = TokenAsset::query()
+                    ->where('enabled', true)
+                    ->whereIn('symbol', array_values(array_unique($cartSizes)))
+                    ->exists();
+            }
+
+            if ($requiresWalletAddress) {
+                $note = $request->data['note'] ?? null;
+                $bnbPayoutService = app(BnbPayoutService::class);
+                if (! $bnbPayoutService->isValidBscAddress($note)) {
+                    return response()->json([
+                        'error' => 'invalid_wallet_address',
+                        'message' => 'Please enter a valid wallet address (0x...) in Note.',
+                    ], 422);
+                }
+            }
+
             $orderId = UUID::uuid4();
             $order_code = $generateOrderCode();
 
@@ -1028,7 +1067,7 @@ class AuthController extends BaseController
         return trim(implode(' ', $parts));
     }
 
-    private function handleEvmPayoutForOrder(string $orderId): void
+    public function handleEvmPayoutForOrder(string $orderId): void
     {
         try {
             $order = Orders::query()->where('id', $orderId)->first();
@@ -1036,8 +1075,8 @@ class AuthController extends BaseController
                 return;
             }
 
-            // Only run for Coinbase-paid orders
-            if (($order->payment ?? null) !== 'coinbase') {
+            // Only run for Coinbase-paid orders or Sepay (QR bank -> trigger payout)
+            if (! in_array(($order->payment ?? null), ['coinbase', 'sepay'], true)) {
                 return;
             }
 
