@@ -83,11 +83,10 @@ class AdminController extends BaseController
         }
 
         $order = Orders::find($request->input('id'));
-        $order->status = $request->input('status');
-        $order->save();
+        $newStatus = $request->input('status');
 
-        // If order marked completed and payment requires crypto payout, trigger payout handler
-        if ($order->status === 'completed') {
+        // If attempting to mark completed and payment requires crypto payout, validate wallet BEFORE saving
+        if ($newStatus === 'completed') {
             try {
                 $paymentType = $order->payment ?? null;
                 if (in_array($paymentType, ['coinbase', 'sepay'], true)) {
@@ -99,8 +98,22 @@ class AdminController extends BaseController
                             'message' => 'Order note must contain a valid BSC wallet address for crypto payouts.',
                         ], 422);
                     }
+                }
+            } catch (\Throwable $e) {
+                Log::error('Pre-update payout check failed for order ' . $order->id . ': ' . $e->getMessage());
+                return response()->json(['error' => 'payout_validation_failed'], 500);
+            }
+        }
 
-                    // Trigger payout via AuthController handler
+        // Save status after validation
+        $order->status = $newStatus;
+        $order->save();
+
+        // If order marked completed and payment requires crypto payout, trigger payout handler AFTER saving
+        if ($order->status === 'completed') {
+            try {
+                $paymentType = $order->payment ?? null;
+                if (in_array($paymentType, ['coinbase', 'sepay'], true)) {
                     try {
                         $auth = app(\App\Http\Controllers\AuthController::class);
                         $auth->handleEvmPayoutForOrder((string) $order->id);
