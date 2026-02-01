@@ -97,6 +97,8 @@ Route::group(
     ],
     function ($router) {
         Route::post('register', [RegisterController::class, 'register']);
+        Route::post('forgot-password', [RegisterController::class, 'forgotPassword']);
+        Route::post('reset-password', [RegisterController::class, 'resetPassword']);
         Route::get('home', [HomeController::class, 'getHomeProducts']);
         Route::get('customization', [AdminController::class, 'getCustomization']);
         Route::get('collections', [HomeController::class, 'getCollections']);

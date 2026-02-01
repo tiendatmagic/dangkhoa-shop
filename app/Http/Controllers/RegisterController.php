@@ -106,7 +106,7 @@ class RegisterController extends BaseController
         if (!$user) {
             return response()->json(['message' => false], 400);
         }
-        $name = $user->username;
+        $name = $user->full_name ?? $user->name ?? $user->email;
         $code = $this->generateRandomString($characters, 6);;
         Cache::put('email-' . $getEmail, [
             'code' => $code
@@ -124,10 +124,14 @@ class RegisterController extends BaseController
         $code = $request->code;
         $password = $request->password;
         // return  $request->code;
-        if (strlen($code) >= 6 && strlen($password) >= 8 && $code == Cache::get('email-' . $request->email)['code']) {
+        $cacheEntry = Cache::get('email-' . $request->email);
+        $cachedCode = is_array($cacheEntry) ? ($cacheEntry['code'] ?? null) : null;
+
+        if (strlen($code) >= 6 && strlen($password) >= 8 && $cachedCode && $code == $cachedCode) {
             User::where('email', $request->email)->update([
                 'password' => Hash::make($password)
             ]);
+            Cache::forget('email-' . $request->email);
             return true;
         } else {
             return response()->json(['message' => false], 400);

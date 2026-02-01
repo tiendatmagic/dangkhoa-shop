@@ -25,6 +25,8 @@ import { CartComponent } from './page/cart/cart.component';
 import { PlaceOrderComponent } from './page/place-order/place-order.component';
 import { LoginComponent } from './page/login/login.component';
 import { RegisterComponent } from './page/register/register.component';
+import { ForgotPasswordComponent } from './page/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './page/reset-password/reset-password.component';
 import { NotifyComponent } from './modal/notify/notify.component';
 import { CollectionComponent } from './page/collection/collection.component';
 import { AboutComponent } from './page/about/about.component';
@@ -72,6 +74,8 @@ export function HttpLoaderFactory(http: HttpClient) {
     PlaceOrderComponent,
     LoginComponent,
     RegisterComponent,
+    ForgotPasswordComponent,
+    ResetPasswordComponent,
     NotifyComponent,
     CollectionComponent,
     AboutComponent,
