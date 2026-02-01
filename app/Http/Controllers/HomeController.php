@@ -60,6 +60,19 @@ class HomeController extends BaseController
                 $query->where('price', '>=', $request->min_price);
             }
 
+            if ($request->filled('q')) {
+                $keyword = trim($request->q);
+                if ($keyword !== '') {
+                    $lowerKeyword = mb_strtolower($keyword, 'UTF-8');
+                    $query->where(function ($sub) use ($lowerKeyword) {
+                        $like = '%' . $lowerKeyword . '%';
+                        $sub->whereRaw('LOWER(name) LIKE ?', [$like])
+                            ->orWhereRaw('LOWER(category) LIKE ?', [$like])
+                            ->orWhereRaw('LOWER(product_type) LIKE ?', [$like]);
+                    });
+                }
+            }
+
             switch ($request->get('sort', 'relevant')) {
                 case 'low-high':
                     $query->orderBy('price', 'asc');

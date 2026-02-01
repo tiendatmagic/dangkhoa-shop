@@ -67,6 +67,92 @@
     </div>
     <div class="lg:gap-3 sm:w-auto flex items-center justify-between gap-2">
       <div class="relative w-auto select-none">
+        <button
+          type="button"
+          class="relative flex items-center h-10 p-2.5 lg:p-2.5 font-medium border border-gray-300 cursor-pointer select-none rounded-lg lg:h-auto"
+          (click)="toggleSearch()"
+          aria-label="Search"
+        >
+          <div class="flex items-center justify-between w-full gap-2 cursor-pointer">
+            <div class="flex items-center gap-3">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-6"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="m21 21-4.35-4.35m0 0A7.5 7.5 0 1 0 5.25 5.25a7.5 7.5 0 0 0 11.4 11.4Z"
+                />
+              </svg>
+            </div>
+          </div>
+        </button>
+
+        <div
+          *ngIf="searchOpen"
+          class="absolute right-0 top-12 z-40 w-72 rounded-lg border border-gray-200 bg-white p-3 shadow-lg"
+        >
+          <form (ngSubmit)="onSearchSubmit()" class="flex items-center gap-2">
+            <input
+              [(ngModel)]="searchTerm"
+              name="searchTerm"
+              type="text"
+              autocomplete="off"
+              placeholder="Search products..."
+              class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-violet-500 focus:outline-none"
+            />
+            <button
+              type="submit"
+              class="flex items-center justify-center rounded-lg bg-violet-600 px-2.5 py-2 text-white hover:bg-violet-700"
+              aria-label="Search"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-4"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="m21 21-4.35-4.35m0 0A7.5 7.5 0 1 0 5.25 5.25a7.5 7.5 0 0 0 11.4 11.4Z"
+                />
+              </svg>
+            </button>
+            <button
+              *ngIf="searchTerm"
+              type="button"
+              class="flex items-center justify-center rounded-lg border border-gray-200 px-2.5 py-2 text-gray-500 hover:bg-gray-50"
+              aria-label="Clear search"
+              (click)="clearSearch()"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-4"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M6 18 18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="relative w-auto select-none">
         <div
           class="relative flex items-center h-10 p-2.5 lg:p-2.5 font-medium border border-gray-300 cursor-pointer select-none rounded-lg lg:h-auto"
           routerLink="/cart"

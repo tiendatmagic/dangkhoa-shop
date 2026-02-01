@@ -1,0 +1,11 @@
+:host {
+  display: block;
+}
+
+.btn-danger {
+  @apply bg-red-600 hover:bg-red-700 shadow-lg shadow-red-200 px-4 py-3 rounded-lg leading-5 text-sm text-white outline-none min-w-20 duration-200 disabled:bg-none disabled:shadow-none disabled:cursor-not-allowed transition-all;
+}
+
+.btn-danger[disabled] {
+  @apply bg-gray-500 bg-opacity-50 min-w-20 transition-colors duration-200;
+}

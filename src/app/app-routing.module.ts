@@ -8,11 +8,14 @@ import { CartComponent } from './page/cart/cart.component';
 import { PlaceOrderComponent } from './page/place-order/place-order.component';
 import { LoginComponent } from './page/login/login.component';
 import { RegisterComponent } from './page/register/register.component';
+import { ForgotPasswordComponent } from './page/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './page/reset-password/reset-password.component';
 import { CollectionComponent } from './page/collection/collection.component';
 import { AboutComponent } from './page/about/about.component';
 import { ProfileComponent } from './page/profile/profile.component';
 import { ProfileInformationComponent } from './page/profile/profile-information.component';
 import { ProfilePasswordComponent } from './page/profile/profile-password.component';
+import { ProfileGoogleAuthComponent } from './page/profile/profile-google-auth.component';
 import { OrderComponent } from './page/order/order.component';
 import { OrderDetailComponent } from './page/order-detail/order-detail.component';
 import { AdminComponent } from './page/admin/admin.component';
@@ -47,7 +50,8 @@ const routes: Routes = [
     children: [
       { path: '', redirectTo: 'information', pathMatch: 'full' },
       { path: 'information', component: ProfileInformationComponent },
-      { path: 'password', component: ProfilePasswordComponent }
+      { path: 'password', component: ProfilePasswordComponent },
+      { path: 'google-auth', component: ProfileGoogleAuthComponent }
     ]
   },
   {
@@ -77,6 +81,14 @@ const routes: Routes = [
   {
     path: 'register',
     component: RegisterComponent,
+  },
+  {
+    path: 'forgot-password',
+    component: ForgotPasswordComponent,
+  },
+  {
+    path: 'reset-password',
+    component: ResetPasswordComponent,
   },
   {
     path: 'checkout',
