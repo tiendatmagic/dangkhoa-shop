@@ -18,6 +18,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   isIntervalActive: any;
   // default empty — admin-provided slides will populate this via API
   slides: string[] = [];
+  banner: string = '';
   currentSlide: number = 0;
   sliderInterval: any = null;
   autoplayDelay: number = 4000;
@@ -43,7 +44,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.cacheInvalidSub = this.apiCache.cacheInvalidated$.subscribe((key: string | null) => {
       if (!key || key === 'public_customization' || key === 'customization') {
         // Clear any existing customization subscription then reload
-        try { if (this.customizationSub) { this.customizationSub.unsubscribe(); this.customizationSub = null; } } catch {}
+        try { if (this.customizationSub) { this.customizationSub.unsubscribe(); this.customizationSub = null; } } catch { }
         this.loadCustomization();
       }
     });
@@ -126,6 +127,14 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.slides = res.slides.map((p: string) => p && p.startsWith('http') ? p : (p ? this.auth.getBaseUrl() + p : p)).filter(Boolean);
       }
       this.homeCollections = Array.isArray(res.collections) ? res.collections : (res.collections || []);
+      // load optional home banner if provided
+      if (res && res.banner) {
+        this.banner = res.banner && res.banner.startsWith('http') ? res.banner : (this.auth.getBaseUrl() + res.banner);
+      } else if (res && res.homeBanner) {
+        this.banner = res.homeBanner && res.homeBanner.startsWith('http') ? res.homeBanner : (this.auth.getBaseUrl() + res.homeBanner);
+      } else {
+        this.banner = '';
+      }
     }, (err: any) => {
       console.error('Failed to load public customization:', err);
     });

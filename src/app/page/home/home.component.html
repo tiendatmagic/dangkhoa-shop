@@ -28,6 +28,10 @@
   </div>
 </section> -->
 
+<section *ngIf="banner">
+  <img [src]="banner" alt="" class="md:h-36 object-fill w-full rounded-lg" />
+</section>
+
 <section *ngIf="slides && slides.length">
   <div class="mx-auto my-6">
     <div
