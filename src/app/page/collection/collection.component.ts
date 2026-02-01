@@ -17,6 +17,7 @@ export class CollectionComponent implements OnInit {
   filterArray: string[] = [];
   selectedPrice: number = 0;
   selectedSort: string = 'relevant';
+  searchKeyword: string = '';
   currentPage: number = 1;
   totalPages: number = 0;
   hasMorePages: boolean = true;
@@ -47,6 +48,14 @@ export class CollectionComponent implements OnInit {
       if (params && params.category) {
         const cats = String(params.category).split(',').map((c: string) => c.trim()).filter(Boolean);
         this.filterArray = cats;
+      } else {
+        this.filterArray = [];
+      }
+
+      if (params && params.q) {
+        this.searchKeyword = String(params.q).trim();
+      } else {
+        this.searchKeyword = '';
       }
       this.loadProducts(true);
     });
@@ -73,6 +82,10 @@ export class CollectionComponent implements OnInit {
 
     if (this.selectedPrice > 0) {
       params.min_price = this.selectedPrice.toString();
+    }
+
+    if (this.searchKeyword) {
+      params.q = this.searchKeyword;
     }
 
 

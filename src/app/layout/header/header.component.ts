@@ -29,6 +29,8 @@ export class HeaderComponent implements OnInit {
   cartCount: number = 0;
   isAdmin: number = 0;
   homeActive: boolean = false;
+  searchOpen: boolean = false;
+  searchTerm: string = '';
 
   constructor(public web3Service: Web3Service, private router: Router, private snackBar: MatSnackBar, public translate: TranslateService, private dataService: DataService, private auth: AuthService) {
     this.web3Service.chainId$.subscribe((networkId: any) => {
@@ -50,6 +52,9 @@ export class HeaderComponent implements OnInit {
       if (event instanceof NavigationEnd) {
         const url = (event as NavigationEnd).urlAfterRedirects || (event as NavigationEnd).url;
         this.homeActive = url === '/' || url.startsWith('/home');
+        const urlTree = this.router.parseUrl(url);
+        const q = urlTree.queryParams['q'];
+        this.searchTerm = typeof q === 'string' ? q : '';
       }
     });
   }
@@ -142,6 +147,31 @@ export class HeaderComponent implements OnInit {
 
   openUserMenu() {
     initFlowbite();
+  }
+
+  toggleSearch() {
+    this.searchOpen = !this.searchOpen;
+  }
+
+  onSearchSubmit() {
+    const term = this.searchTerm.trim();
+    if (!term) {
+      this.searchOpen = false;
+      return;
+    }
+    this.router.navigate(['/collection'], {
+      queryParams: { q: term },
+      queryParamsHandling: 'merge'
+    });
+    this.searchOpen = false;
+  }
+
+  clearSearch() {
+    this.searchTerm = '';
+    this.router.navigate(['/collection'], {
+      queryParams: { q: null },
+      queryParamsHandling: 'merge'
+    });
   }
 
   copyAddress(address: string): void {
