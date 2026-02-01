@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild, Renderer2 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Web3Service } from '../../services/web3.service';
 import { initFlowbite } from 'flowbite';
@@ -14,7 +14,7 @@ import { Router, NavigationEnd } from '@angular/router';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   account: string = '';
   balance: any;
   nativeSymbol: string = '';
@@ -32,7 +32,10 @@ export class HeaderComponent implements OnInit {
   searchOpen: boolean = false;
   searchTerm: string = '';
 
-  constructor(public web3Service: Web3Service, private router: Router, private snackBar: MatSnackBar, public translate: TranslateService, private dataService: DataService, private auth: AuthService) {
+  @ViewChild('searchWrapper') searchWrapper!: ElementRef;
+  private documentClickListener: (() => void) | null = null;
+
+  constructor(public web3Service: Web3Service, private router: Router, private snackBar: MatSnackBar, public translate: TranslateService, private dataService: DataService, private auth: AuthService, private renderer: Renderer2) {
     this.web3Service.chainId$.subscribe((networkId: any) => {
       this.selectedNetwork = networkId;
       this.selectedNetworkImg = this.web3Service.chainConfig[this.selectedNetwork]?.logo || '';
@@ -91,6 +94,22 @@ export class HeaderComponent implements OnInit {
     });
 
     initFlowbite();
+  }
+
+  ngAfterViewInit(): void {
+    this.documentClickListener = this.renderer.listen('document', 'click', (event: Event) => {
+      const target = event.target as Node;
+      if (this.searchOpen && this.searchWrapper && !this.searchWrapper.nativeElement.contains(target)) {
+        this.searchOpen = false;
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.documentClickListener) {
+      this.documentClickListener();
+      this.documentClickListener = null;
+    }
   }
 
   connectWallet() {
