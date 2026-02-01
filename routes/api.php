@@ -26,11 +26,16 @@ Route::group([
     'prefix' => 'auth'
 ], function ($router) {
     Route::post('login', [AuthController::class, 'login']);
+    Route::post('login-2fa', [AuthController::class, 'login2fa']);
     Route::post('me', [AuthController::class, 'me']);
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('password', [AuthController::class, 'changePassword']);
     Route::post('profile', [AuthController::class, 'updateProfile']);
+    Route::post('2fa/status', [AuthController::class, 'twoFactorStatus']);
+    Route::post('2fa/generate', [AuthController::class, 'twoFactorGenerate']);
+    Route::post('2fa/enable', [AuthController::class, 'twoFactorEnable']);
+    Route::post('2fa/disable', [AuthController::class, 'twoFactorDisable']);
 });
 
 Route::group([

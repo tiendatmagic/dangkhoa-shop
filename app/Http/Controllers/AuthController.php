@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Ramsey\Uuid\Uuid;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use PragmaRX\Google2FA\Google2FA;
 
 class AuthController extends BaseController
 {
@@ -35,7 +36,7 @@ class AuthController extends BaseController
 
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login', 'refresh', 'coinbaseWebhook', 'sepayWebhook']]);
+        $this->middleware('auth:api', ['except' => ['login', 'login2fa', 'refresh', 'coinbaseWebhook', 'sepayWebhook']]);
     }
 
     public function systemSetting(Request $request)
@@ -96,7 +97,7 @@ class AuthController extends BaseController
             $user = auth('api')->user();
 
             // Kiểm tra nếu tài khoản có bật 2FA
-            if ($user->two_factor_secret) {
+            if ($user->two_factor_enabled) {
                 return response()->json([
                     'requires_2fa' => true,
                     'message' => '2FA required',
@@ -107,6 +108,160 @@ class AuthController extends BaseController
 
             return $this->respondWithToken($token, $newRefreshToken, null, request());
         }
+    }
+
+    public function login2fa(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' => 'required|string|min:8',
+            'one_time_password' => 'required|string|min:6|max:6',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid input',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $credentials = $request->only('email', 'password');
+        if (! $token = auth('api')->attempt($credentials)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        $user = auth('api')->user();
+
+        if ($user->two_factor_enabled) {
+            $google2fa = new Google2FA();
+            $valid = $google2fa->verifyKey((string) $user->two_factor_secret, (string) $request->one_time_password);
+            if (! $valid) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid 2FA code',
+                ], 401);
+            }
+        }
+
+        $newRefreshToken = $this->createRefreshToken();
+
+        return $this->respondWithToken($token, $newRefreshToken, null, request());
+    }
+
+    public function twoFactorStatus(Request $request)
+    {
+        $user = $request->user();
+
+        return response()->json([
+            'enabled' => (bool) $user->two_factor_enabled,
+            'has_secret' => ! empty($user->two_factor_secret),
+        ]);
+    }
+
+    public function twoFactorGenerate(Request $request)
+    {
+        $user = $request->user();
+        $google2fa = new Google2FA();
+        $secret = $google2fa->generateSecretKey(32);
+
+        $user->forceFill([
+            'two_factor_secret' => $secret,
+            'two_factor_enabled' => false,
+        ])->save();
+
+        $appName = config('app.name');
+        $otpauthUri = $google2fa->getQRCodeUrl($appName, (string) $user->email, $secret);
+
+        return response()->json([
+            'secret' => $secret,
+            'qr_code_uri' => $otpauthUri,
+            'issuer' => $appName,
+            'account' => $user->email,
+        ]);
+    }
+
+    public function twoFactorEnable(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'one_time_password' => 'required|string|min:6|max:6',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid input',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = $request->user();
+        if (! $user->two_factor_secret) {
+            return response()->json([
+                'status' => 'error',
+                'message' => '2FA not initialized',
+            ], 400);
+        }
+
+        $google2fa = new Google2FA();
+        $valid = $google2fa->verifyKey((string) $user->two_factor_secret, (string) $request->one_time_password);
+
+        if (! $valid) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid 2FA code',
+            ], 401);
+        }
+
+        $user->forceFill([
+            'two_factor_enabled' => true,
+        ])->save();
+
+        return response()->json(['message' => '2FA enabled']);
+    }
+
+    public function twoFactorDisable(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'one_time_password' => 'required|string|min:6|max:6',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid input',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = $request->user();
+
+        if (! $user->two_factor_secret) {
+            return response()->json([
+                'status' => 'error',
+                'message' => '2FA not initialized',
+            ], 400);
+        }
+
+        $google2fa = new Google2FA();
+        $valid = $google2fa->verifyKey((string) $user->two_factor_secret, (string) $request->one_time_password);
+
+        if (! $valid) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid 2FA code',
+            ], 401);
+        }
+
+        $user->forceFill([
+            'two_factor_secret' => null,
+            'two_factor_enabled' => false,
+        ])->save();
+
+        return response()->json(['message' => '2FA disabled']);
     }
 
     public function createRefreshToken()

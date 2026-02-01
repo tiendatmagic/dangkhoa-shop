@@ -97,6 +97,39 @@ export class AuthService {
       catchError((error: any) => this.handleError(error))
     );
   }
+
+  onLogin2fa(data: any) {
+    data.version = this.appVersion;
+    return this.http.post(`${this.urlEnv}api/auth/login-2fa`, data, {
+
+    }).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
+  getTwoFactorStatus() {
+    return this.http.post(`${this.urlEnv}api/auth/2fa/status`, {}).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
+  generateTwoFactor() {
+    return this.http.post(`${this.urlEnv}api/auth/2fa/generate`, {}).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
+  enableTwoFactor(data: any) {
+    return this.http.post(`${this.urlEnv}api/auth/2fa/enable`, data).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
+  disableTwoFactor(data: any) {
+    return this.http.post(`${this.urlEnv}api/auth/2fa/disable`, data).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
   onRegister(data: any) {
     data.version = this.appVersion;
     return this.http.post(`${this.urlEnv}api/register`, data, {

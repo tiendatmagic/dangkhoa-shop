@@ -21,6 +21,8 @@ class User extends Authenticatable implements JWTSubject
     protected $fillable = [
         'email',
         'password',
+        'two_factor_secret',
+        'two_factor_enabled',
         'created_at',
         'updated_at',
     ];
@@ -33,11 +35,13 @@ class User extends Authenticatable implements JWTSubject
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
     ];
     protected $casts = [
         'id' => 'string',
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'two_factor_enabled' => 'boolean',
     ];
 
     public function getJWTIdentifier()

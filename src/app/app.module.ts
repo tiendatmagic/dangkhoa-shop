@@ -32,6 +32,7 @@ import { HttpInterceptorService } from './services/http-logger.service';
 import { ProfileComponent } from './page/profile/profile.component';
 import { ProfileInformationComponent } from './page/profile/profile-information.component';
 import { ProfilePasswordComponent } from './page/profile/profile-password.component';
+import { ProfileGoogleAuthComponent } from './page/profile/profile-google-auth.component';
 import { OrderComponent } from './page/order/order.component';
 import { OrderDetailComponent } from './page/order-detail/order-detail.component';
 import { AdminComponent } from './page/admin/admin.component';
@@ -97,6 +98,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     MatIconModule,
     ProfileInformationComponent,
     ProfilePasswordComponent,
+    ProfileGoogleAuthComponent,
     CommonModule,
     AdminCustomizeComponent,
     FormsModule,

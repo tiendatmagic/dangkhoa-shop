@@ -13,6 +13,7 @@ import { AboutComponent } from './page/about/about.component';
 import { ProfileComponent } from './page/profile/profile.component';
 import { ProfileInformationComponent } from './page/profile/profile-information.component';
 import { ProfilePasswordComponent } from './page/profile/profile-password.component';
+import { ProfileGoogleAuthComponent } from './page/profile/profile-google-auth.component';
 import { OrderComponent } from './page/order/order.component';
 import { OrderDetailComponent } from './page/order-detail/order-detail.component';
 import { AdminComponent } from './page/admin/admin.component';
@@ -47,7 +48,8 @@ const routes: Routes = [
     children: [
       { path: '', redirectTo: 'information', pathMatch: 'full' },
       { path: 'information', component: ProfileInformationComponent },
-      { path: 'password', component: ProfilePasswordComponent }
+      { path: 'password', component: ProfilePasswordComponent },
+      { path: 'google-auth', component: ProfileGoogleAuthComponent }
     ]
   },
   {

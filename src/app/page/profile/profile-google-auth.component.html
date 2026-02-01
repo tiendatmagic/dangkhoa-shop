@@ -1,0 +1,115 @@
+<div class="profile-google-auth">
+  <div class="mb-4">
+    <h3 class="text-lg font-semibold">Google Authenticator</h3>
+    <p class="text-sm text-gray-600">
+      Add an extra layer of security to your account.
+    </p>
+  </div>
+
+  <div
+    *ngIf="twoFactorEnabled"
+    class="rounded-md border border-emerald-200 bg-emerald-50 p-3 mb-4"
+  >
+    <p class="text-sm text-emerald-700">
+      2FA is currently enabled on your account.
+    </p>
+  </div>
+
+  <div
+    *ngIf="!twoFactorEnabled"
+    class="rounded-md border border-blue-100 bg-blue-50 p-3 mb-4"
+  >
+    <p class="text-sm text-blue-700">
+      2FA is not enabled. Generate a QR code to set it up.
+    </p>
+  </div>
+
+  <div *ngIf="!twoFactorEnabled" class="mb-4">
+    <button
+      class="btn-primary"
+      [disabled]="isLoading"
+      (click)="onGenerate()"
+      matRipple
+      matRippleColor="#ffffff80"
+    >
+      Generate QR Code
+    </button>
+  </div>
+
+  <div *ngIf="qrCodeUri" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <div
+      class="p-3 border rounded-md bg-white flex justify-center items-center"
+    >
+      <div id="qrcode"></div>
+    </div>
+    <div class="p-3 border rounded-md bg-white">
+      <p class="text-sm font-medium mb-2">Manual setup key</p>
+      <div class="text-xs break-all bg-gray-100 p-2 rounded">{{ secret }}</div>
+      <p class="text-xs text-gray-500 mt-2">
+        Enter this key manually if you cannot scan the QR code.
+      </p>
+    </div>
+  </div>
+
+  <div *ngIf="!twoFactorEnabled" class="mb-6">
+    <form [formGroup]="enableForm">
+      <div class="flex flex-col items-start mb-2 gap-y-1">
+        <label class="leading-6 inline-block text-[15px]"
+          >Authenticator Code</label
+        >
+        <div class="relative w-full">
+          <input
+            autocomplete="one-time-code"
+            type="text"
+            class="w-full p-2.6 mt-1 mb-3 tracking-wider border-[1px] rounded-lg bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-500 dark:placeholder:text-gray-400 border-[#ececec] dark:border-[#46525f] outline-none dark:focus:border-violet-700 focus:border-violet-700"
+            placeholder="123456"
+            name="enableCode"
+            formControlName="code"
+            maxlength="6"
+          />
+        </div>
+      </div>
+
+      <button
+        class="btn-primary"
+        [disabled]="isLoading"
+        (click)="onEnable()"
+        matRipple
+        matRippleColor="#ffffff80"
+      >
+        Enable 2FA
+      </button>
+    </form>
+  </div>
+
+  <div *ngIf="twoFactorEnabled" class="mb-6">
+    <form [formGroup]="disableForm">
+      <div class="flex flex-col items-start mb-2 gap-y-1">
+        <label class="leading-6 inline-block text-[15px]"
+          >Authenticator Code</label
+        >
+        <div class="relative w-full">
+          <input
+            autocomplete="one-time-code"
+            type="text"
+            class="w-full p-2.6 mt-1 mb-3 tracking-wider border-[1px] rounded-lg bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-500 dark:placeholder:text-gray-400 border-[#ececec] dark:border-[#46525f] outline-none dark:focus:border-violet-700 focus:border-violet-700"
+            placeholder="123456"
+            name="disableCode"
+            formControlName="code"
+            maxlength="6"
+          />
+        </div>
+      </div>
+
+      <button
+        class="btn-danger"
+        [disabled]="isLoading"
+        (click)="onDisable()"
+        matRipple
+        matRippleColor="#ffffff80"
+      >
+        Disable 2FA
+      </button>
+    </form>
+  </div>
+</div>
