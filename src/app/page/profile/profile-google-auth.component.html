@@ -8,26 +8,26 @@
 
   <div
     *ngIf="twoFactorEnabled"
-    class="rounded-md border border-emerald-200 bg-emerald-50 p-3 mb-4"
+    class="border-emerald-200 bg-emerald-50 p-3 mb-4 border rounded-md"
   >
-    <p class="text-sm text-emerald-700">
+    <p class="text-emerald-700 text-sm">
       2FA is currently enabled on your account.
     </p>
   </div>
 
   <div
     *ngIf="!twoFactorEnabled"
-    class="rounded-md border border-blue-100 bg-blue-50 p-3 mb-4"
+    class="bg-blue-50 p-3 mb-4 border border-blue-100 rounded-md"
   >
     <p class="text-sm text-blue-700">
       2FA is not enabled. Generate a QR code to set it up.
     </p>
   </div>
 
-  <div *ngIf="!twoFactorEnabled" class="mb-4">
+  <div *ngIf="!twoFactorEnabled && !isLoadingStatus" class="mb-4">
     <button
       class="btn-primary"
-      [disabled]="isLoading"
+      [disabled]="isLoading || isLoadingStatus || hasSecret"
       (click)="onGenerate()"
       matRipple
       matRippleColor="#ffffff80"
@@ -36,16 +36,16 @@
     </button>
   </div>
 
-  <div *ngIf="qrCodeUri" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+  <div *ngIf="qrCodeUri" class="md:grid-cols-2 grid grid-cols-1 gap-4 mb-6">
     <div
-      class="p-3 border rounded-md bg-white flex justify-center items-center"
+      class="flex items-center justify-center p-3 bg-white border rounded-md"
     >
       <div id="qrcode"></div>
     </div>
-    <div class="p-3 border rounded-md bg-white">
-      <p class="text-sm font-medium mb-2">Manual setup key</p>
-      <div class="text-xs break-all bg-gray-100 p-2 rounded">{{ secret }}</div>
-      <p class="text-xs text-gray-500 mt-2">
+    <div class="p-3 bg-white border rounded-md">
+      <p class="mb-2 text-sm font-medium">Manual setup key</p>
+      <div class="p-2 text-xs break-all bg-gray-100 rounded">{{ secret }}</div>
+      <p class="mt-2 text-xs text-gray-500">
         Enter this key manually if you cannot scan the QR code.
       </p>
     </div>
@@ -53,7 +53,7 @@
 
   <div *ngIf="!twoFactorEnabled" class="mb-6">
     <form [formGroup]="enableForm">
-      <div class="flex flex-col items-start mb-2 gap-y-1">
+      <div class="gap-y-1 flex flex-col items-start mb-2">
         <label class="leading-6 inline-block text-[15px]"
           >Authenticator Code</label
         >
@@ -84,7 +84,7 @@
 
   <div *ngIf="twoFactorEnabled" class="mb-6">
     <form [formGroup]="disableForm">
-      <div class="flex flex-col items-start mb-2 gap-y-1">
+      <div class="gap-y-1 flex flex-col items-start mb-2">
         <label class="leading-6 inline-block text-[15px]"
           >Authenticator Code</label
         >

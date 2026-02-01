@@ -21,7 +21,9 @@ export class ProfileGoogleAuthComponent {
   enableCode: FormControl;
   disableCode: FormControl;
   isLoading: boolean = false;
+  isLoadingStatus: boolean = true;
   twoFactorEnabled: boolean = false;
+  hasSecret: boolean = false;
   qrCodeUri: string = '';
   secret: string = '';
 
@@ -49,13 +51,23 @@ export class ProfileGoogleAuthComponent {
   }
 
   loadStatus() {
+    this.isLoadingStatus = true;
     this.auth.getTwoFactorStatus().subscribe((res: any) => {
       this.twoFactorEnabled = !!res.enabled;
+      this.hasSecret = !!res.has_secret;
+      this.isLoadingStatus = false;
+    }, () => {
+      this.isLoadingStatus = false;
     });
   }
 
   onGenerate() {
-    if (this.isLoading) return;
+    if (this.isLoading || this.isLoadingStatus || this.hasSecret) {
+      if (this.hasSecret) {
+        this.snackBar.open('2FA secret already exists. Please disable 2FA first if you want to reset it.', 'OK', { duration: 4000 });
+      }
+      return;
+    }
     this.isLoading = true;
     this.auth.generateTwoFactor().subscribe((res: any) => {
       this.qrCodeUri = res.qr_code_uri;
@@ -76,8 +88,13 @@ export class ProfileGoogleAuthComponent {
       }, 100);
 
       this.snackBar.open('Scan the QR code with Google Authenticator, then enter the code to enable.', 'OK', { duration: 5000 });
-    }, () => {
+    }, (error: any) => {
       this.isLoading = false;
+      if (error.error && error.error.message) {
+        this.snackBar.open(error.error.message, 'OK', { duration: 4000 });
+      } else {
+        this.snackBar.open('Unable to generate 2FA secret.', 'OK', { duration: 3000 });
+      }
     });
   }
 
@@ -88,12 +105,21 @@ export class ProfileGoogleAuthComponent {
       return;
     }
 
+    if (!this.secret) {
+      this.snackBar.open('Please generate QR code first.', 'OK', { duration: 3000 });
+      return;
+    }
+
     if (this.isLoading) return;
     this.isLoading = true;
 
-    this.auth.enableTwoFactor({ one_time_password: this.enableForm.value.code }).subscribe(() => {
+    this.auth.enableTwoFactor({
+      secret: this.secret,
+      one_time_password: this.enableForm.value.code
+    }).subscribe(() => {
       this.isLoading = false;
       this.twoFactorEnabled = true;
+      this.hasSecret = true;
       this.qrCodeUri = '';
       this.secret = '';
       this.enableForm.reset();
@@ -121,6 +147,7 @@ export class ProfileGoogleAuthComponent {
     this.auth.disableTwoFactor({ one_time_password: this.disableForm.value.code }).subscribe(() => {
       this.isLoading = false;
       this.twoFactorEnabled = false;
+      this.hasSecret = false;
       this.disableForm.reset();
       this.snackBar.open('2FA has been disabled.', 'OK', { duration: 3000 });
     }, (error: any) => {

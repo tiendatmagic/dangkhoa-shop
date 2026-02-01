@@ -165,14 +165,19 @@ class AuthController extends BaseController
     public function twoFactorGenerate(Request $request)
     {
         $user = $request->user();
+
+        // Prevent generating new secret if one already exists
+        if (! empty($user->two_factor_secret)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => '2FA secret already exists. Please disable 2FA first if you want to reset it.',
+            ], 400);
+        }
+
         $google2fa = new Google2FA();
         $secret = $google2fa->generateSecretKey(32);
 
-        $user->forceFill([
-            'two_factor_secret' => $secret,
-            'two_factor_enabled' => false,
-        ])->save();
-
+        // Don't save to database yet - only return to client
         $appName = config('app.name');
         $otpauthUri = $google2fa->getQRCodeUrl($appName, (string) $user->email, $secret);
 
@@ -187,6 +192,7 @@ class AuthController extends BaseController
     public function twoFactorEnable(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'secret' => 'required|string',
             'one_time_password' => 'required|string|min:6|max:6',
         ]);
 
@@ -199,15 +205,15 @@ class AuthController extends BaseController
         }
 
         $user = $request->user();
-        if (! $user->two_factor_secret) {
+        if (! empty($user->two_factor_secret)) {
             return response()->json([
                 'status' => 'error',
-                'message' => '2FA not initialized',
+                'message' => '2FA is already enabled',
             ], 400);
         }
 
         $google2fa = new Google2FA();
-        $valid = $google2fa->verifyKey((string) $user->two_factor_secret, (string) $request->one_time_password);
+        $valid = $google2fa->verifyKey((string) $request->secret, (string) $request->one_time_password);
 
         if (! $valid) {
             return response()->json([
@@ -216,7 +222,9 @@ class AuthController extends BaseController
             ], 401);
         }
 
+        // Only save secret to database after successful verification
         $user->forceFill([
+            'two_factor_secret' => $request->secret,
             'two_factor_enabled' => true,
         ])->save();
 
