@@ -19,6 +19,7 @@ export class AdminProductDetailComponent {
   category: FormControl;
   isBestSeller: FormControl;
   size: FormControl;
+  description: FormControl;
   productForm: FormGroup;
   id: any;
   isLoading: boolean = false;
@@ -38,6 +39,7 @@ export class AdminProductDetailComponent {
     this.category = new FormControl('');
     this.isBestSeller = new FormControl('0', [Validators.required]);
     this.size = new FormControl('', [Validators.required, Validators.minLength(1)]);
+    this.description = new FormControl('', [Validators.maxLength(1000)]);
 
     this.productForm = fb.group({
       productName: this.productName,
@@ -47,6 +49,7 @@ export class AdminProductDetailComponent {
       category: this.category,
       isBestSeller: this.isBestSeller,
       size: this.size,
+      description: this.description,
     });
   }
 
@@ -65,7 +68,8 @@ export class AdminProductDetailComponent {
             productType: res.product_type || '',
             category: res.category || '',
             isBestSeller: res.is_best_seller || 0,
-            size: Array.isArray(res.size) ? res.size.join(', ') : res.size || ''
+            size: Array.isArray(res.size) ? res.size.join(', ') : res.size || '',
+            description: res.description || ''
           });
 
           if (Array.isArray(res.image) && res.image.length > 0) {
@@ -146,7 +150,8 @@ export class AdminProductDetailComponent {
       quantity: formData.quantity,
       is_best_seller: parseInt(formData.isBestSeller),
       size: sizeArray,
-      image: finalImageUrl
+      image: finalImageUrl,
+      description: formData.description || ''
     };
 
     this.auth.updateProduct(payload).subscribe(

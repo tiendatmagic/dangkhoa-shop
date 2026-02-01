@@ -274,6 +274,7 @@ class AdminController extends BaseController
             'is_best_seller' => 'required|in:0,1',
             'size' => 'nullable|array',
             'image' => 'nullable|string',
+            'description' => 'nullable|string|max:1000',
         ]);
 
         if ($validator->fails()) {
@@ -287,6 +288,7 @@ class AdminController extends BaseController
         $product->quantity = $request->quantity ?? $product->quantity;
         $product->is_best_seller = $request->is_best_seller;
         $product->size = json_encode($request->size ?? json_decode($product->size, true));
+        $product->description = $request->description ?? $product->description;
 
         $price = $request->price ?? $product->price;
         $productType = $request->product_type ?? $product->product_type;
@@ -356,6 +358,7 @@ class AdminController extends BaseController
             'quantity' => 'nullable|numeric|min:0',
             'size' => 'required|array',
             'image' => 'required|string',
+            'description' => 'nullable|string|max:1000',
         ]);
 
         if ($validator->fails()) {
@@ -389,6 +392,7 @@ class AdminController extends BaseController
         $product->quantity = $quantity;
         $product->size = json_encode($request->size);
         $product->image = json_encode([$request->image]);
+        $product->description = $request->description ?? '';
         $product->save();
 
         $product->image = json_decode($product->image);

@@ -1,5 +1,6 @@
 <div
-  class="rounded-lg w-full overflow-auto border-[#ececec] dark:border-[#46525f] border-[1px] glass-effect not-bg-glass shadow-md relative max-w-screen-4xl p-3">
+  class="rounded-lg w-full overflow-auto border-[#ececec] dark:border-[#46525f] border-[1px] glass-effect not-bg-glass shadow-md relative max-w-screen-4xl p-3"
+>
   <div class="lg:px-3 py-5 pt-3">
     <div class="mb-3 text-2xl">
       <div class="flex justify-between">
@@ -10,7 +11,13 @@
       </div>
     </div>
 
-    <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" hidden>
+    <input
+      type="file"
+      #fileInput
+      (change)="onFileSelected($event)"
+      accept="image/*"
+      hidden
+    />
 
     <ng-container *ngIf="isLoading">
       <div class="min-h-40">
@@ -20,29 +27,58 @@
 
     <ng-container *ngIf="!isLoading">
       <div
-        class="overflow-auto border-[1px] border-[#ececec] dark:border-[#46525f] glass-effect not-bg-glass shadow-md rounded-xl px-4 py-4">
+        class="overflow-auto border-[1px] border-[#ececec] dark:border-[#46525f] glass-effect not-bg-glass shadow-md rounded-xl px-4 py-4"
+      >
         <form [formGroup]="productForm">
-
           <div class="md:gap-5 md:flex-row flex flex-col w-full gap-3">
             <div class="md:w-1/3 w-full">
               <div class="md:gap-5 md:flex-row flex flex-col h-full gap-2">
-                <div class="md:justify-center md:items-center gap-y-1 flex flex-col w-full mb-3">
+                <div
+                  class="md:justify-center md:items-center gap-y-1 flex flex-col w-full mb-3"
+                >
                   <div>
-                    <label for="image" class="block mb-2 text-sm font-medium text-gray-900">Product image <span
-                        class="text-red-500">*</span></label>
-                    <div class="relative w-full cursor-pointer" (click)="onImageClick()">
-                      <div class="aspect-square max-w-48 max-h-48 group relative overflow-hidden rounded-lg">
-                        <img [src]="previewUrl || 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'"
-                          alt="" class="group-hover:scale-110 object-cover w-full h-full transition-transform">
+                    <label
+                      for="image"
+                      class="block mb-2 text-sm font-medium text-gray-900"
+                      >Product image <span class="text-red-500">*</span></label
+                    >
+                    <div
+                      class="relative w-full cursor-pointer"
+                      (click)="onImageClick()"
+                    >
+                      <div
+                        class="aspect-square max-w-48 max-h-48 group relative overflow-hidden rounded-lg"
+                      >
+                        <img
+                          [src]="
+                            previewUrl ||
+                            'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
+                          "
+                          alt=""
+                          class="group-hover:scale-110 object-cover w-full h-full transition-transform"
+                        />
                         <div
-                          class="group-hover:opacity-100 absolute top-0 left-0 flex items-center justify-center w-full h-full transition-opacity duration-300 bg-black bg-opacity-50 opacity-0">
+                          class="group-hover:opacity-100 absolute top-0 left-0 flex items-center justify-center w-full h-full transition-opacity duration-300 bg-black bg-opacity-50 opacity-0"
+                        >
                           <div class="p-2 bg-white rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                              stroke="currentColor" class="w-6 h-6">
-                              <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
-                              <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke-width="1.5"
+                              stroke="currentColor"
+                              class="w-6 h-6"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z"
+                              />
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z"
+                              />
                             </svg>
                           </div>
                         </div>
@@ -55,15 +91,23 @@
 
             <div class="md:w-2/3 w-full">
               <div class="md:gap-5 md:flex-row flex flex-col gap-2">
-                <div class="gap-y-1 md:w-1/2 flex flex-col items-start w-full mb-3">
+                <div
+                  class="gap-y-1 md:w-1/2 flex flex-col items-start w-full mb-3"
+                >
                   <label class="block mb-2 text-sm font-medium text-gray-900">
                     Product name <span class="text-red-500">*</span>
                   </label>
                   <div class="relative w-full">
-                    <input autocomplete="off" type="text"
+                    <input
+                      autocomplete="off"
+                      type="text"
                       class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
-                      placeholder="Enter product name" [formControl]="productName" minlength="1" maxlength="30"
-                      required>
+                      placeholder="Enter product name"
+                      [formControl]="productName"
+                      minlength="1"
+                      maxlength="30"
+                      required
+                    />
                   </div>
                 </div>
 
@@ -73,8 +117,10 @@
                       Product type
                     </label>
                     <div class="relative w-full">
-                      <select [formControl]="productType"
-                        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg">
+                      <select
+                        [formControl]="productType"
+                        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+                      >
                         <option value="" selected>None</option>
                         <option value="paxg">Gold - (1 XAU)</option>
                         <option value="eth">ETH</option>
@@ -105,39 +151,59 @@
                   </div>
                   <div class="md:w-1/2 w-full" *ngIf="productType.value">
                     <label
-                      class="text-ellipsis whitespace-nowrap block mb-2 overflow-hidden text-xs font-medium text-gray-900">
+                      class="text-ellipsis whitespace-nowrap block mb-2 overflow-hidden text-xs font-medium text-gray-900"
+                    >
                       Price calculated by multiplication
                     </label>
                     <div class="relative w-full">
-                      <input autocomplete="off" type="number"
+                      <input
+                        autocomplete="off"
+                        type="number"
                         class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
-                        placeholder="Enter quantity, example: 1" [formControl]="quantity" maxlength="30">
+                        placeholder="Enter quantity, example: 1"
+                        [formControl]="quantity"
+                        maxlength="30"
+                      />
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div class="md:gap-5 md:mt-0 md:flex-row flex flex-col gap-2 mt-2">
-                <div class="gap-y-1 md:w-1/2 flex flex-col items-start w-full mb-3">
+              <div
+                class="md:gap-5 md:mt-0 md:flex-row flex flex-col gap-2 mt-2"
+              >
+                <div
+                  class="gap-y-1 md:w-1/2 flex flex-col items-start w-full mb-3"
+                >
                   <div class="flex">
                     <label class="block mb-2 text-sm font-medium text-gray-900">
                       Price <span class="text-red-500">*</span>
                     </label>
                   </div>
                   <div class="relative w-full">
-                    <input autocomplete="off" type="number"
+                    <input
+                      autocomplete="off"
+                      type="number"
                       class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
-                      placeholder="Enter price" [formControl]="price" maxlength="30" required>
+                      placeholder="Enter price"
+                      [formControl]="price"
+                      maxlength="30"
+                      required
+                    />
                   </div>
                 </div>
 
-                <div class="gap-y-1 md:w-1/2 flex flex-col items-start w-full mb-3">
+                <div
+                  class="gap-y-1 md:w-1/2 flex flex-col items-start w-full mb-3"
+                >
                   <label class="block mb-2 text-sm font-medium text-gray-900">
                     Category
                   </label>
                   <div class="relative w-full">
-                    <select [formControl]="category"
-                      class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg">
+                    <select
+                      [formControl]="category"
+                      class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+                    >
                       <option value="" selected>None</option>
                       <option value="men">Men</option>
                       <option value="women">Women</option>
@@ -149,30 +215,65 @@
                 </div>
               </div>
 
-              <div class="md:gap-5 md:mt-0 md:flex-row flex flex-col gap-2 mt-2">
-                <div class="gap-y-1 md:w-1/2 flex flex-col items-start w-full mb-3">
+              <div
+                class="md:gap-5 md:mt-0 md:flex-row flex flex-col gap-2 mt-2"
+              >
+                <div
+                  class="gap-y-1 md:w-1/2 flex flex-col items-start w-full mb-3"
+                >
                   <label class="block mb-2 text-sm font-medium text-gray-900">
                     Is Best Seller <span class="text-red-500">*</span>
                   </label>
                   <div class="relative w-full">
-                    <select [formControl]="isBestSeller"
-                      class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg">
+                    <select
+                      [formControl]="isBestSeller"
+                      class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+                    >
                       <option value="0">No</option>
                       <option value="1">Yes</option>
                     </select>
                   </div>
                 </div>
 
-                <div class="gap-y-1 md:w-1/2 flex flex-col items-start w-full mb-3">
+                <div
+                  class="gap-y-1 md:w-1/2 flex flex-col items-start w-full mb-3"
+                >
                   <label class="block mb-2 text-sm font-medium text-gray-900">
                     Type <span class="text-red-500">*</span>
                   </label>
                   <div class="relative w-full">
-                    <input autocomplete="off" type="text" class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0
-                    placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f]
-                    dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700
-                    rounded-lg" placeholder="Enter type, example: S, M, L" [formControl]="size" maxlength="500"
-                      required>
+                    <input
+                      autocomplete="off"
+                      type="text"
+                      class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+                      placeholder="Enter type, example: S, M, L"
+                      [formControl]="size"
+                      maxlength="500"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="md:gap-5 md:mt-0 md:flex-row flex flex-col gap-2 mt-2"
+              >
+                <div class="gap-y-1 flex flex-col items-start w-full mb-3">
+                  <label class="block mb-2 text-sm font-medium text-gray-900">
+                    Description
+                  </label>
+                  <div class="relative w-full">
+                    <textarea
+                      autocomplete="off"
+                      class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg resize-none"
+                      placeholder="Enter product description"
+                      [formControl]="description"
+                      maxlength="1000"
+                      rows="4"
+                    ></textarea>
+                    <small class="text-gray-500"
+                      >{{ description.value?.length || 0 }}/1000</small
+                    >
                   </div>
                 </div>
               </div>
@@ -180,9 +281,15 @@
           </div>
 
           <div class="w-full mt-3 text-center">
-            <button type="button" (click)="createProduct()" class="btn-primary w-full" matRipple
-              matRippleColor="#ffffff66" [disabled]="isUploading || !productForm.valid || !pendingImage">
-              {{ isUploading ? 'Uploading...' : 'Create' }}
+            <button
+              type="button"
+              (click)="createProduct()"
+              class="btn-primary w-full"
+              matRipple
+              matRippleColor="#ffffff66"
+              [disabled]="isUploading || !productForm.valid || !pendingImage"
+            >
+              {{ isUploading ? "Uploading..." : "Create" }}
             </button>
           </div>
         </form>

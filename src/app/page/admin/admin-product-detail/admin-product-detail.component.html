@@ -171,6 +171,20 @@
                   </div>
                 </div>
               </div>
+
+              <div class="md:gap-5 md:mt-0 md:flex-row flex flex-col gap-2 mt-2">
+                <div class="gap-y-1 w-full flex flex-col items-start mb-3">
+                  <label class="block mb-2 text-sm font-medium text-gray-900">
+                    Description
+                  </label>
+                  <div class="relative w-full">
+                    <textarea autocomplete="off" 
+                      class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg resize-none"
+                      placeholder="Enter product description" [formControl]="description" maxlength="1000" rows="4"></textarea>
+                    <small class="text-gray-500">{{ description.value?.length || 0 }}/1000</small>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
