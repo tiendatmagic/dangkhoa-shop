@@ -237,4 +237,44 @@
       <div *ngIf="lastSavedAt" class="text-sm text-green-600">Saved</div>
     </div>
   </section>
+
+  <section class="mt-10">
+    <h4 class="mb-2 font-medium">Page Content (About / Contact)</h4>
+    <p class="mb-4 text-sm text-gray-600">
+      Nội dung bên dưới sẽ hiển thị ở <span class="font-medium">/about</span> và
+      <span class="font-medium">/contact</span>.
+    </p>
+
+    <div class="grid grid-cols-1 gap-6">
+      <div class="p-3 border rounded-lg admin-ck-editor">
+        <div class="mb-2 font-medium">About page</div>
+        <ckeditor
+          [editor]="Editor"
+          [config]="editorConfig"
+          [(ngModel)]="aboutContent"
+        ></ckeditor>
+      </div>
+
+      <div class="p-3 border rounded-lg admin-ck-editor">
+        <div class="mb-2 font-medium">Contact page</div>
+        <ckeditor
+          [editor]="Editor"
+          [config]="editorConfig"
+          [(ngModel)]="contactContent"
+        ></ckeditor>
+      </div>
+    </div>
+
+    <div class="sm:w-auto flex items-center w-full gap-3 mt-4">
+      <button
+        class="btn-primary w-full text-center"
+        (click)="save()"
+        [disabled]="saving || uploading || isLoading.get('customize')"
+      >
+        <span *ngIf="!saving">Save</span>
+        <span *ngIf="saving">Saving...</span>
+      </button>
+      <div *ngIf="lastSavedAt" class="text-sm text-green-600">Saved</div>
+    </div>
+  </section>
 </div>

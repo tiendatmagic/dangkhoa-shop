@@ -1,6 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { AuthService } from '../../../services/auth.service';
 import { DataService } from '../../../services/data.service';
 import { ApiCacheService } from '../../../services/api-cache.service';
@@ -10,15 +12,35 @@ import { catchError, debounceTime, distinctUntilChanged, switchMap, takeUntil, f
 
 @Component({
   selector: 'app-admin-customize',
+  standalone: true,
   templateUrl: './admin-customize.component.html',
   styleUrl: './admin-customize.component.scss',
-  imports: [CommonModule, FormsModule]
+  imports: [CommonModule, FormsModule, CKEditorModule]
 })
 export class AdminCustomizeComponent implements OnInit, OnDestroy {
+  public Editor: any = ClassicEditor;
+  public editorConfig: any = {
+    toolbar: {
+      items: [
+        'heading',
+        '|',
+        'bold', 'italic', 'underline', 'link',
+        '|',
+        'bulletedList', 'numberedList',
+        '|',
+        'blockQuote',
+        '|',
+        'undo', 'redo'
+      ]
+    }
+  };
+
   slides: string[] = [];
   banner: string = '';
   collections: any[] = [];
   selectedCollections: any[] = [];
+  aboutContent: string = '';
+  contactContent: string = '';
   // Fixed categories for Shop By Category
   categories: Array<{ id: string; name: string; image?: string }> = [
     { id: 'men', name: 'Men' },
@@ -61,6 +83,8 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
         this.selectedCollections = customization.collections || [];
         // load banner if provided (supports keys `banner` or `homeBanner`)
         this.banner = customization.banner || customization.homeBanner || '';
+        this.aboutContent = customization.about_content || '';
+        this.contactContent = customization.contact_content || '';
         if (Array.isArray(customization.collections)) {
           customization.collections.forEach((c: any) => {
             const cat = this.categories.find(x => x.id === (c.id || String(c.name).toLowerCase().replace(/[^a-z0-9]+/g, '_')));
@@ -191,7 +215,9 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
     const payload = {
       slides: this.slides,
       collections: collectionsPayload,
-      banner: this.banner
+      banner: this.banner,
+      about_content: this.aboutContent,
+      contact_content: this.contactContent,
     };
     this.auth.saveCustomization(payload).subscribe(() => {
       this.saving = false;
@@ -200,7 +226,7 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
       if (this._savedTimer) clearTimeout(this._savedTimer);
       this._savedTimer = setTimeout(() => this.lastSavedAt = null, 3000);
       // update cache so public endpoint is fresh
-      this.apiCache.put('customization', { slides: payload.slides, collections: payload.collections, banner: payload.banner });
+      this.apiCache.put('customization', { slides: payload.slides, collections: payload.collections, banner: payload.banner, about_content: payload.about_content, contact_content: payload.contact_content });
       // ensure home uses the newest public customization key
       try { this.apiCache.invalidate('public_customization'); } catch { }
     }, (err) => {
@@ -232,6 +258,8 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
         this.selectedCollections = customization.collections || [];
         // load banner if provided
         this.banner = customization.banner || customization.homeBanner || '';
+        this.aboutContent = customization.about_content || '';
+        this.contactContent = customization.contact_content || '';
         if (Array.isArray(customization.collections)) {
           customization.collections.forEach((c: any) => {
             const cat = this.categories.find(x => x.id === (c.id || String(c.name).toLowerCase().replace(/[^a-z0-9]+/g, '_')));

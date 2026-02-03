@@ -20,6 +20,8 @@
     "@angular/platform-browser": "^20.1.4",
     "@angular/platform-browser-dynamic": "^20.1.4",
     "@angular/router": "^20.1.4",
+    "@ckeditor/ckeditor5-angular": "^11.0.0",
+    "@ckeditor/ckeditor5-build-classic": "^41.4.2",
     "@ngx-translate/core": "^16.0.4",
     "@ngx-translate/http-loader": "^16.0.1",
     "angularx-qrcode": "^20.0.0",

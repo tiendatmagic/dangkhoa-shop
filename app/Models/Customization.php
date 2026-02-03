@@ -20,5 +20,7 @@ class Customization extends Model
     'slides',
     'collections',
     'banner',
+    'about_content',
+    'contact_content',
   ];
 }
