@@ -1,5 +1,6 @@
 <div
-  class="rounded-lg w-full overflow-auto border-[#ececec] dark:border-[#46525f] border-[1px] glass-effect not-bg-glass shadow-md relative max-w-screen-4xl p-3">
+  class="rounded-lg w-full overflow-auto border-[#ececec] dark:border-[#46525f] border-[1px] glass-effect not-bg-glass shadow-md relative max-w-screen-4xl p-3"
+>
   <div class="pt-3 lg:px-3">
     <div class="text-2xl">
       <div class="flex flex-col justify-between sm:flex-row">
@@ -11,12 +12,26 @@
         </div>
 
         <div class="flex" *ngIf="!isLoading">
-          <button class="mt-3 btn-primary whitespace-nowrap" matRipple matRippleColor="#ffffff80"
-            routerLink="/admin/create-product">
+          <button
+            class="mt-3 btn-primary whitespace-nowrap"
+            matRipple
+            matRippleColor="#ffffff80"
+            routerLink="/admin/create-product"
+          >
             <div class="flex items-center gap-3">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                stroke="currentColor" class="size-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-6"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 4.5v15m7.5-7.5h-15"
+                />
               </svg>
               <span>Create Product</span>
             </div>
@@ -40,21 +55,36 @@
     <ng-container *ngIf="productData">
       <ng-container *ngFor="let product of productData">
         <div
-          class="flex flex-col items-start justify-between w-full gap-1 py-4 border-b sm:gap-3 lg:gap-5 md:items-center md:flex-row">
+          class="flex flex-col items-start justify-between w-full gap-1 py-4 border-b sm:gap-3 lg:gap-5 md:items-center md:flex-row"
+        >
           <div class="md:w-3/6">
             <div>
               <div class="flex items-start gap-6 mt-2">
-                <div class="w-16 rounded-md cursor-pointer min-w-16 sm:w-20 sm:min-w-20 aspect-square">
-                  <img src="{{urlLink}}{{ product.image[0] }}" alt="" (error)="handleImageError($event)"
-                    class="w-full h-full rounded-lg" routerLink="/admin/product-detail/{{ product.id }}" />
+                <div
+                  class="w-16 rounded-md cursor-pointer min-w-16 sm:w-20 sm:min-w-20 aspect-square"
+                >
+                  <img
+                    src="{{ urlLink }}{{ product.image[0] }}"
+                    alt=""
+                    (error)="handleImageError($event)"
+                    class="w-full h-full rounded-lg"
+                    routerLink="/admin/product-detail/{{ product.id }}"
+                  />
                 </div>
                 <div>
-                  <a class="text-base font-medium break-all hover:underline text-violet-700"
-                    routerLink="/admin/product-detail/{{ product.id }}">{{ product.name }}</a>
+                  <a
+                    class="text-base font-medium break-all hover:underline text-violet-600"
+                    routerLink="/admin/product-detail/{{ product.id }}"
+                    >{{ product.name }}</a
+                  >
                   <div *ngIf="product.price">Price: ${{ product.price }}</div>
                   <div class="flex items-center gap-2 mt-2">
-                    <div *ngFor="let size of product.size" class="px-2 border rounded-md sm:px-3 sm:py-1 bg-slate-50">{{
-                      size }}</div>
+                    <div
+                      *ngFor="let size of product.size"
+                      class="px-2 border rounded-md sm:px-3 sm:py-1 bg-slate-50"
+                    >
+                      {{ size }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -62,24 +92,39 @@
           </div>
 
           <div class="md:w-2/6">
-            <div>Category: <span class="capitalize">{{ product.category }}</span></div>
-            <div>Is best seller: {{ product.is_best_seller ? 'Yes' : 'No' }}</div>
+            <div>
+              Category: <span class="capitalize">{{ product.category }}</span>
+            </div>
+            <div>
+              Is best seller: {{ product.is_best_seller ? "Yes" : "No" }}
+            </div>
           </div>
 
           <div class="flex justify-end gap-3 md:w-1/6">
-            <button class="mt-3 btn-primary whitespace-nowrap" routerLink="/admin/product-detail/{{ product.id }}"
-              matRipple matRippleColor="#ffffff80">
+            <button
+              class="mt-3 btn-primary whitespace-nowrap"
+              routerLink="/admin/product-detail/{{ product.id }}"
+              matRipple
+              matRippleColor="#ffffff80"
+            >
               Edit
             </button>
-            <button class="mt-3 btn-outline-primary whitespace-nowrap" (click)="deleteProduct(product.id)" matRipple
-              matRippleColor="#ffffff80">
+            <button
+              class="mt-3 btn-outline-primary whitespace-nowrap"
+              (click)="deleteProduct(product.id)"
+              matRipple
+              matRippleColor="#ffffff80"
+            >
               Delete
             </button>
           </div>
         </div>
       </ng-container>
 
-      <div class="flex justify-center mt-5" *ngIf="productData.length >= 10 && productData.length < totalProducts">
+      <div
+        class="flex justify-center mt-5"
+        *ngIf="productData.length >= 10 && productData.length < totalProducts"
+      >
         <button class="btn-primary" (click)="viewMore()" [disabled]="isLoading">
           View More
         </button>

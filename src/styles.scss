@@ -66,10 +66,10 @@ body {
   }
 
   .btn-outline-primary {
-    @apply border-violet-700 border-[1px] px-4 py-3 rounded-lg leading-5 text-sm text-violet-700 outline-none min-w-20 transition-colors duration-200 disabled:cursor-not-allowed;
+    @apply border-violet-600 border-[1px] px-4 py-3 rounded-lg leading-5 text-sm text-violet-600 outline-none min-w-20 transition-colors duration-200 disabled:cursor-not-allowed;
   }
 
   .btn-primary-opacity {
-    @apply bg-violet-700 bg-opacity-50 min-w-20 transition-colors duration-200;
+    @apply bg-violet-600 bg-opacity-50 min-w-20 transition-colors duration-200;
   }
 }

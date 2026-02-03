@@ -16,7 +16,7 @@
               (click)="selectImage(image)"
               [ngClass]="
                 image === selectedImage
-                  ? 'border-violet-700'
+                  ? 'border-violet-600'
                   : 'border-gray-200'
               "
             />
@@ -87,7 +87,7 @@
                 id="quantity-input"
                 data-input-counter
                 aria-describedby="helper-text-explanation"
-                class="h-11 text-center text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-500 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700"
+                class="h-11 text-center text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-500 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-600 focus:border-violet-600"
                 value="1"
                 [(ngModel)]="quantity"
                 name="quantity"
