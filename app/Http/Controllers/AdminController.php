@@ -189,17 +189,25 @@ class AdminController extends BaseController
     {
         $apiKey = env('GOLDAPI_KEY', 'goldapi-41ndhsmghqq7ku-io');
 
-        if ($productType === 'silver') {
+        if ($productType === 'xag') {
             $response = Http::withHeaders(['x-access-token' => $apiKey])->get('https://www.goldapi.io/api/XAG/USD');
             if (! $response->successful()) {
                 throw new \Exception('Failed to fetch silver price');
             }
             $data = $response->json();
             $spotPrice = $data['price'];
-            $spotPricePerTenth = $spotPrice / 10;
 
-            return round($quantity * $spotPricePerTenth);
-        } elseif ($productType === 'gold') {
+            return round($quantity * $spotPrice);
+        } elseif ($productType === 'silver') {
+            $response = Http::withHeaders(['x-access-token' => $apiKey])->get('https://www.goldapi.io/api/XAG/USD');
+            if (! $response->successful()) {
+                throw new \Exception('Failed to fetch silver price');
+            }
+            $data = $response->json();
+            $spotPrice = $data['price'];
+
+            return round($quantity * $spotPrice);
+        } elseif ($productType === 'gold' || $productType === 'paxg') {
             $response = Http::withHeaders(['x-access-token' => $apiKey])->get('https://www.goldapi.io/api/XAU/USD');
             if (! $response->successful()) {
                 throw new \Exception('Failed to fetch gold price');

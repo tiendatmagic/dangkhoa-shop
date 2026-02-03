@@ -307,9 +307,15 @@ class HomeController extends BaseController
     {
         $apiKey = env('GOLDAPI_KEY');
 
+        if ($productType === 'xag') {
+            $response = Http::withHeaders(['x-access-token' => $apiKey])->timeout(5)->get("https://www.goldapi.io/api/XAG/USD");
+            $price = $response->successful() ? $response->json()['price'] : null;
+            return $price ? round($price * $quantity) : null;
+        }
+
         if ($productType === 'silver') {
             $response = Http::withHeaders(['x-access-token' => $apiKey])->timeout(5)->get("https://www.goldapi.io/api/XAG/USD");
-            $price = $response->successful() ? $response->json()['price'] / 10 : null;
+            $price = $response->successful() ? $response->json()['price'] : null;
             return $price ? round($price * $quantity) : null;
         }
 
