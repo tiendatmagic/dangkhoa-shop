@@ -28,6 +28,14 @@
   </div>
 </section> -->
 
+<section *ngIf="banner">
+  <img
+    [src]="banner"
+    alt=""
+    class="sm:rounded-lg max-h-32 object-cover w-full h-auto rounded-sm"
+  />
+</section>
+
 <section *ngIf="slides && slides.length">
   <div class="mx-auto my-6">
     <div
@@ -171,7 +179,7 @@
     >
       <ng-container *ngFor="let product of productList">
         <a
-          class="overflow-auto text-gray-700 rounded-lg cursor-pointer"
+          class="hover:shadow-lg p-2 overflow-auto text-gray-700 transition-all rounded-lg shadow cursor-pointer"
           routerLink="/product/{{ product.id }}"
         >
           <div
@@ -186,6 +194,9 @@
           </div>
           <p class="pt-3 pb-1 text-sm">{{ product.name }}</p>
           <p class="text-sm font-medium">${{ product.price }}</p>
+          <p class="text-xs text-right">
+            Number of sales: {{ getSales(product.id) }}
+          </p>
         </a>
       </ng-container>
     </div>
@@ -212,7 +223,7 @@
     >
       <ng-container *ngFor="let product of bestSellerProducts">
         <a
-          class="overflow-auto text-gray-700 rounded-lg cursor-pointer"
+          class="hover:shadow-lg p-2 overflow-auto text-gray-700 rounded-lg shadow cursor-pointer"
           routerLink="/product/{{ product.id }}"
         >
           <div class="overflow-hidden">
@@ -225,6 +236,9 @@
           </div>
           <p class="pt-3 pb-1 text-sm">{{ product.name }}</p>
           <p class="text-sm font-medium">${{ product.price }}</p>
+          <p class="text-xs text-right">
+            Number of sales: {{ getSales(product.id) }}
+          </p>
         </a>
       </ng-container>
     </div>

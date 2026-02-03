@@ -16,6 +16,7 @@ import { catchError, debounceTime, distinctUntilChanged, switchMap, takeUntil, f
 })
 export class AdminCustomizeComponent implements OnInit, OnDestroy {
   slides: string[] = [];
+  banner: string = '';
   collections: any[] = [];
   selectedCollections: any[] = [];
   // Fixed categories for Shop By Category
@@ -58,6 +59,8 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
       if (customization) {
         this.slides = customization.slides || [];
         this.selectedCollections = customization.collections || [];
+        // load banner if provided (supports keys `banner` or `homeBanner`)
+        this.banner = customization.banner || customization.homeBanner || '';
         if (Array.isArray(customization.collections)) {
           customization.collections.forEach((c: any) => {
             const cat = this.categories.find(x => x.id === (c.id || String(c.name).toLowerCase().replace(/[^a-z0-9]+/g, '_')));
@@ -111,6 +114,20 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
       }
     }, (err) => {
       console.error('Category upload error', err);
+    });
+  }
+
+  onBannerFileChange(event: any) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    this.uploading = true;
+    this.auth.uploadImage(file).pipe(takeUntil(this.destroy$), finalize(() => { this.uploading = false; })).subscribe((r: any) => {
+      if (r && r.url) {
+        this.banner = r.url;
+        this.save();
+      }
+    }, (err) => {
+      console.error('Banner upload error', err);
     });
   }
 
@@ -173,7 +190,8 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
 
     const payload = {
       slides: this.slides,
-      collections: collectionsPayload
+      collections: collectionsPayload,
+      banner: this.banner
     };
     this.auth.saveCustomization(payload).subscribe(() => {
       this.saving = false;
@@ -182,7 +200,7 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
       if (this._savedTimer) clearTimeout(this._savedTimer);
       this._savedTimer = setTimeout(() => this.lastSavedAt = null, 3000);
       // update cache so public endpoint is fresh
-      this.apiCache.put('customization', { slides: payload.slides, collections: payload.collections });
+      this.apiCache.put('customization', { slides: payload.slides, collections: payload.collections, banner: payload.banner });
       // ensure home uses the newest public customization key
       try { this.apiCache.invalidate('public_customization'); } catch { }
     }, (err) => {
@@ -212,6 +230,8 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
       if (customization) {
         this.slides = customization.slides || [];
         this.selectedCollections = customization.collections || [];
+        // load banner if provided
+        this.banner = customization.banner || customization.homeBanner || '';
         if (Array.isArray(customization.collections)) {
           customization.collections.forEach((c: any) => {
             const cat = this.categories.find(x => x.id === (c.id || String(c.name).toLowerCase().replace(/[^a-z0-9]+/g, '_')));

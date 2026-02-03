@@ -19,5 +19,6 @@ class Customization extends Model
   protected $fillable = [
     'slides',
     'collections',
+    'banner',
   ];
 }

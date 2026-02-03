@@ -17,32 +17,15 @@ export class AppComponent {
   cartItems: any[] = [];
 
   constructor(public translate: TranslateService, private router: Router, private dataService: DataService, private auth: AuthService, private apiCache: ApiCacheService) {
-    this.auth.onLoad$.subscribe((value) => {
-      if (value) {
-        var token = localStorage.getItem('dangkhoa-token');
-        if (token) {
-
-          this.auth.onMe({}).subscribe((res: any) => {
-            this.auth.isLogin = true;
-          },
-            (error: any) => {
-              if (error.status == 0 && error.statusText == 'Unknown Error') {
-                localStorage.removeItem("dangkhoa-renew");
-                localStorage.removeItem("dangkhoa-token");
-              }
-            }
-          );
-        }
-        else {
-          this.auth.refreshAccessToken();
-        }
-      }
+    // Bootstrap session using HttpOnly cookies (no localStorage tokens).
+    this.auth.ensureAuthenticated().subscribe({
+      next: () => { this.auth.onLoad = true; },
+      error: () => { this.auth.onLoad = true; }
     });
   }
   ngOnInit(): void {
     // ensure cache cleared on app bootstrap (handles reloads / dev HMR)
     try { this.apiCache.invalidateAll(); } catch {}
-    var token = localStorage.getItem('dangkhoa-token');
     const accessPaths = ['my', 'account', 'dashboard', 'admin', 'deposit', 'withdraw', 'event', 'wallet', 'profile', 'order', 'checkout', 'order-detail'];
 
     this.router.events.subscribe((event: any) => {
@@ -50,8 +33,10 @@ export class AppComponent {
         const firstPath = event.url.split('/')[1];
 
         if (accessPaths.includes(firstPath)) {
-          if (!this.auth.isLogin && !token) {
-            this.router.navigate(['/login']);
+          if (!this.auth.isLogin) {
+            this.auth.ensureAuthenticated().subscribe((ok) => {
+              if (!ok) this.router.navigate(['/login']);
+            });
           }
         }
       }

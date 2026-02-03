@@ -18,6 +18,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   isIntervalActive: any;
   // default empty — admin-provided slides will populate this via API
   slides: string[] = [];
+  banner: string = '';
   currentSlide: number = 0;
   sliderInterval: any = null;
   autoplayDelay: number = 4000;
@@ -43,7 +44,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.cacheInvalidSub = this.apiCache.cacheInvalidated$.subscribe((key: string | null) => {
       if (!key || key === 'public_customization' || key === 'customization') {
         // Clear any existing customization subscription then reload
-        try { if (this.customizationSub) { this.customizationSub.unsubscribe(); this.customizationSub = null; } } catch {}
+        try { if (this.customizationSub) { this.customizationSub.unsubscribe(); this.customizationSub = null; } } catch { }
         this.loadCustomization();
       }
     });
@@ -126,6 +127,14 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.slides = res.slides.map((p: string) => p && p.startsWith('http') ? p : (p ? this.auth.getBaseUrl() + p : p)).filter(Boolean);
       }
       this.homeCollections = Array.isArray(res.collections) ? res.collections : (res.collections || []);
+      // load optional home banner if provided
+      if (res && res.banner) {
+        this.banner = res.banner && res.banner.startsWith('http') ? res.banner : (this.auth.getBaseUrl() + res.banner);
+      } else if (res && res.homeBanner) {
+        this.banner = res.homeBanner && res.homeBanner.startsWith('http') ? res.homeBanner : (this.auth.getBaseUrl() + res.homeBanner);
+      } else {
+        this.banner = '';
+      }
     }, (err: any) => {
       console.error('Failed to load public customization:', err);
     });
@@ -173,5 +182,41 @@ export class HomeComponent implements OnInit, OnDestroy {
   restartAutoplay() {
     this.stopAutoplay();
     this.startAutoplay();
+  }
+
+  // Returns a cached random sales count for a given product id (1..15).
+  // Cached in localStorage per product id for 5 minutes.
+  getSales(productId: any): number {
+    try {
+      const key = 'sales_' + String(productId);
+      const raw = sessionStorage.getItem(key);
+      const now = Date.now();
+      const ttl = 5 * 60 * 1000; // 5 minutes
+      if (raw) {
+        const obj = JSON.parse(raw);
+        if (obj && typeof obj.value === 'number' && typeof obj.ts === 'number') {
+          if (now - obj.ts < ttl) {
+            return obj.value;
+          } else {
+            // expired: clear all sales_* keys as requested
+            try {
+              for (let i = sessionStorage.length - 1; i >= 0; i--) {
+                const k = sessionStorage.key(i);
+                if (k && k.indexOf('sales_') === 0) {
+                  sessionStorage.removeItem(k);
+                }
+              }
+            } catch (err) {
+              // ignore and continue to generate new value
+            }
+          }
+        }
+      }
+      const value = Math.floor(Math.random() * 15) + 1; // 1..15
+      sessionStorage.setItem(key, JSON.stringify({ value, ts: now }));
+      return value;
+    } catch (e) {
+      return Math.floor(Math.random() * 15) + 1;
+    }
   }
 }

@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, Subject, catchError, finalize, takeUntil, tap, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, catchError, finalize, map, of, shareReplay, switchMap, takeUntil, tap, throwError } from 'rxjs';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { DatePipe, Location } from '@angular/common';
 import { Subscription } from 'rxjs';
@@ -13,7 +13,7 @@ export class AuthService {
   public urlEnv = environment.production ? environment.apiUrl : environment.apiUrlLocal;
   public urlLink = environment.production ? this.urlEnv + '/public'.replace(/\/$/, '') : this.urlEnv.replace(/\/$/, '');
   public imgError: string = '/assets/images/default.jpg';
-  public getToken = localStorage.getItem('dangkhoa-token');
+  public getToken = '';
   public getProfile = localStorage.getItem('dangkhoa-profile');
   public token2FA: string = '';
   private isAdminSubject = new BehaviorSubject<number>(0);
@@ -37,8 +37,30 @@ export class AuthService {
   refreshSubscription: Subscription | null = null;
   private destroyOnMe$: Subject<void> = new Subject<void>();
   private destroyRefreshing$: Subject<void> = new Subject<void>();
+  private ensureAuthInFlight$: Observable<boolean> | null = null;
 
   constructor(private http: HttpClient, private route: ActivatedRoute, private router: Router, private location: Location, private apiCache: ApiCacheService) {
+  }
+
+  private meRequest(data: any) {
+    data.version = this.appVersion;
+
+    this.isGetMe = true;
+    this.destroyOnMe$.next();
+    this.destroyOnMe$.complete();
+    this.destroyOnMe$ = new Subject<void>();
+
+    return this.http.post(`${this.urlEnv}api/auth/me`, data).pipe(
+      tap((res: any) => {
+        this.isAdmin = res.is_admin || 0;
+        localStorage.setItem('dangkhoa-profile', JSON.stringify(res));
+        this.isLogin = true;
+      }),
+      takeUntil(this.destroyOnMe$),
+      finalize(() => {
+        this.isGetMe = false;
+      })
+    );
   }
   get isAdmin(): number {
     return this.isAdminSubject.value;
@@ -144,28 +166,42 @@ export class AuthService {
   }
 
   onMe(data: any) {
-    data.version = this.appVersion;
-
-    if (this.isGetMe) {
-      return throwError('');
-    }
-    this.isGetMe = true;
-    this.destroyOnMe$.next();
-    this.destroyOnMe$.complete();
-    this.destroyOnMe$ = new Subject<void>();
-
-    return this.http.post(`${this.urlEnv}api/auth/me`, data).pipe(
-      tap((res: any) => {
-        this.isAdmin = res.is_admin || 0;
-        localStorage.setItem('dangkhoa-profile', JSON.stringify(res));
-        this.isLogin = true;
-      }),
-      takeUntil(this.destroyOnMe$),
-      catchError((error: any) => this.handleError(error)),
-      finalize(() => {
-        // this.isGetMe = false;
-      })
+    return this.meRequest(data).pipe(
+      catchError((error: any) => this.handleError(error))
     );
+  }
+
+  /**
+   * Ensure the current browser session is authenticated using HttpOnly cookies.
+   * Tries /me first, then /refresh + /me.
+   */
+  ensureAuthenticated(): Observable<boolean> {
+    if (this.isLogin) {
+      return of(true);
+    }
+    if (this.ensureAuthInFlight$) {
+      return this.ensureAuthInFlight$;
+    }
+
+    const me$ = this.meRequest({}).pipe(map(() => true));
+
+    this.ensureAuthInFlight$ = me$.pipe(
+      catchError(() => {
+        return this.http.post(`${this.urlEnv}api/auth/refresh`, {}).pipe(
+          switchMap(() => me$),
+          catchError(() => {
+            this.isLogin = false;
+            return of(false);
+          })
+        );
+      }),
+      finalize(() => {
+        this.ensureAuthInFlight$ = null;
+      }),
+      shareReplay(1)
+    );
+
+    return this.ensureAuthInFlight$;
   }
 
   handleError(error: any) {
@@ -182,23 +218,22 @@ export class AuthService {
         this.router.navigate(['/403']);
         break;
       case 401:
-        if (error.error.message == 'Unauthenticated.') {
+        // Avoid refresh loops if the refresh endpoint itself fails.
+        if (typeof error?.url === 'string' && error.url.includes('/api/auth/refresh')) {
+          break;
+        }
+        if (error?.error?.message == 'Unauthenticated.') {
           this.refreshAccessToken();
         }
         break;
       default:
-        if (localStorage.getItem("dangkhoa-token")) {
-
-        }
         break;
     }
     return throwError(error || "Server Error");
   }
 
   refreshAccessToken() {
-    const refreshToken = localStorage.getItem('dangkhoa-renew');
-
-    if (!refreshToken || this.isRefreshing) {
+    if (this.isRefreshing) {
       return;
     }
 
@@ -207,30 +242,21 @@ export class AuthService {
     this.destroyRefreshing$.complete();
     this.destroyRefreshing$ = new Subject<void>();
 
-    this.http.post(`${this.urlEnv}api/auth/refresh`, { refresh_token: refreshToken }).pipe(
+    this.http.post(`${this.urlEnv}api/auth/refresh`, {}).pipe(
       takeUntil(this.destroyRefreshing$),
-      tap((response: any) => {
-        this.getToken = response.access_token;
+      tap(() => {
         this.isLogin = true;
         this.isRefreshing = false;
-        localStorage.setItem('dangkhoa-token', response.access_token);
-        localStorage.setItem('dangkhoa-renew', response.refresh_token);
         this.onLoad = true;
+
+        // refresh succeeded; update profile/admin flags
+        this.onMe({}).subscribe({ next: () => {}, error: () => {} });
       }),
       catchError((error) => {
-        const allowedPaths = ['login', 'register', 'forgot-password', 'reset-password', 'verify-2fa'];
-        const currentUrl = this.location.path();
-
-        if (localStorage.getItem("dangkhoa-token")) {
-          if (!allowedPaths.some(path => currentUrl.includes(path))) {
-          }
-        }
         this.isLogin = false;
         this.getToken = '';
         localStorage.removeItem("dangkhoa-profile");
-        localStorage.removeItem("dangkhoa-renew");
-        localStorage.removeItem("dangkhoa-token");
-        this.router.navigate(['/login']);
+        // Access/refresh cookies are cleared by backend on logout; on refresh failure just treat as logged out.
         return throwError(error);
       }),
       finalize(() => {
@@ -240,8 +266,7 @@ export class AuthService {
   }
 
   onLogout() {
-    const refreshToken = localStorage.getItem('dangkhoa-renew');
-    return this.http.post(`${this.urlEnv}api/auth/logout`, { refresh_token: refreshToken }).pipe(
+    return this.http.post(`${this.urlEnv}api/auth/logout`, {}).pipe(
       catchError((error: any) => this.handleError(error))
     );
   }

@@ -459,9 +459,9 @@ class AdminController extends BaseController
         $data = Cache::remember($cacheKey, now()->addMinutes(5), function () {
             $custom = Customization::orderBy('id', 'desc')->first();
             if (!$custom) {
-                return ['slides' => [], 'collections' => []];
+                return ['slides' => [], 'collections' => [], 'banner' => ''];
             }
-            return ['slides' => $custom->slides ?? [], 'collections' => $custom->collections ?? []];
+            return ['slides' => $custom->slides ?? [], 'collections' => $custom->collections ?? [], 'banner' => $custom->banner ?? ''];
         });
 
         return response()->json($data, 200);
@@ -470,12 +470,13 @@ class AdminController extends BaseController
     // Save customization (create or update latest)
     public function saveCustomization(Request $request)
     {
-        $data = $request->only(['slides', 'collections']);
+        $data = $request->only(['slides', 'collections', 'banner']);
 
         $validator = Validator::make($data, [
             'slides' => 'nullable|array',
             'slides.*' => 'nullable|string',
             'collections' => 'nullable|array',
+            'banner' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -486,11 +487,12 @@ class AdminController extends BaseController
             $custom = Customization::create([
                 'slides' => $data['slides'] ?? [],
                 'collections' => $data['collections'] ?? [],
+                'banner' => $data['banner'] ?? '',
             ]);
 
             // Refresh cache so public endpoint returns latest immediately
             $cacheKey = 'customization_public';
-            Cache::put($cacheKey, ['slides' => $custom->slides ?? [], 'collections' => $custom->collections ?? []], now()->addMinutes(5));
+            Cache::put($cacheKey, ['slides' => $custom->slides ?? [], 'collections' => $custom->collections ?? [], 'banner' => $custom->banner ?? ''], now()->addMinutes(5));
 
             return response()->json(['message' => 'Customization saved', 'data' => $custom], 200);
         } catch (\Exception $e) {
