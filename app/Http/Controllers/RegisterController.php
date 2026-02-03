@@ -38,24 +38,49 @@ class RegisterController extends BaseController
 
     use Sharable;
 
+    private function requestIsSecure(Request $request): bool
+    {
+        $secureEnv = env('AUTH_COOKIE_SECURE');
+        if ($secureEnv !== null) {
+            return (bool) filter_var($secureEnv, FILTER_VALIDATE_BOOLEAN);
+        }
+
+        if ($request->isSecure()) {
+            return true;
+        }
+
+        $forwardedProto = strtolower((string) $request->header('X-Forwarded-Proto'));
+        return $forwardedProto === 'https';
+    }
+
     private function authCookieDomain(): ?string
     {
         $domain = env('AUTH_COOKIE_DOMAIN');
         return is_string($domain) && $domain !== '' ? $domain : null;
     }
 
-    private function authCookieSameSite(): string
+    private function authCookieSameSite(Request $request): string
     {
-        $sameSite = (string) env('AUTH_COOKIE_SAMESITE', 'Lax');
-        $sameSite = ucfirst(strtolower($sameSite));
-        return in_array($sameSite, ['Lax', 'Strict', 'None'], true) ? $sameSite : 'Lax';
+        $sameSiteEnv = env('AUTH_COOKIE_SAMESITE');
+        if (is_string($sameSiteEnv) && $sameSiteEnv !== '') {
+            $sameSite = ucfirst(strtolower($sameSiteEnv));
+            return in_array($sameSite, ['Lax', 'Strict', 'None'], true) ? $sameSite : 'Lax';
+        }
+
+        $origin = $request->headers->get('Origin');
+        $originHost = $origin ? (parse_url($origin, PHP_URL_HOST) ?: null) : null;
+
+        if ($this->requestIsSecure($request) && $originHost && $originHost !== $request->getHost()) {
+            return 'None';
+        }
+
+        return 'Lax';
     }
 
     private function authCookieSecure(Request $request): bool
     {
-        $secureEnv = env('AUTH_COOKIE_SECURE');
-        $secure = $secureEnv === null ? $request->isSecure() : filter_var($secureEnv, FILTER_VALIDATE_BOOLEAN);
-        if ($this->authCookieSameSite() === 'None') {
+        $secure = $this->requestIsSecure($request);
+        if ($this->authCookieSameSite($request) === 'None') {
             return true;
         }
         return (bool) $secure;
@@ -72,7 +97,7 @@ class RegisterController extends BaseController
             $this->authCookieSecure($request),
             true,
             false,
-            $this->authCookieSameSite(),
+            $this->authCookieSameSite($request),
         );
     }
 
