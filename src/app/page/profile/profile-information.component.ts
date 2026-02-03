@@ -49,8 +49,7 @@ export class ProfileInformationComponent {
       },
         (error: any) => {
           if (error.status == 0 && error.statusText == 'Unknown Error') {
-            localStorage.removeItem("dangkhoa-renew");
-            localStorage.removeItem("dangkhoa-token");
+            localStorage.removeItem("dangkhoa-profile");
           }
         }
       );

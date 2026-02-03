@@ -29,14 +29,55 @@ use Illuminate\Support\Facades\Validator;
 use Ramsey\Uuid\Uuid;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use PragmaRX\Google2FA\Google2FA;
+use Symfony\Component\HttpFoundation\Cookie;
 
 class AuthController extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, Sharable, ValidatesRequests;
 
+    private function authCookieDomain(): ?string
+    {
+        $domain = env('AUTH_COOKIE_DOMAIN');
+        return is_string($domain) && $domain !== '' ? $domain : null;
+    }
+
+    private function authCookieSameSite(): string
+    {
+        $sameSite = (string) env('AUTH_COOKIE_SAMESITE', 'Lax');
+        $sameSite = ucfirst(strtolower($sameSite));
+        return in_array($sameSite, ['Lax', 'Strict', 'None'], true) ? $sameSite : 'Lax';
+    }
+
+    private function authCookieSecure(Request $request): bool
+    {
+        $secureEnv = env('AUTH_COOKIE_SECURE');
+        $secure = $secureEnv === null ? $request->isSecure() : filter_var($secureEnv, FILTER_VALIDATE_BOOLEAN);
+
+        // SameSite=None requires Secure
+        if ($this->authCookieSameSite() === 'None') {
+            return true;
+        }
+        return (bool) $secure;
+    }
+
+    private function makeAuthCookie(Request $request, string $name, string $value, int $minutes): Cookie
+    {
+        return cookie(
+            $name,
+            $value,
+            $minutes,
+            '/',
+            $this->authCookieDomain(),
+            $this->authCookieSecure($request),
+            true,
+            false,
+            $this->authCookieSameSite(),
+        );
+    }
+
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login', 'login2fa', 'refresh', 'coinbaseWebhook', 'sepayWebhook']]);
+        $this->middleware('auth:api', ['except' => ['login', 'login2fa', 'refresh', 'logout', 'coinbaseWebhook', 'sepayWebhook']]);
     }
 
     public function systemSetting(Request $request)
@@ -306,11 +347,16 @@ class AuthController extends BaseController
      */
     public function logout()
     {
-        $refreshToken = request()->refresh_token;
+        try {
+            auth('api')->logout();
+        } catch (\Throwable $e) {
+            // ignore
+        }
 
-        auth('api')->logout();
-
-        return response()->json(['message' => 'Successfully logged out']);
+        return response()
+            ->json(['message' => 'Successfully logged out'])
+            ->withCookie(cookie()->forget('dangkhoa_access'))
+            ->withCookie(cookie()->forget('dangkhoa_refresh'));
     }
 
     /**
@@ -320,7 +366,16 @@ class AuthController extends BaseController
      */
     public function refresh()
     {
-        $refreshToken = request()->refresh_token;
+        $refreshToken = request()->input('refresh_token')
+            ?? request()->cookie('dangkhoa_refresh')
+            ?? request()->header('Token');
+
+        if (! is_string($refreshToken) || $refreshToken === '') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized',
+            ], 401);
+        }
         try {
             $decoded = JWTAuth::getJWTProvider()->decode($refreshToken);
             $user = User::find($decoded['user_id']);
@@ -413,13 +468,19 @@ class AuthController extends BaseController
      */
     public function respondWithToken($token, $newRefreshToken, $refreshToken, Request $request)
     {
-        return response()->json([
-            'access_token' => $token,
-            'refresh_token' => $newRefreshToken,
-            'token_type' => 'bearer',
-            'expires_in' => auth('api')->factory()->getTTL() * 60,
-            'information' => response()->json(auth('api')->user())->getData(),
-        ]);
+        /** @var \Tymon\JWTAuth\JWTGuard $guard */
+        $guard = auth('api');
+        $accessMinutes = (int) $guard->factory()->getTTL();
+        $refreshMinutes = (int) config('jwt.refresh_ttl');
+
+        return response()
+            ->json([
+                'token_type' => 'bearer',
+                'expires_in' => $accessMinutes * 60,
+                'information' => response()->json(auth('api')->user())->getData(),
+            ])
+            ->withCookie($this->makeAuthCookie($request, 'dangkhoa_access', (string) $token, $accessMinutes))
+            ->withCookie($this->makeAuthCookie($request, 'dangkhoa_refresh', (string) $newRefreshToken, $refreshMinutes));
     }
 
     public function confirmOrder(Request $request)

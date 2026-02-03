@@ -20,6 +20,7 @@ use App\Traits\Sharable;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use PragmaRX\Google2FA\Google2FA;
 use Illuminate\Routing\Controller as BaseController;
+use Symfony\Component\HttpFoundation\Cookie;
 
 class RegisterController extends BaseController
 {
@@ -37,15 +38,59 @@ class RegisterController extends BaseController
 
     use Sharable;
 
+    private function authCookieDomain(): ?string
+    {
+        $domain = env('AUTH_COOKIE_DOMAIN');
+        return is_string($domain) && $domain !== '' ? $domain : null;
+    }
+
+    private function authCookieSameSite(): string
+    {
+        $sameSite = (string) env('AUTH_COOKIE_SAMESITE', 'Lax');
+        $sameSite = ucfirst(strtolower($sameSite));
+        return in_array($sameSite, ['Lax', 'Strict', 'None'], true) ? $sameSite : 'Lax';
+    }
+
+    private function authCookieSecure(Request $request): bool
+    {
+        $secureEnv = env('AUTH_COOKIE_SECURE');
+        $secure = $secureEnv === null ? $request->isSecure() : filter_var($secureEnv, FILTER_VALIDATE_BOOLEAN);
+        if ($this->authCookieSameSite() === 'None') {
+            return true;
+        }
+        return (bool) $secure;
+    }
+
+    private function makeAuthCookie(Request $request, string $name, string $value, int $minutes): Cookie
+    {
+        return cookie(
+            $name,
+            $value,
+            $minutes,
+            '/',
+            $this->authCookieDomain(),
+            $this->authCookieSecure($request),
+            true,
+            false,
+            $this->authCookieSameSite(),
+        );
+    }
+
     protected function respondWithToken($token, $newRefreshToken, Request $request)
     {
-        return response()->json([
-            'access_token' => $token,
-            'refresh_token' => $newRefreshToken,
-            'token_type' => 'bearer',
-            'expires_in' => auth('api')->factory()->getTTL() * 60,
-            'information' =>  response()->json(auth('api')->user())->getData()
-        ]);
+        /** @var \Tymon\JWTAuth\JWTGuard $guard */
+        $guard = auth('api');
+        $accessMinutes = (int) $guard->factory()->getTTL();
+        $refreshMinutes = (int) config('jwt.refresh_ttl');
+
+        return response()
+            ->json([
+                'token_type' => 'bearer',
+                'expires_in' => $accessMinutes * 60,
+                'information' => response()->json(auth('api')->user())->getData(),
+            ])
+            ->withCookie($this->makeAuthCookie($request, 'dangkhoa_access', (string) $token, $accessMinutes))
+            ->withCookie($this->makeAuthCookie($request, 'dangkhoa_refresh', (string) $newRefreshToken, $refreshMinutes));
     }
 
     public function register(Request $request)

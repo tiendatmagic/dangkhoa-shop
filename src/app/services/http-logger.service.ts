@@ -10,14 +10,10 @@ export class HttpInterceptorService implements HttpInterceptor {
 
   constructor(private auth: AuthService) { }
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    var tokenReNew = localStorage.getItem('dangkhoa-renew');
-    let token = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${this.auth.getToken}`,
-        Token: tokenReNew?.toString() || ''
-      }
-    })
-    return next.handle(token);
+    // Use HttpOnly cookies for auth; ensure cookies are sent for API calls.
+    const isApiRequest = typeof req.url === 'string' && req.url.startsWith(this.auth.urlEnv);
+    const cloned = isApiRequest ? req.clone({ withCredentials: true }) : req;
+    return next.handle(cloned);
 
   }
 }

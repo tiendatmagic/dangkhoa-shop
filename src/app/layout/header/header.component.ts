@@ -63,10 +63,6 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    if (localStorage.getItem('dangkhoa-token')) {
-      this.isLogin = true;
-    }
-
     if (this.translate.currentLang == 'vi') {
       this.lang = 'vi';
     }
@@ -122,8 +118,6 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onLogout() {
     this.auth.onLogout().subscribe((res: any) => {
-      localStorage.removeItem("dangkhoa-renew");
-      localStorage.removeItem("dangkhoa-token");
       localStorage.removeItem("dangkhoa-profile");
       this.auth.getToken = '';
       this.auth.isLogin = false;
@@ -137,8 +131,6 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
         this.auth.getToken = '';
         this.auth.isLogin = false;
         this.auth.isAdmin = 0;
-        localStorage.removeItem("dangkhoa-renew");
-        localStorage.removeItem("dangkhoa-token");
         localStorage.removeItem("dangkhoa-profile");
         this.router.navigate(['/login']);
       }

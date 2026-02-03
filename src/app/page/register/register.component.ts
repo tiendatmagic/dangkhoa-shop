@@ -38,10 +38,9 @@ export class RegisterComponent {
   }
 
   ngOnInit() {
-    var getToken = localStorage.getItem('dangkhoa-renew');
-    if (getToken) {
-      this.router.navigate(['/']);
-    }
+    this.auth.ensureAuthenticated().subscribe((ok) => {
+      if (ok) this.router.navigate(['/']);
+    });
   }
 
   onRegister() {
@@ -53,12 +52,13 @@ export class RegisterComponent {
       this.registerForm.disable();
 
       this.auth.onRegister(data).subscribe((res: any) => {
-        localStorage.setItem('dangkhoa-token', res.access_token);
-        localStorage.setItem('dangkhoa-renew', res.refresh_token);
-        this.auth.getToken = res.access_token;
         this.router.navigate(['/home']);
         this.auth.isLogin = true;
         this.auth.onLoad = true;
+        if (res?.information) {
+          localStorage.setItem('dangkhoa-profile', JSON.stringify(res.information));
+          this.auth.isAdmin = res?.information?.is_admin || 0;
+        }
         this.registerForm.enable();
       },
 

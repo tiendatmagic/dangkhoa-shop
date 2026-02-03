@@ -103,26 +103,28 @@ export class PlaceOrderComponent {
   ngOnInit() {
     this.id = this.route.snapshot.paramMap.get('id');
     if (!this.id) {
-      var token = localStorage.getItem('dangkhoa-token');
-      if (!token) {
-        this.snackBar.open('Please login first', 'OK', {
-          duration: 3000,
-          horizontalPosition: 'right',
-          verticalPosition: 'bottom',
-        })
-        this.router.navigate(['/login']);
-      }
-
-      try {
-        const storedCart = localStorage.getItem('cartItems');
-        this.cartProducts = storedCart ? JSON.parse(storedCart) : [];
-        if (!this.cartProducts.length) {
-          this.router.navigate(['/cart']);
+      this.auth.ensureAuthenticated().subscribe((ok) => {
+        if (!ok) {
+          this.snackBar.open('Please login first', 'OK', {
+            duration: 3000,
+            horizontalPosition: 'right',
+            verticalPosition: 'bottom',
+          });
+          this.router.navigate(['/login']);
+          return;
         }
-      } catch (error) {
-        localStorage.setItem('cartItems', JSON.stringify([]));
-      }
-      this.calculateTotal();
+
+        try {
+          const storedCart = localStorage.getItem('cartItems');
+          this.cartProducts = storedCart ? JSON.parse(storedCart) : [];
+          if (!this.cartProducts.length) {
+            this.router.navigate(['/cart']);
+          }
+        } catch (error) {
+          localStorage.setItem('cartItems', JSON.stringify([]));
+        }
+        this.calculateTotal();
+      });
     }
     else {
       this.auth.getOrder({ id: this.id }).subscribe(

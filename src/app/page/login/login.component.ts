@@ -36,11 +36,9 @@ export class LoginComponent {
   }
 
   ngOnInit() {
-    var getToken = localStorage.getItem('dangkhoa-renew');
-
-    if (getToken) {
-      this.router.navigate(['/']);
-    }
+    this.auth.ensureAuthenticated().subscribe((ok) => {
+      if (ok) this.router.navigate(['/']);
+    });
   }
 
   onLogin() {
@@ -68,14 +66,13 @@ export class LoginComponent {
             return;
           }
 
-          localStorage.setItem('dangkhoa-token', res.access_token);
-          localStorage.setItem('dangkhoa-renew', res.refresh_token);
           this.router.navigate(['/home']);
-          this.auth.getToken = res.access_token;
           this.auth.isLogin = true;
-          this.auth.isAdmin = res['information'].is_admin;
+          this.auth.isAdmin = res?.information?.is_admin || 0;
           this.isLoading = this.auth.isLoading;
-          localStorage.setItem('dangkhoa-profile', JSON.stringify(res['information']));
+          if (res?.information) {
+            localStorage.setItem('dangkhoa-profile', JSON.stringify(res.information));
+          }
           this.loginForm.enable();
         },
           (error: any) => {
@@ -107,14 +104,13 @@ export class LoginComponent {
     this.loginForm.disable();
 
     this.auth.onLogin2fa(verifyData).subscribe((res: any) => {
-      localStorage.setItem('dangkhoa-token', res.access_token);
-      localStorage.setItem('dangkhoa-renew', res.refresh_token);
       this.router.navigate(['/home']);
-      this.auth.getToken = res.access_token;
       this.auth.isLogin = true;
-      this.auth.isAdmin = res['information'].is_admin;
+      this.auth.isAdmin = res?.information?.is_admin || 0;
       this.isLoading = this.auth.isLoading;
-      localStorage.setItem('dangkhoa-profile', JSON.stringify(res['information']));
+      if (res?.information) {
+        localStorage.setItem('dangkhoa-profile', JSON.stringify(res.information));
+      }
       this.loginForm.enable();
     },
       (error: any) => {
