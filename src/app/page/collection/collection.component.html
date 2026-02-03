@@ -25,7 +25,7 @@
                   value="men"
                   (change)="onCategoryChange('men', $event)"
                 />
-                <span>Men</span>
+                <span>{{ categoryService.getCategoryName("men") }}</span>
               </label>
             </p>
             <p>
@@ -38,7 +38,7 @@
                   value="women"
                   (change)="onCategoryChange('women', $event)"
                 />
-                <span>Women</span>
+                <span>{{ categoryService.getCategoryName("women") }}</span>
               </label>
             </p>
             <p>
@@ -51,7 +51,7 @@
                   value="crypto"
                   (change)="onCategoryChange('crypto', $event)"
                 />
-                <span>Crypto</span>
+                <span>{{ categoryService.getCategoryName("crypto") }}</span>
               </label>
             </p>
             <p>
@@ -64,7 +64,9 @@
                   value="gold/silver"
                   (change)="onCategoryChange('gold/silver', $event)"
                 />
-                <span>Gold/Silver</span>
+                <span>{{
+                  categoryService.getCategoryName("gold/silver")
+                }}</span>
               </label>
             </p>
             <p>
@@ -77,7 +79,7 @@
                   value="other"
                   (change)="onCategoryChange('other', $event)"
                 />
-                <span>Other</span>
+                <span>{{ categoryService.getCategoryName("other") }}</span>
               </label>
             </p>
           </div>
@@ -166,7 +168,7 @@
         >
           <ng-container *ngFor="let product of productList">
             <a
-              class="hover:shadow-lg p-2 overflow-auto text-gray-700 transition-all rounded-lg shadow cursor-pointer "
+              class="hover:shadow-lg p-2 overflow-auto text-gray-700 transition-all rounded-lg shadow cursor-pointer"
               routerLink="/product/{{ product.id }}"
             >
               <div

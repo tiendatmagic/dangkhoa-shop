@@ -4,6 +4,7 @@ import { DataService } from '../../services/data.service';
 import { AuthService } from '../../services/auth.service';  // Import AuthService
 import { ApiCacheService } from '../../services/api-cache.service';
 import { ActivatedRoute } from '@angular/router';
+import { CategoryService } from '../../services/category.service';
 
 @Component({
   selector: 'app-collection',
@@ -30,7 +31,8 @@ export class CollectionComponent implements OnInit, OnDestroy {
     private dataService: DataService,
     private auth: AuthService,
     private route: ActivatedRoute,
-    private apiCache: ApiCacheService
+    private apiCache: ApiCacheService,
+    public categoryService: CategoryService
   ) { }
 
   ngOnDestroy(): void {

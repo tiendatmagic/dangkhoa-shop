@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../services/auth.service';
 import { DataService } from '../../../services/data.service';
 import { ApiCacheService } from '../../../services/api-cache.service';
+import { CategoryService } from '../../../services/category.service';
 
 @Component({
   selector: 'app-admin-create-product',
@@ -35,7 +36,8 @@ export class AdminCreateProductComponent {
     private auth: AuthService,
     private dataService: DataService,
     private apiCache: ApiCacheService,
-    private http: HttpClient
+    private http: HttpClient,
+    public categoryService: CategoryService
   ) {
     this.productName = new FormControl('', [Validators.required, Validators.minLength(1), Validators.maxLength(30)]);
     this.price = new FormControl(0, [Validators.required, Validators.min(0)]);

@@ -4,6 +4,7 @@ import { DataService } from '../../services/data.service';
 import { AuthService } from '../../services/auth.service';
 import { Subscription } from 'rxjs';
 import { ApiCacheService } from '../../services/api-cache.service';
+import { CategoryService } from '../../services/category.service';
 
 @Component({
   selector: 'app-home',
@@ -30,8 +31,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(
     private web3Service: Web3Service,
     private dataService: DataService,
-    private auth: AuthService
-    , private apiCache: ApiCacheService
+    private auth: AuthService,
+    private apiCache: ApiCacheService,
+    public categoryService: CategoryService
   ) { }
 
   ngOnInit() {

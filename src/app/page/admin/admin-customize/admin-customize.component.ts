@@ -7,6 +7,7 @@ import { AuthService } from '../../../services/auth.service';
 import { DataService } from '../../../services/data.service';
 import { ApiCacheService } from '../../../services/api-cache.service';
 import { AdminTabService } from '../../../services/admin-tab.service';
+import { CategoryService } from '../../../services/category.service';
 import { forkJoin, of, Subject } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, switchMap, takeUntil, finalize } from 'rxjs/operators';
 
@@ -42,13 +43,15 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
   aboutContent: string = '';
   contactContent: string = '';
   // Fixed categories for Shop By Category
-  categories: Array<{ id: string; name: string; image?: string }> = [
+  categories: Array<{ id: string; name: string; image?: string; customName?: string }> = [
     { id: 'men', name: 'Men' },
     { id: 'women', name: 'Women' },
     { id: 'crypto', name: 'Crypto' },
     { id: 'gold_silver', name: 'Gold/Silver' },
     { id: 'other', name: 'Other' },
   ];
+  editingCategoryId: string | null = null;
+  tempCategoryName: string = '';
   uploading = false;
   saving = false;
   lastSavedAt: number | null = null;
@@ -57,7 +60,7 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
   isLoading = new Map<string, boolean>();
   private customizationSub: any = null;
 
-  constructor(private auth: AuthService, private data: DataService, private apiCache: ApiCacheService, private adminTab: AdminTabService) { }
+  constructor(private auth: AuthService, private data: DataService, private apiCache: ApiCacheService, private adminTab: AdminTabService, private categoryService: CategoryService) { }
 
   ngOnInit(): void {
     // Setup cancellable, debounced tab-driven requests from AdminTabService
@@ -88,8 +91,13 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
         if (Array.isArray(customization.collections)) {
           customization.collections.forEach((c: any) => {
             const cat = this.categories.find(x => x.id === (c.id || String(c.name).toLowerCase().replace(/[^a-z0-9]+/g, '_')));
-            if (cat && c.image) {
-              cat.image = c.image;
+            if (cat) {
+              if (c.image) {
+                cat.image = c.image;
+              }
+              if (c.customName) {
+                cat.customName = c.customName;
+              }
             }
           });
         }
@@ -199,15 +207,19 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
     this.saving = true;
     // include selected collections and any category images (Shop By Category)
     const collectionsPayload: any[] = this.selectedCollections.map(c => ({ id: c.id, name: c.name, image: c.image }));
-    // merge category images (use category id like 'men','women' etc.)
+    // merge category images and custom names (use category id like 'men','women' etc.)
     this.categories.forEach(cat => {
-      if (cat.image) {
-        // if exists in selected collections, update image; otherwise push as standalone entry
+      if (cat.image || cat.customName) {
+        // if exists in selected collections, update image/customName; otherwise push as standalone entry
         const found = collectionsPayload.find(x => x.id === cat.id);
         if (found) {
-          found.image = cat.image;
+          if (cat.image) found.image = cat.image;
+          if (cat.customName) found.customName = cat.customName;
         } else {
-          collectionsPayload.push({ id: cat.id, name: cat.name, image: cat.image });
+          const payload: any = { id: cat.id, name: cat.name };
+          if (cat.image) payload.image = cat.image;
+          if (cat.customName) payload.customName = cat.customName;
+          collectionsPayload.push(payload);
         }
       }
     });
@@ -229,6 +241,8 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
       this.apiCache.put('customization', { slides: payload.slides, collections: payload.collections, banner: payload.banner, about_content: payload.about_content, contact_content: payload.contact_content });
       // ensure home uses the newest public customization key
       try { this.apiCache.invalidate('public_customization'); } catch { }
+      // refresh category names in the service
+      this.categoryService.refreshCategoryNames();
     }, (err) => {
       this.saving = false;
       console.error('Save customization error', err);
@@ -263,8 +277,13 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
         if (Array.isArray(customization.collections)) {
           customization.collections.forEach((c: any) => {
             const cat = this.categories.find(x => x.id === (c.id || String(c.name).toLowerCase().replace(/[^a-z0-9]+/g, '_')));
-            if (cat && c.image) {
-              cat.image = c.image;
+            if (cat) {
+              if (c.image) {
+                cat.image = c.image;
+              }
+              if (c.customName) {
+                cat.customName = c.customName;
+              }
             }
           });
         }
@@ -276,6 +295,29 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
     }, () => {
       this.isLoading.set('customize', false);
     });
+  }
+
+  startEditCategoryName(cat: any) {
+    this.editingCategoryId = cat.id;
+    this.tempCategoryName = cat.customName || cat.name;
+  }
+
+  cancelEditCategoryName() {
+    this.editingCategoryId = null;
+    this.tempCategoryName = '';
+  }
+
+  saveCategoryName(cat: any) {
+    if (this.tempCategoryName.trim()) {
+      cat.customName = this.tempCategoryName.trim();
+      this.editingCategoryId = null;
+      this.tempCategoryName = '';
+      this.save();
+    }
+  }
+
+  getCategoryDisplayName(cat: any): string {
+    return cat.customName || cat.name;
   }
 
   ngOnDestroy(): void {

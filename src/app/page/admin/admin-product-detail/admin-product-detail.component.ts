@@ -4,6 +4,7 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { DataService } from '../../../services/data.service';
+import { CategoryService } from '../../../services/category.service';
 
 @Component({
   selector: 'app-admin-product-detail',
@@ -31,7 +32,7 @@ export class AdminProductDetailComponent {
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
-  constructor(private route: ActivatedRoute, private fb: FormBuilder, private router: Router, private http: HttpClient, private auth: AuthService, private dataService: DataService) {
+  constructor(private route: ActivatedRoute, private fb: FormBuilder, private router: Router, private http: HttpClient, private auth: AuthService, private dataService: DataService, public categoryService: CategoryService) {
     this.productName = new FormControl('', [Validators.required, Validators.minLength(1), Validators.maxLength(30)]);
     this.price = new FormControl('', [Validators.required, Validators.min(0)]);
     this.quantity = new FormControl('', [Validators.min(0)]);
