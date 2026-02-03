@@ -1,5 +1,5 @@
-<div class="flex flex-col gap-3 md:flex-row sm:gap-5 md:gap-10">
-  <div class="w-full md:w-1/5">
+<div class="md:flex-row sm:gap-5 md:gap-10 flex flex-col gap-3">
+  <div class="md:w-1/5 w-full">
     <div>
       <div class="my-5">
         <div class="mt-3 text-3xl text-left">
@@ -9,83 +9,134 @@
         </div>
       </div>
 
-      <div class="flex flex-row gap-3 md:flex-col">
-        <div class="w-1/2 py-3 pl-5 border border-gray-300 rounded-lg md:w-full sm:block">
+      <div class="md:flex-col flex flex-row gap-3">
+        <div
+          class="md:w-full sm:block w-1/2 py-3 pl-5 border border-gray-300 rounded-lg"
+        >
           <p class="mb-3 text-sm font-medium">CATEGORIES</p>
           <div class="flex flex-col gap-2 text-sm">
             <p>
               <label for="Men" class="flex items-center gap-3">
-                <input type="checkbox" class="border border-gray-400 text-violet-700" id="Men" name="Men" value="men"
-                  (change)="onCategoryChange('men', $event)">
+                <input
+                  type="checkbox"
+                  class="text-violet-700 border border-gray-400"
+                  id="Men"
+                  name="Men"
+                  value="men"
+                  (change)="onCategoryChange('men', $event)"
+                />
                 <span>Men</span>
               </label>
             </p>
             <p>
               <label for="Women" class="flex items-center gap-3">
-                <input type="checkbox" class="border border-gray-400 text-violet-700" id="Women" name="Women"
-                  value="women" (change)="onCategoryChange('women', $event)">
+                <input
+                  type="checkbox"
+                  class="text-violet-700 border border-gray-400"
+                  id="Women"
+                  name="Women"
+                  value="women"
+                  (change)="onCategoryChange('women', $event)"
+                />
                 <span>Women</span>
               </label>
             </p>
             <p>
               <label for="Crypto" class="flex items-center gap-3">
-                <input type="checkbox" class="border border-gray-400 text-violet-700" id="Crypto" name="Crypto"
-                  value="crypto" (change)="onCategoryChange('crypto', $event)">
+                <input
+                  type="checkbox"
+                  class="text-violet-700 border border-gray-400"
+                  id="Crypto"
+                  name="Crypto"
+                  value="crypto"
+                  (change)="onCategoryChange('crypto', $event)"
+                />
                 <span>Crypto</span>
               </label>
             </p>
             <p>
               <label for="Gold/Silver" class="flex items-center gap-3">
-                <input type="checkbox" class="border border-gray-400 text-violet-700" id="Gold/Silver"
-                  name="gold/silver" value="gold/silver" (change)="onCategoryChange('gold/silver', $event)">
+                <input
+                  type="checkbox"
+                  class="text-violet-700 border border-gray-400"
+                  id="Gold/Silver"
+                  name="gold/silver"
+                  value="gold/silver"
+                  (change)="onCategoryChange('gold/silver', $event)"
+                />
                 <span>Gold/Silver</span>
               </label>
             </p>
             <p>
               <label for="Other" class="flex items-center gap-3">
-                <input type="checkbox" class="border border-gray-400 text-violet-700" id="Other" name="Other"
-                  value="other" (change)="onCategoryChange('other', $event)">
+                <input
+                  type="checkbox"
+                  class="text-violet-700 border border-gray-400"
+                  id="Other"
+                  name="Other"
+                  value="other"
+                  (change)="onCategoryChange('other', $event)"
+                />
                 <span>Other</span>
               </label>
             </p>
           </div>
         </div>
-        <div class="w-1/2 py-3 pl-5 border border-gray-300 rounded-lg md:w-full sm:block">
+        <div
+          class="md:w-full sm:block w-1/2 py-3 pl-5 border border-gray-300 rounded-lg"
+        >
           <p class="mb-3 text-sm font-medium">PRICE</p>
           <div class="flex flex-col gap-2 text-sm">
             <p>
               <label for="all" class="flex items-center gap-3">
-                <input type="radio" class="border border-gray-400 text-violet-700" id="all" name="price" value="0"
-                  (change)="onPriceChange(0)" checked>
+                <input
+                  type="radio"
+                  class="text-violet-700 border border-gray-400"
+                  id="all"
+                  name="price"
+                  value="0"
+                  (change)="onPriceChange(0)"
+                  checked
+                />
                 <span>All</span>
               </label>
             </p>
             <p>
               <label for="p-50" class="flex items-center gap-3">
-                <input type="radio" class="border border-gray-400 text-violet-700" id="p-50" name="price" value="50"
-                  (change)="onPriceChange(50)">
+                <input
+                  type="radio"
+                  class="text-violet-700 border border-gray-400"
+                  id="p-50"
+                  name="price"
+                  value="50"
+                  (change)="onPriceChange(50)"
+                />
                 <span>>= $50</span>
               </label>
             </p>
             <p>
               <label for="p-100" class="flex items-center gap-3">
-                <input type="radio" class="border border-gray-400 text-violet-700" id="p-100" name="price" value="100"
-                  (change)="onPriceChange(100)">
+                <input
+                  type="radio"
+                  class="text-violet-700 border border-gray-400"
+                  id="p-100"
+                  name="price"
+                  value="100"
+                  (change)="onPriceChange(100)"
+                />
                 <span>>= $100</span>
               </label>
             </p>
           </div>
         </div>
       </div>
-
     </div>
   </div>
 
-
-  <div class="w-full md:w-4/5">
+  <div class="md:w-4/5 w-full">
     <section id="latest-collection">
       <div class="my-5">
-        <div class="flex flex-col items-center justify-between sm:flex-row">
+        <div class="sm:flex-row flex flex-col items-center justify-between">
           <div class="mt-3 text-3xl text-left">
             <div class="inline-flex items-center gap-2 mb-3">
               <p class="font-medium">ALL COLLECTION</p>
@@ -95,37 +146,57 @@
 
           <div>
             <form class="max-w-sm mx-auto">
-              <select id="sort"
+              <select
+                id="sort"
                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
-                (change)="onSortChange($event)">
+                (change)="onSortChange($event)"
+              >
                 <option value="relevant">Sort by: Relevant</option>
                 <option value="low-high">Sort by: Low to High</option>
                 <option value="high-low">Sort by: High to Low</option>
               </select>
             </form>
           </div>
-
         </div>
       </div>
 
       <ng-container *ngIf="!isLoading; else loadingTemplate">
-        <div class="grid grid-cols-2 gap-4 mt-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-y-6">
+        <div
+          class="md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-y-6 grid grid-cols-2 gap-4 mt-3"
+        >
           <ng-container *ngFor="let product of productList">
-            <a class="overflow-auto rounded-lg cursor-pointer" routerLink="/product/{{ product.id }}">
-              <div class="max-w-full max-h-full mx-auto overflow-hidden rounded-lg aspect-square">
-                <img class="object-cover w-full h-full transition duration-300 ease-in-out hover:scale-110"
-                  (error)="handleImageError($event)" alt="{{ product.name }}" [src]="getImageUrl(product.image)" />
+            <a
+              class="hover:shadow-lg p-2 overflow-auto text-gray-700 transition-all rounded-lg shadow cursor-pointer "
+              routerLink="/product/{{ product.id }}"
+            >
+              <div
+                class="aspect-square max-w-full max-h-full mx-auto overflow-hidden rounded-lg"
+              >
+                <img
+                  class="hover:scale-110 object-cover w-full h-full transition duration-300 ease-in-out"
+                  (error)="handleImageError($event)"
+                  alt="{{ product.name }}"
+                  [src]="getImageUrl(product.image)"
+                />
               </div>
               <p class="pt-3 pb-1 text-sm">{{ product.name }}</p>
               <p class="text-sm font-medium">${{ product.price }}</p>
+              <p class="text-xs text-right">
+                Number of sales: {{ getSales(product.id) }}
+              </p>
             </a>
           </ng-container>
         </div>
 
         <!-- Button View More -->
         <div class="mt-6 text-center" *ngIf="hasMorePages && !isLoadingMore">
-          <button type="button" (click)="loadMoreProducts()" class="px-6 py-3 rounded-lg btn-primary" matRipple
-            matRippleColor="#ffffff66">
+          <button
+            type="button"
+            (click)="loadMoreProducts()"
+            class="btn-primary px-6 py-3 rounded-lg"
+            matRipple
+            matRippleColor="#ffffff66"
+          >
             View More
           </button>
         </div>
@@ -134,7 +205,10 @@
           <p class="text-gray-500">Loading more products...</p>
         </div>
 
-        <div class="mt-6 text-center" *ngIf="!hasMorePages && productList.length > 0">
+        <div
+          class="mt-6 text-center"
+          *ngIf="!hasMorePages && productList.length > 0"
+        >
           <p class="text-gray-500">No more products to load.</p>
         </div>
       </ng-container>
@@ -144,7 +218,7 @@
 
 <!-- Loading template cho grid -->
 <ng-template #loadingTemplate>
-  <div class="py-8 text-center col-span-full">
+  <div class="col-span-full py-8 text-center">
     <p class="text-lg font-medium text-gray-500">Loading products...</p>
   </div>
 </ng-template>

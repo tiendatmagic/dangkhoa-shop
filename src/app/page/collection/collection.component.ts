@@ -11,7 +11,7 @@ import { ActivatedRoute } from '@angular/router';
   templateUrl: './collection.component.html',
   styleUrl: './collection.component.scss'
 })
-export class CollectionComponent implements OnInit {
+export class CollectionComponent implements OnInit, OnDestroy {
   productList: any[] = [];
   allProducts: any[] = [];
   filterArray: string[] = [];
@@ -160,6 +160,41 @@ export class CollectionComponent implements OnInit {
 
   handleImageError(event: any) {
     event.target.src = 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg';
+  }
+
+  // Returns a cached random sales count for a given product id (1..15).
+  // Cached in sessionStorage per product id for 5 minutes.
+  getSales(productId: any): number {
+    try {
+      const key = 'sales_' + String(productId);
+      const raw = sessionStorage.getItem(key);
+      const now = Date.now();
+      const ttl = 5 * 60 * 1000; // 5 minutes
+      if (raw) {
+        const obj = JSON.parse(raw);
+        if (obj && typeof obj.value === 'number' && typeof obj.ts === 'number') {
+          if (now - obj.ts < ttl) {
+            return obj.value;
+          } else {
+            try {
+              for (let i = sessionStorage.length - 1; i >= 0; i--) {
+                const k = sessionStorage.key(i);
+                if (k && k.indexOf('sales_') === 0) {
+                  sessionStorage.removeItem(k);
+                }
+              }
+            } catch (err) {
+              // ignore and continue to generate new value
+            }
+          }
+        }
+      }
+      const value = Math.floor(Math.random() * 15) + 1; // 1..15
+      sessionStorage.setItem(key, JSON.stringify({ value, ts: now }));
+      return value;
+    } catch (e) {
+      return Math.floor(Math.random() * 15) + 1;
+    }
   }
 
   test() {
