@@ -1,1 +1,21 @@
-:host { display: block; } .p-4 { padding: 1rem; } .text-lg { font-size: 1.125rem; } .text-sm { font-size: .875rem; } .bg-violet-600 { background-color: #7c3aed; } .bg-gray-200 { background-color: #e5e7eb; } .w-full { width: 100%; } .rounded { border-radius: 0.375rem; }
+:host {
+  display: block;
+}
+.p-4 {
+  padding: 1rem;
+}
+.text-lg {
+  font-size: 1.125rem;
+}
+.text-sm {
+  font-size: 0.875rem;
+}
+.bg-gray-200 {
+  background-color: #e5e7eb;
+}
+.w-full {
+  width: 100%;
+}
+.rounded {
+  border-radius: 0.375rem;
+}
