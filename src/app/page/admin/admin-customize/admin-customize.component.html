@@ -183,8 +183,58 @@
           <span *ngIf="!cat.image" class="text-xs text-gray-500">No image</span>
         </div>
         <div class="flex-1">
-          <div class="font-medium">{{ cat.name }}</div>
+          <div class="font-medium">
+            <span *ngIf="editingCategoryId !== cat.id">{{
+              getCategoryDisplayName(cat)
+            }}</span>
+            <div
+              *ngIf="editingCategoryId === cat.id"
+              class="flex items-center gap-2"
+            >
+              <input
+                type="text"
+                [(ngModel)]="tempCategoryName"
+                class="flex-1 px-2 py-1 text-sm border rounded"
+                (keyup.enter)="saveCategoryName(cat)"
+                (keyup.escape)="cancelEditCategoryName()"
+                placeholder="Category name"
+              />
+              <button
+                class="btn-outline text-xs text-green-600"
+                (click)="saveCategoryName(cat)"
+              >
+                Save
+              </button>
+              <button
+                class="btn-outline text-xs text-gray-500"
+                (click)="cancelEditCategoryName()"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
           <div class="flex items-center gap-2 mt-1">
+            <button
+              *ngIf="editingCategoryId !== cat.id"
+              class="btn-outline inline-flex items-center gap-1 text-xs text-blue-600 cursor-pointer"
+              (click)="startEditCategoryName(cat)"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-3 h-3"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                />
+              </svg>
+              <span>Edit name</span>
+            </button>
             <label
               [for]="'catUpload-' + cat.id"
               class="btn-outline inline-flex items-center gap-2 text-sm text-gray-600 cursor-pointer"
@@ -226,6 +276,42 @@
     </div>
 
     <div class="sm:w-auto flex items-center w-full gap-3 mt-3">
+      <button
+        class="btn-primary w-full text-center"
+        (click)="save()"
+        [disabled]="saving || uploading || isLoading.get('customize')"
+      >
+        <span *ngIf="!saving">Save</span>
+        <span *ngIf="saving">Saving...</span>
+      </button>
+      <div *ngIf="lastSavedAt" class="text-sm text-green-600">Saved</div>
+    </div>
+  </section>
+
+  <section class="mt-10">
+    <h4 class="mb-2 font-medium">Page Content (About / Contact)</h4>
+
+    <div class="grid grid-cols-1 gap-6">
+      <div class="admin-ck-editor p-3 border rounded-lg">
+        <div class="mb-2 font-medium">About page</div>
+        <ckeditor
+          [editor]="Editor"
+          [config]="editorConfig"
+          [(ngModel)]="aboutContent"
+        ></ckeditor>
+      </div>
+
+      <div class="admin-ck-editor p-3 border rounded-lg">
+        <div class="mb-2 font-medium">Contact page</div>
+        <ckeditor
+          [editor]="Editor"
+          [config]="editorConfig"
+          [(ngModel)]="contactContent"
+        ></ckeditor>
+      </div>
+    </div>
+
+    <div class="sm:w-auto flex items-center w-full gap-3 mt-4">
       <button
         class="btn-primary w-full text-center"
         (click)="save()"

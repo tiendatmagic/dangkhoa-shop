@@ -7,19 +7,17 @@
   </div>
 </div>
 
-<div class="flex flex-col items-start gap-12 my-10 md:flex-row">
+<div class="md:flex-row flex flex-col items-start gap-12 my-10">
   <img
-    class="rounded-lg w-full md:max-w-[450px]"
     alt=""
     src="https://cdn.prod.website-files.com/637dd8d62ccaf602c8ad331c/642af2c5635cbd3df4920e62_furniture%20(2).webp"
+    class="rounded-lg w-full md:max-w-[450px]"
   />
   <div
-    class="flex flex-col justify-center gap-6 leading-6 text-gray-600 md:w-2/4"
+    class="md:w-2/4 flex flex-col justify-center gap-6 leading-6 text-gray-600"
   >
-    <p class="text-xl font-semibold text-gray-600">Our Store</p>
-    <p class="text-gray-500">
-      Khanh Hoa <br />
-      Vietnam
-    </p>
+    <div *ngIf="!loading" class="my-0">
+      <div class="ck-content" [innerHTML]="contactHtml"></div>
+    </div>
   </div>
 </div>

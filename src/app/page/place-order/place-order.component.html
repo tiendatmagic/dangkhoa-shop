@@ -24,7 +24,7 @@
                     [(ngModel)]="name"
                     name="name"
                     id="your_name"
-                    class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+                    class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-600 focus:border-violet-600 rounded-lg"
                     placeholder="Your name"
                     required
                   />
@@ -41,7 +41,7 @@
                     [(ngModel)]="email"
                     name="email"
                     id="your_email"
-                    class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+                    class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-600 focus:border-violet-600 rounded-lg"
                     placeholder="Your email"
                     required
                   />
@@ -61,7 +61,7 @@
                     id="your_address"
                     [(ngModel)]="address"
                     name="address"
-                    class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+                    class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-600 focus:border-violet-600 rounded-lg"
                     placeholder="Your address"
                     required
                   />
@@ -81,7 +81,7 @@
                         id="phone-input"
                         [(ngModel)]="phone"
                         name="phone"
-                        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+                        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-600 focus:border-violet-600 rounded-lg"
                         pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
                         placeholder="Your phone"
                         required
@@ -110,7 +110,7 @@
                       id=""
                       name="note"
                       [(ngModel)]="note"
-                      class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg resize-none"
+                      class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-600 focus:border-violet-600 rounded-lg resize-none"
                       [placeholder]="
                         requiresBscWalletNote
                           ? '0x... (BSC/BEP20 wallet address)'
@@ -214,7 +214,7 @@
                   matRipple
                   [ngClass]="
                     choosePaymentMethod == 1
-                      ? 'border-violet-700 border-2'
+                      ? 'border-violet-600 border-2'
                       : 'border-gray-200'
                   "
                   (click)="choosePayment(1)"
@@ -247,7 +247,7 @@
                   matRipple
                   [ngClass]="
                     choosePaymentMethod == 2
-                      ? 'border-violet-700 border-2'
+                      ? 'border-violet-600 border-2'
                       : 'border-gray-200'
                   "
                   (click)="choosePayment(2)"
@@ -280,7 +280,7 @@
                   matRipple
                   [ngClass]="
                     choosePaymentMethod == 3
-                      ? 'border-violet-700 border-2'
+                      ? 'border-violet-600 border-2'
                       : 'border-gray-200'
                   "
                   (click)="choosePayment(3)"
@@ -313,7 +313,7 @@
                   matRipple
                   [ngClass]="
                     choosePaymentMethod == 4
-                      ? 'border-violet-700 border-2'
+                      ? 'border-violet-600 border-2'
                       : 'border-gray-200'
                   "
                   (click)="choosePayment(4)"
@@ -364,7 +364,7 @@
                       <a
                         href="https://metamask.io/"
                         target="_blank"
-                        class="text-violet-700 hover:underline"
+                        class="text-violet-600 hover:underline"
                         >install Metamask</a
                       >.
                     </p>
@@ -481,13 +481,13 @@
                       <a
                         [href]="coinbaseHostedUrl"
                         target="_blank"
-                        class="text-violet-700 hover:underline text-base font-medium"
+                        class="text-violet-600 hover:underline text-base font-medium"
                         >Open hosted checkout</a
                       >
                     </p>
                     <p class="mt-2 text-sm text-gray-700">
                       Time left:
-                      <span class="text-violet-700 font-medium">{{
+                      <span class="text-violet-600 font-medium">{{
                         coinbaseRemaining
                       }}</span>
                     </p>
@@ -748,43 +748,43 @@
       </p>
       <p>
         <span class="font-medium">Order number:</span>
-        <span class="text-violet-700"> {{ orderData.order_code }}</span>
+        <span class="text-violet-600"> {{ orderData.order_code }}</span>
       </p>
       <p>
         <span class="font-medium">Name:</span
-        ><span class="text-violet-700"> {{ orderData.name }}</span>
+        ><span class="text-violet-600"> {{ orderData.name }}</span>
       </p>
       <p>
         <span class="font-medium">Email:</span
-        ><span class="text-violet-700"> {{ orderData.email }}</span>
+        ><span class="text-violet-600"> {{ orderData.email }}</span>
       </p>
       <p>
         <span class="font-medium">Address:</span
-        ><span class="text-violet-700"> {{ orderData.address }}</span>
+        ><span class="text-violet-600"> {{ orderData.address }}</span>
       </p>
       <p>
         <span class="font-medium">Phone:</span
-        ><span class="text-violet-700"> {{ orderData.phone }}</span>
+        ><span class="text-violet-600"> {{ orderData.phone }}</span>
       </p>
       <p>
         <span class="font-medium">Note:</span
-        ><span class="text-violet-700 break-all"> {{ orderData.note }}</span>
+        ><span class="text-violet-600 break-all"> {{ orderData.note }}</span>
       </p>
       <p>
         <span class="font-medium">Date:</span
-        ><span class="text-violet-700">
+        ><span class="text-violet-600">
           {{ orderData.created_at | date: "dd/MM/yyyy HH:mm:ss" }}</span
         >
       </p>
       <p>
         <span class="font-medium">Total:</span
-        ><span class="text-violet-700">
+        ><span class="text-violet-600">
           ${{ orderData.total + deliveryFee }}</span
         >
       </p>
       <p>
         <span class="font-medium">Payment method:</span
-        ><span class="text-violet-700 capitalize">
+        ><span class="text-violet-600 capitalize">
           {{
             orderData.paymentMethod == "usdt"
               ? "Metamask - USDT"
@@ -800,17 +800,17 @@
           <div class="p-2 mt-2 border rounded-lg" *ngFor="let p of payoutData">
             <p>
               <span class="font-medium">Asset:</span>
-              <span class="text-violet-700"> {{ p.asset_symbol }}</span>
+              <span class="text-violet-600"> {{ p.asset_symbol }}</span>
             </p>
             <p>
               <span class="font-medium">Sent:</span>
-              <span class="text-violet-700">
+              <span class="text-violet-600">
                 {{ p.sent_at ? "yes" : "no" }}</span
               >
             </p>
             <p *ngIf="p.tx_hash">
               <span class="font-medium">Tx:</span>
-              <span class="text-violet-700 break-all"> {{ p.tx_hash }}</span>
+              <span class="text-violet-600 break-all"> {{ p.tx_hash }}</span>
             </p>
             <p *ngIf="p.error">
               <span class="font-medium text-red-600">Error:</span>

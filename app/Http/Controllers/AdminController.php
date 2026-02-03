@@ -18,6 +18,7 @@ use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use SWeb3\SWeb3;
@@ -157,7 +158,7 @@ class AdminController extends BaseController
                         $product->price = $dynamicPrice ?? $product->price ?? 0;
                         Cache::put($cacheKey, $product->price, now()->addMinutes(1));
                     } catch (\Exception $e) {
-                        \Log::error("Failed to fetch price for {$product->product_type}: " . $e->getMessage());
+                        Log::error("Failed to fetch price for {$product->product_type}: " . $e->getMessage());
                         $product->price = $product->price ?? 0;
                     }
                 }
@@ -188,17 +189,25 @@ class AdminController extends BaseController
     {
         $apiKey = env('GOLDAPI_KEY', 'goldapi-41ndhsmghqq7ku-io');
 
-        if ($productType === 'silver') {
+        if ($productType === 'xag') {
             $response = Http::withHeaders(['x-access-token' => $apiKey])->get('https://www.goldapi.io/api/XAG/USD');
             if (! $response->successful()) {
                 throw new \Exception('Failed to fetch silver price');
             }
             $data = $response->json();
             $spotPrice = $data['price'];
-            $spotPricePerTenth = $spotPrice / 10;
 
-            return round($quantity * $spotPricePerTenth);
-        } elseif ($productType === 'gold') {
+            return round($quantity * $spotPrice);
+        } elseif ($productType === 'silver') {
+            $response = Http::withHeaders(['x-access-token' => $apiKey])->get('https://www.goldapi.io/api/XAG/USD');
+            if (! $response->successful()) {
+                throw new \Exception('Failed to fetch silver price');
+            }
+            $data = $response->json();
+            $spotPrice = $data['price'];
+
+            return round($quantity * $spotPrice);
+        } elseif ($productType === 'gold' || $productType === 'paxg') {
             $response = Http::withHeaders(['x-access-token' => $apiKey])->get('https://www.goldapi.io/api/XAU/USD');
             if (! $response->successful()) {
                 throw new \Exception('Failed to fetch gold price');
@@ -459,9 +468,15 @@ class AdminController extends BaseController
         $data = Cache::remember($cacheKey, now()->addMinutes(5), function () {
             $custom = Customization::orderBy('id', 'desc')->first();
             if (!$custom) {
-                return ['slides' => [], 'collections' => [], 'banner' => ''];
+                return ['slides' => [], 'collections' => [], 'banner' => '', 'about_content' => '', 'contact_content' => ''];
             }
-            return ['slides' => $custom->slides ?? [], 'collections' => $custom->collections ?? [], 'banner' => $custom->banner ?? ''];
+            return [
+                'slides' => $custom->slides ?? [],
+                'collections' => $custom->collections ?? [],
+                'banner' => $custom->banner ?? '',
+                'about_content' => (string) ($custom->about_content ?? ''),
+                'contact_content' => (string) ($custom->contact_content ?? ''),
+            ];
         });
 
         return response()->json($data, 200);
@@ -470,17 +485,35 @@ class AdminController extends BaseController
     // Save customization (create or update latest)
     public function saveCustomization(Request $request)
     {
-        $data = $request->only(['slides', 'collections', 'banner']);
+        $data = $request->only(['slides', 'collections', 'banner', 'about_content', 'contact_content']);
 
         $validator = Validator::make($data, [
             'slides' => 'nullable|array',
             'slides.*' => 'nullable|string',
             'collections' => 'nullable|array',
             'banner' => 'nullable|string',
+            'about_content' => ['nullable', 'string', 'max:200000', 'not_regex:/<\s*script\b/i'],
+            'contact_content' => ['nullable', 'string', 'max:200000', 'not_regex:/<\s*script\b/i'],
         ]);
 
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 422);
+        }
+
+        // Prevent hard SQL errors if migrations weren't run yet.
+        $hasAbout = Schema::hasColumn('customizations', 'about_content');
+        $hasContact = Schema::hasColumn('customizations', 'contact_content');
+        if (! $hasAbout && ! empty($data['about_content'])) {
+            return response()->json([
+                'error' => 'migration_required',
+                'message' => 'Missing column about_content in customizations table. Please run migrations.',
+            ], 422);
+        }
+        if (! $hasContact && ! empty($data['contact_content'])) {
+            return response()->json([
+                'error' => 'migration_required',
+                'message' => 'Missing column contact_content in customizations table. Please run migrations.',
+            ], 422);
         }
 
         try {
@@ -488,15 +521,23 @@ class AdminController extends BaseController
                 'slides' => $data['slides'] ?? [],
                 'collections' => $data['collections'] ?? [],
                 'banner' => $data['banner'] ?? '',
+                'about_content' => $data['about_content'] ?? '',
+                'contact_content' => $data['contact_content'] ?? '',
             ]);
 
             // Refresh cache so public endpoint returns latest immediately
             $cacheKey = 'customization_public';
-            Cache::put($cacheKey, ['slides' => $custom->slides ?? [], 'collections' => $custom->collections ?? [], 'banner' => $custom->banner ?? ''], now()->addMinutes(5));
+            Cache::put($cacheKey, [
+                'slides' => $custom->slides ?? [],
+                'collections' => $custom->collections ?? [],
+                'banner' => $custom->banner ?? '',
+                'about_content' => (string) ($custom->about_content ?? ''),
+                'contact_content' => (string) ($custom->contact_content ?? ''),
+            ], now()->addMinutes(5));
 
             return response()->json(['message' => 'Customization saved', 'data' => $custom], 200);
         } catch (\Exception $e) {
-            \Log::error('Save customization error: ' . $e->getMessage());
+            Log::error('Save customization error: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to save customization'], 500);
         }
     }

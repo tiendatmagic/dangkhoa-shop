@@ -703,7 +703,7 @@ class AuthController extends BaseController
                 $requiresWalletAddress = Products::query()
                     ->whereIn('id', $productIds)
                     ->whereNotNull('product_type')
-                    ->whereNotIn('product_type', ['none', 'gold', 'silver'])
+                    ->whereNotIn('product_type', ['none', 'gold', 'silver', 'paxg', 'xag'])
                     ->exists();
             }
 
@@ -839,7 +839,7 @@ class AuthController extends BaseController
                 $requiresWalletAddress = Products::query()
                     ->whereIn('id', $productIds)
                     ->whereNotNull('product_type')
-                    ->whereNotIn('product_type', ['none', 'gold', 'silver'])
+                    ->whereNotIn('product_type', ['none', 'gold', 'silver', 'paxg', 'xag'])
                     ->exists();
             }
 
@@ -1373,7 +1373,7 @@ class AuthController extends BaseController
                 $size = strtoupper(trim((string) ($row->size ?? '')));
 
                 $symbol = '';
-                if ($productType !== '' && ! in_array($productType, ['NONE', 'GOLD', 'SILVER'], true)) {
+                if ($productType !== '' && ! in_array($productType, ['NONE', 'GOLD', 'SILVER', 'PAXG', 'XAG'], true)) {
                     $symbol = $productType;
                 } elseif ($size !== '' && $enabledAssets->has($size)) {
                     $symbol = $size;

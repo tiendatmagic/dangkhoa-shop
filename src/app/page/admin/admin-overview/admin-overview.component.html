@@ -20,10 +20,12 @@
 
   <div class="grid grid-cols-1 gap-4">
     <div>
-      <label class="block mb-2 text-sm font-medium text-gray-900">CHAIN_ID</label>
+      <label class="block mb-2 text-sm font-medium text-gray-900"
+        >CHAIN_ID</label
+      >
       <input
         type="number"
-        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-600 focus:border-violet-600 rounded-lg"
         [(ngModel)]="chainId"
         placeholder="56"
       />
@@ -31,25 +33,33 @@
     </div>
 
     <div>
-      <label class="block mb-2 text-sm font-medium text-gray-900">RPC URL</label>
+      <label class="block mb-2 text-sm font-medium text-gray-900"
+        >RPC URL</label
+      >
       <input
         type="text"
-        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-600 focus:border-violet-600 rounded-lg"
         [(ngModel)]="rpcUrl"
         placeholder="https://..."
       />
-      <p class="mt-2 text-xs text-gray-600">Required for on-chain payouts (BSC: chainId 56).</p>
+      <p class="mt-2 text-xs text-gray-600">
+        Required for on-chain payouts (BSC: chainId 56).
+      </p>
     </div>
 
     <div>
-      <label class="block mb-2 text-sm font-medium text-gray-900">CONTRACT ADDRESS</label>
+      <label class="block mb-2 text-sm font-medium text-gray-900"
+        >CONTRACT ADDRESS</label
+      >
       <input
         type="text"
-        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-600 focus:border-violet-600 rounded-lg"
         [(ngModel)]="contractAddress"
         placeholder="0x..."
       />
-      <p class="mt-2 text-xs text-gray-600">Required: payout contract that implements withdrawNative/withdrawERC20.</p>
+      <p class="mt-2 text-xs text-gray-600">
+        Required: payout contract that implements withdrawNative/withdrawERC20.
+      </p>
     </div>
 
     <div>
@@ -58,11 +68,13 @@
       >
       <input
         type="text"
-        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-600 focus:border-violet-600 rounded-lg"
         [(ngModel)]="fromAddress"
         placeholder="0x..."
       />
-      <p class="mt-2 text-xs text-gray-600">Sender wallet address (must match PRIVATE_KEY). This wallet pays gas.</p>
+      <p class="mt-2 text-xs text-gray-600">
+        Sender wallet address (must match PRIVATE_KEY). This wallet pays gas.
+      </p>
     </div>
 
     <div>
@@ -71,7 +83,7 @@
       >
       <input
         type="password"
-        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-600 focus:border-violet-600 rounded-lg"
         [(ngModel)]="privateKey"
         [placeholder]="hasPrivateKey ? '•••••••• (set)' : 'Paste private key'"
       />
@@ -100,16 +112,18 @@
       <label class="block mb-2 text-sm font-medium text-gray-900">SYMBOL</label>
       <input
         type="text"
-        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-600 focus:border-violet-600 rounded-lg"
         [(ngModel)]="tokenSymbol"
         placeholder="BNB, USDT, DOGE..."
       />
     </div>
 
     <div>
-      <label class="block mb-2 text-sm font-medium text-gray-900">IS NATIVE</label>
+      <label class="block mb-2 text-sm font-medium text-gray-900"
+        >IS NATIVE</label
+      >
       <select
-        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 border-[1px] border-[#ececec] dark:border-[#46525f] outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 border-[1px] border-[#ececec] dark:border-[#46525f] outline-none dark:focus:border-violet-600 focus:border-violet-600 rounded-lg"
         [(ngModel)]="tokenIsNative"
       >
         <option [ngValue]="false">ERC20</option>
@@ -118,29 +132,35 @@
     </div>
 
     <div *ngIf="!tokenIsNative">
-      <label class="block mb-2 text-sm font-medium text-gray-900">TOKEN ADDRESS</label>
+      <label class="block mb-2 text-sm font-medium text-gray-900"
+        >TOKEN ADDRESS</label
+      >
       <input
         type="text"
-        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 placeholder:text-gray-700 border-[1px] border-[#ececec] dark:border-[#46525f] dark:placeholder-gray-400 outline-none dark:focus:border-violet-600 focus:border-violet-600 rounded-lg"
         [(ngModel)]="tokenAddress"
         placeholder="0x..."
       />
     </div>
 
     <div>
-      <label class="block mb-2 text-sm font-medium text-gray-900">DECIMALS</label>
+      <label class="block mb-2 text-sm font-medium text-gray-900"
+        >DECIMALS</label
+      >
       <input
         type="number"
-        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 border-[1px] border-[#ececec] dark:border-[#46525f] outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 border-[1px] border-[#ececec] dark:border-[#46525f] outline-none dark:focus:border-violet-600 focus:border-violet-600 rounded-lg"
         [(ngModel)]="tokenDecimals"
         placeholder="18"
       />
     </div>
 
     <div>
-      <label class="block mb-2 text-sm font-medium text-gray-900">ENABLED</label>
+      <label class="block mb-2 text-sm font-medium text-gray-900"
+        >ENABLED</label
+      >
       <select
-        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 border-[1px] border-[#ececec] dark:border-[#46525f] outline-none dark:focus:border-violet-700 focus:border-violet-700 rounded-lg"
+        class="text-gray-900 text-sm block w-full p-2.5 bg-[#fafafa] dark:bg-[#1b212c] focus:ring-0 border-[1px] border-[#ececec] dark:border-[#46525f] outline-none dark:focus:border-violet-600 focus:border-violet-600 rounded-lg"
         [(ngModel)]="tokenEnabled"
       >
         <option [ngValue]="true">Enabled</option>
@@ -149,7 +169,11 @@
     </div>
 
     <div>
-      <button class="btn-primary" [disabled]="savingToken" (click)="saveTokenAsset()">
+      <button
+        class="btn-primary"
+        [disabled]="savingToken"
+        (click)="saveTokenAsset()"
+      >
         Save Token
       </button>
     </div>
@@ -174,12 +198,14 @@
           <tr *ngFor="let a of tokenAssets">
             <td class="p-2">{{ a.symbol }}</td>
             <td class="p-2">{{ a.chain_id }}</td>
-            <td class="p-2">{{ a.is_native ? 'Native' : 'ERC20' }}</td>
-            <td class="p-2">{{ a.token_address || '-' }}</td>
+            <td class="p-2">{{ a.is_native ? "Native" : "ERC20" }}</td>
+            <td class="p-2">{{ a.token_address || "-" }}</td>
             <td class="p-2">{{ a.decimals }}</td>
-            <td class="p-2">{{ a.enabled ? 'Yes' : 'No' }}</td>
+            <td class="p-2">{{ a.enabled ? "Yes" : "No" }}</td>
             <td class="p-2">
-              <button class="btn-primary" (click)="deleteToken(a.symbol)">Delete</button>
+              <button class="btn-primary" (click)="deleteToken(a.symbol)">
+                Delete
+              </button>
             </td>
           </tr>
           <tr *ngIf="!tokenAssets || tokenAssets.length === 0">

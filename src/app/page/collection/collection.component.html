@@ -19,65 +19,67 @@
               <label for="Men" class="flex items-center gap-3">
                 <input
                   type="checkbox"
-                  class="text-violet-700 border border-gray-400"
+                  class="text-violet-600 border border-gray-400"
                   id="Men"
                   name="Men"
                   value="men"
                   (change)="onCategoryChange('men', $event)"
                 />
-                <span>Men</span>
+                <span>{{ categoryService.getCategoryName("men") }}</span>
               </label>
             </p>
             <p>
               <label for="Women" class="flex items-center gap-3">
                 <input
                   type="checkbox"
-                  class="text-violet-700 border border-gray-400"
+                  class="text-violet-600 border border-gray-400"
                   id="Women"
                   name="Women"
                   value="women"
                   (change)="onCategoryChange('women', $event)"
                 />
-                <span>Women</span>
+                <span>{{ categoryService.getCategoryName("women") }}</span>
               </label>
             </p>
             <p>
               <label for="Crypto" class="flex items-center gap-3">
                 <input
                   type="checkbox"
-                  class="text-violet-700 border border-gray-400"
+                  class="text-violet-600 border border-gray-400"
                   id="Crypto"
                   name="Crypto"
                   value="crypto"
                   (change)="onCategoryChange('crypto', $event)"
                 />
-                <span>Crypto</span>
+                <span>{{ categoryService.getCategoryName("crypto") }}</span>
               </label>
             </p>
             <p>
               <label for="Gold/Silver" class="flex items-center gap-3">
                 <input
                   type="checkbox"
-                  class="text-violet-700 border border-gray-400"
+                  class="text-violet-600 border border-gray-400"
                   id="Gold/Silver"
                   name="gold/silver"
                   value="gold/silver"
                   (change)="onCategoryChange('gold/silver', $event)"
                 />
-                <span>Gold/Silver</span>
+                <span>{{
+                  categoryService.getCategoryName("gold/silver")
+                }}</span>
               </label>
             </p>
             <p>
               <label for="Other" class="flex items-center gap-3">
                 <input
                   type="checkbox"
-                  class="text-violet-700 border border-gray-400"
+                  class="text-violet-600 border border-gray-400"
                   id="Other"
                   name="Other"
                   value="other"
                   (change)="onCategoryChange('other', $event)"
                 />
-                <span>Other</span>
+                <span>{{ categoryService.getCategoryName("other") }}</span>
               </label>
             </p>
           </div>
@@ -91,7 +93,7 @@
               <label for="all" class="flex items-center gap-3">
                 <input
                   type="radio"
-                  class="text-violet-700 border border-gray-400"
+                  class="text-violet-600 border border-gray-400"
                   id="all"
                   name="price"
                   value="0"
@@ -105,7 +107,7 @@
               <label for="p-50" class="flex items-center gap-3">
                 <input
                   type="radio"
-                  class="text-violet-700 border border-gray-400"
+                  class="text-violet-600 border border-gray-400"
                   id="p-50"
                   name="price"
                   value="50"
@@ -118,7 +120,7 @@
               <label for="p-100" class="flex items-center gap-3">
                 <input
                   type="radio"
-                  class="text-violet-700 border border-gray-400"
+                  class="text-violet-600 border border-gray-400"
                   id="p-100"
                   name="price"
                   value="100"
@@ -166,7 +168,7 @@
         >
           <ng-container *ngFor="let product of productList">
             <a
-              class="hover:shadow-lg p-2 overflow-auto text-gray-700 transition-all rounded-lg shadow cursor-pointer "
+              class="hover:shadow-lg p-2 overflow-auto text-gray-700 transition-all rounded-lg shadow cursor-pointer"
               routerLink="/product/{{ product.id }}"
             >
               <div

@@ -1,4 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { AuthService } from '../../services/auth.service';
+import { ApiCacheService } from '../../services/api-cache.service';
+import { Subject, of } from 'rxjs';
+import { catchError, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-about',
@@ -6,6 +10,57 @@ import { Component } from '@angular/core';
   templateUrl: './about.component.html',
   styleUrl: './about.component.scss'
 })
-export class AboutComponent {
+export class AboutComponent implements OnInit, OnDestroy {
+  loading = true;
+  aboutHtml = '';
+  private destroy$ = new Subject<void>();
 
+  private fallbackHtml = `
+<div class="flex flex-col items-start gap-12 my-10 md:flex-row">
+  <img
+    class="rounded-lg w-full md:max-w-[450px]"
+    alt=""
+    src="https://cdn.hpdecor.vn/wp-content/uploads/2024/03/shop-thoi-trang-big-08.jpg"
+  />
+  <div class="flex flex-col justify-center gap-6 leading-6 text-gray-600 md:w-2/4">
+    <p>About DangKhoa Shop</p>
+    <p>
+      Welcome to DangKhoa Shop – where fashion meets individuality. At DangKhoa
+      Shop, we believe that clothing is more than just fabric; it’s a statement
+      of who you are. Our collections are carefully curated to bring you
+      timeless styles, modern trends, and quality craftsmanship that let you
+      express your true self with confidence.
+    </p>
+    <p>
+      From casual essentials to statement pieces, we provide fashion for men,
+      women, and kids, ensuring that every member of your family finds something
+      they love. Our mission is to make fashion accessible, stylish, and
+      comfortable for everyone.
+    </p>
+    <p>
+      At DangKhoa Shop, we don’t just sell clothes, we share a lifestyle, one
+      built on style, comfort, and authenticity.
+    </p>
+  </div>
+</div>
+`;
+
+  constructor(private auth: AuthService, private apiCache: ApiCacheService) {}
+
+  ngOnInit(): void {
+    this.loading = true;
+    this.apiCache.getCached(
+      'public_customization',
+      this.auth.getPublicCustomization().pipe(catchError(() => of(null)))
+    ).pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
+      const html = res?.about_content;
+      this.aboutHtml = (typeof html === 'string' && html.trim().length > 0) ? html : this.fallbackHtml;
+      this.loading = false;
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 }

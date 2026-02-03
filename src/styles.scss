@@ -46,7 +46,7 @@ body {
 
 @layer components {
   .btn-primary {
-    @apply bg-violet-600 hover:bg-violet-800 shadow-lg shadow-purple-200 px-4 py-3 rounded-lg leading-5 text-sm text-white outline-none min-w-20 duration-200 disabled:bg-none disabled:shadow-none disabled:cursor-not-allowed transition-all;
+    @apply bg-[#5766dc] hover:bg-[#2d3fca] shadow-lg shadow-purple-200 px-4 py-3 rounded-lg leading-5 text-sm text-white outline-none min-w-20 duration-200 disabled:bg-none disabled:shadow-none disabled:cursor-not-allowed transition-all;
     &:hover {
       @apply shadow-xl;
     }
@@ -66,10 +66,10 @@ body {
   }
 
   .btn-outline-primary {
-    @apply border-violet-700 border-[1px] px-4 py-3 rounded-lg leading-5 text-sm text-violet-700 outline-none min-w-20 transition-colors duration-200 disabled:cursor-not-allowed;
+    @apply border-[#5766dc] border-[1px] px-4 py-3 rounded-lg leading-5 text-sm text-[#5766dc] outline-none min-w-20 transition-colors duration-200 disabled:cursor-not-allowed;
   }
 
   .btn-primary-opacity {
-    @apply bg-violet-700 bg-opacity-50 min-w-20 transition-colors duration-200;
+    @apply bg-[#5766dc] bg-opacity-50 min-w-20 transition-colors duration-200;
   }
 }
