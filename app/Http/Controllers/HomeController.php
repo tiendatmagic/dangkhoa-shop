@@ -335,6 +335,7 @@ class HomeController extends BaseController
             'trx' => 'TRXUSDT',
             'sui' => 'SUIUSDT',
             'shib' => 'SHIBUSDT',
+            'doge' => 'DOGEUSDT',
             'near' => 'NEARUSDT',
             'fil' => 'FILUSDT',
             'etc' => 'ETCUSDT',
