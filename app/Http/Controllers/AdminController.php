@@ -220,7 +220,7 @@ class AdminController extends BaseController
         }
 
         if (in_array($productType, ['usdt', 'usdc'])) {
-            return round($quantity * 1);
+            return round($quantity * 1, 6);
         }
 
         $symbolMap = [
