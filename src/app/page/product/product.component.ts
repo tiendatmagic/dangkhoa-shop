@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../services/auth.service';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-product',
@@ -27,7 +28,8 @@ export class ProductComponent implements OnInit, OnDestroy {
     private auth: AuthService,
     private dataService: DataService,
     private route: ActivatedRoute,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private sanitizer: DomSanitizer
   ) { }
 
   async ngOnInit() {
@@ -74,6 +76,10 @@ export class ProductComponent implements OnInit, OnDestroy {
 
   handleImageError(event: any) {
     event.target.src = 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg';
+  }
+
+  sanitizeHtml(html: string) {
+    return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 
   ngOnDestroy() {

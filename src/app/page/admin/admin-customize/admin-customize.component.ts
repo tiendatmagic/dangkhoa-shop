@@ -206,22 +206,16 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
     if (this.saving) return;
     this.saving = true;
     // include selected collections and any category images (Shop By Category)
-    const collectionsPayload: any[] = this.selectedCollections.map(c => ({ id: c.id, name: c.name, image: c.image }));
-    // merge category images and custom names (use category id like 'men','women' etc.)
-    this.categories.forEach(cat => {
-      if (cat.image || cat.customName) {
-        // if exists in selected collections, update image/customName; otherwise push as standalone entry
-        const found = collectionsPayload.find(x => x.id === cat.id);
-        if (found) {
-          if (cat.image) found.image = cat.image;
-          if (cat.customName) found.customName = cat.customName;
-        } else {
-          const payload: any = { id: cat.id, name: cat.name };
-          if (cat.image) payload.image = cat.image;
-          if (cat.customName) payload.customName = cat.customName;
-          collectionsPayload.push(payload);
-        }
+    const collectionsPayload: any[] = this.selectedCollections.map(c => {
+      const payload: any = { id: c.id, name: c.name };
+      // Add image and customName from the fixed categories if they exist
+      const cat = this.categories.find(x => x.id === c.id);
+      if (cat) {
+        if (cat.image) payload.image = cat.image;
+        if (cat.customName) payload.customName = cat.customName;
       }
+      if (c.image) payload.image = c.image;
+      return payload;
     });
 
     const payload = {

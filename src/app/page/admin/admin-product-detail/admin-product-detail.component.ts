@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { DataService } from '../../../services/data.service';
 import { CategoryService } from '../../../services/category.service';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 @Component({
   selector: 'app-admin-product-detail',
@@ -13,6 +14,22 @@ import { CategoryService } from '../../../services/category.service';
   styleUrl: './admin-product-detail.component.scss'
 })
 export class AdminProductDetailComponent {
+  public Editor: any = ClassicEditor;
+  public editorConfig: any = {
+    toolbar: {
+      items: [
+        'heading',
+        '|',
+        'bold', 'italic', 'underline', 'link',
+        '|',
+        'bulletedList', 'numberedList',
+        '|',
+        'blockQuote',
+        '|',
+        'undo', 'redo'
+      ]
+    }
+  };
   productName: FormControl;
   price: FormControl;
   quantity: FormControl;
@@ -40,7 +57,7 @@ export class AdminProductDetailComponent {
     this.category = new FormControl('');
     this.isBestSeller = new FormControl('0', [Validators.required]);
     this.size = new FormControl('', [Validators.required, Validators.minLength(1)]);
-    this.description = new FormControl('', [Validators.maxLength(1000)]);
+    this.description = new FormControl('', [Validators.maxLength(50000)]);
 
     this.productForm = fb.group({
       productName: this.productName,

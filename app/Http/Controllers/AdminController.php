@@ -187,7 +187,7 @@ class AdminController extends BaseController
 
     private function calculateDynamicPrice($productType, $quantity)
     {
-        $apiKey = env('GOLDAPI_KEY', 'goldapi-41ndhsmghqq7ku-io');
+        $apiKey = env('GOLDAPI_KEY', 'goldapi-bjhc1smldvh897-io');
 
         if ($productType === 'xag') {
             $response = Http::withHeaders(['x-access-token' => $apiKey])->get('https://www.goldapi.io/api/XAG/USD');
@@ -283,7 +283,7 @@ class AdminController extends BaseController
             'is_best_seller' => 'required|in:0,1',
             'size' => 'nullable|array',
             'image' => 'nullable|string',
-            'description' => 'nullable|string|max:1000',
+            'description' => ['nullable', 'string', 'max:50000', 'not_regex:/<\s*script\b/i'],
         ]);
 
         if ($validator->fails()) {
@@ -367,7 +367,7 @@ class AdminController extends BaseController
             'quantity' => 'nullable|numeric|min:0',
             'size' => 'required|array',
             'image' => 'required|string',
-            'description' => 'nullable|string|max:1000',
+            'description' => ['nullable', 'string', 'max:50000', 'not_regex:/<\s*script\b/i'],
         ]);
 
         if ($validator->fails()) {
