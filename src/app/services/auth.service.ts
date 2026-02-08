@@ -250,7 +250,7 @@ export class AuthService {
         this.onLoad = true;
 
         // refresh succeeded; update profile/admin flags
-        this.onMe({}).subscribe({ next: () => {}, error: () => {} });
+        this.onMe({}).subscribe({ next: () => { }, error: () => { } });
       }),
       catchError((error) => {
         this.isLogin = false;
@@ -385,6 +385,12 @@ export class AuthService {
   }
   deleteProduct(data: any) {
     return this.http.post(`${this.urlEnv}api/product/delete-product`, data).pipe(
+      catchError((error: any) => this.handleError(error))
+    );
+  }
+
+  deleteProductImage(data: any) {
+    return this.http.post(`${this.urlEnv}api/product/delete-product-image`, data).pipe(
       catchError((error: any) => this.handleError(error))
     );
   }

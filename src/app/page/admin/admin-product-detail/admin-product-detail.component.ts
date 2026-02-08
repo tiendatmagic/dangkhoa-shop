@@ -47,6 +47,11 @@ export class AdminProductDetailComponent {
   pendingImage: File | null = null;
   urlLink: string = '';
 
+  // Multiple images support
+  productImages: string[] = [];
+  pendingImages: File[] = [];
+  pendingImageUrls: string[] = [];
+
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   constructor(private route: ActivatedRoute, private fb: FormBuilder, private router: Router, private http: HttpClient, private auth: AuthService, private dataService: DataService, public categoryService: CategoryService) {
@@ -90,9 +95,14 @@ export class AdminProductDetailComponent {
             description: res.description || ''
           });
 
-          if (Array.isArray(res.image) && res.image.length > 0) {
-            this.imageUrl = res.image[0];
+          // Load images
+          if (Array.isArray(res.image)) {
+            this.productImages = res.image;
+            if (this.productImages.length > 0) {
+              this.imageUrl = this.productImages[0];
+            }
           } else if (res.image) {
+            this.productImages = [res.image];
             this.imageUrl = res.image;
           }
 
@@ -112,19 +122,49 @@ export class AdminProductDetailComponent {
   }
 
   onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file && file.type.startsWith('image/') && file.size < 2 * 1024 * 1024) {
-      this.pendingImage = file;
-
-      if (this.previewUrl) {
-        URL.revokeObjectURL(this.previewUrl);
+    const files = event.target.files;
+    if (files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file && file.type.startsWith('image/') && file.size < 2 * 1024 * 1024) {
+          this.addImage(file);
+        } else {
+          this.dataService.showNotify('Error', `File ${file.name} is not valid`, 'error', true, true, false);
+        }
       }
-      this.previewUrl = URL.createObjectURL(file);
-      event.target.value = '';
-    } else {
-      this.dataService.showNotify('Error', 'The file is not valid', 'error', true, true, false);
-      event.target.value = '';
     }
+    event.target.value = '';
+  }
+
+  addImage(file: File) {
+    this.pendingImages.push(file);
+    const previewUrl = URL.createObjectURL(file);
+    this.pendingImageUrls.push(previewUrl);
+  }
+
+  removeImage(index: number) {
+    if (this.pendingImageUrls[index]) {
+      URL.revokeObjectURL(this.pendingImageUrls[index]);
+    }
+    this.pendingImages.splice(index, 1);
+    this.pendingImageUrls.splice(index, 1);
+  }
+
+  removeExistingImage(index: number) {
+    const imageUrl = this.productImages[index];
+
+    this.auth.deleteProductImage({ id: this.id, image_url: imageUrl }).subscribe(
+      (res: any) => {
+        this.productImages = res.product.image || [];
+        if (this.productImages.length > 0) {
+          this.imageUrl = this.productImages[0];
+        }
+        this.dataService.showNotify('Success', 'Image deleted successfully', 'success', true, true, false);
+      },
+      (error: any) => {
+        this.dataService.showNotify('Error', 'Failed to delete image', 'error', true, true, false);
+      }
+    );
   }
 
   updateProduct() {
@@ -133,32 +173,52 @@ export class AdminProductDetailComponent {
       const formData = this.productForm.value;
       const sizeArray = formData.size ? formData.size.split(',').map((s: any) => s.trim()).filter((s: any) => s) : [];
 
-      if (this.pendingImage) {
-        this.auth.uploadImage(this.pendingImage).subscribe(
-          (response: { url: string }) => {
-            if (this.previewUrl) URL.revokeObjectURL(this.previewUrl);
-            this.pendingImage = null;
-            this.submitPayload(sizeArray, formData, response.url);
-          },
-          (error: any) => {
-            this.dataService.showNotify('Error', 'Failed to upload image', 'error', true, true, false);
-            this.isUploading = false;
-          }
-        );
+      if (this.pendingImages.length > 0) {
+        this.uploadNewImages(sizeArray, formData);
       } else {
-        this.submitPayload(sizeArray, formData, this.imageUrl);
+        this.submitPayload(sizeArray, formData);
       }
     } else {
-      if (!this.pendingImage && !this.imageUrl) {
-        this.dataService.showNotify('Error', 'Please select an image', 'error', true, true, false);
-      } else if (!this.productForm.valid) {
+      if (!this.productForm.valid) {
         this.productForm.markAllAsTouched();
         this.dataService.showNotify('Error', 'Please check the form', 'error', true, true, false);
       }
     }
   }
 
-  private submitPayload(sizeArray: string[], formData: any, finalImageUrl: string) {
+  private uploadNewImages(sizeArray: string[], formData: any) {
+    const uploadPromises = this.pendingImages.map((file) => {
+      return new Promise<string>((resolve, reject) => {
+        this.auth.uploadImage(file).subscribe(
+          (res: { url: string }) => {
+            resolve(res.url);
+          },
+          (err) => {
+            reject(err);
+          }
+        );
+      });
+    });
+
+    Promise.all(uploadPromises)
+      .then((imageUrls: string[]) => {
+        // Add new images to existing images
+        this.productImages = [...this.productImages, ...imageUrls];
+
+        // Clean up preview URLs
+        this.pendingImageUrls.forEach(url => URL.revokeObjectURL(url));
+        this.pendingImages = [];
+        this.pendingImageUrls = [];
+
+        this.submitPayload(sizeArray, formData);
+      })
+      .catch((err) => {
+        this.dataService.showNotify('Error', 'Failed to upload one or more images', 'error', true, true, false);
+        this.isUploading = false;
+      });
+  }
+
+  private submitPayload(sizeArray: string[], formData: any) {
     const payload = {
       id: this.id,
       name: formData.productName,
@@ -168,7 +228,7 @@ export class AdminProductDetailComponent {
       quantity: formData.quantity,
       is_best_seller: parseInt(formData.isBestSeller),
       size: sizeArray,
-      image: finalImageUrl,
+      images: this.productImages,
       description: formData.description || ''
     };
 

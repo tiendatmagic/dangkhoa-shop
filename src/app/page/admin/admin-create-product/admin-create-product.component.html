@@ -16,6 +16,7 @@
       #fileInput
       (change)="onFileSelected($event)"
       accept="image/*"
+      multiple
       hidden
     />
 
@@ -40,7 +41,7 @@
                     <label
                       for="image"
                       class="block mb-2 text-sm font-medium text-gray-900"
-                      >Product image <span class="text-red-500">*</span></label
+                      >Product images <span class="text-red-500">*</span></label
                     >
                     <div
                       class="relative w-full cursor-pointer"
@@ -51,8 +52,9 @@
                       >
                         <img
                           [src]="
-                            previewUrl ||
-                            'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
+                            pendingImageUrls.length > 0
+                              ? pendingImageUrls[0]
+                              : 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
                           "
                           alt=""
                           class="group-hover:scale-110 object-cover w-full h-full transition-transform"
@@ -84,6 +86,45 @@
                         </div>
                       </div>
                     </div>
+                    <!-- Images list -->
+                    <div
+                      class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3"
+                      *ngIf="pendingImageUrls.length > 0"
+                    >
+                      <div
+                        *ngFor="let url of pendingImageUrls; let i = index"
+                        class="w-[24%] sm:w-full sm:mb-3 flex-shrink-0 cursor-pointer border-2 rounded-md border-violet-600 relative group overflow-hidden aspect-square"
+                      >
+                        <img
+                          [src]="url"
+                          alt=""
+                          class="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          (click)="removeImage(i); $event.stopPropagation()"
+                          class="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.5"
+                            stroke="currentColor"
+                            class="w-4 h-4"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-600">
+                      {{ pendingImageUrls.length }} image(s) selected
+                    </p>
                   </div>
                 </div>
               </div>

@@ -44,6 +44,8 @@ export class AdminCreateProductComponent {
   isUploading: boolean = false;
   previewUrl: string | null = null;
   pendingImage: File | null = null;
+  pendingImages: File[] = [];
+  pendingImageUrls: string[] = [];
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
@@ -77,44 +79,49 @@ export class AdminCreateProductComponent {
     });
   }
 
-
   onImageClick() {
     this.fileInput.nativeElement.click();
   }
 
   onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file && file.type.startsWith('image/') && file.size < 2 * 1024 * 1024) {
-      this.pendingImage = file;
-      if (this.previewUrl) URL.revokeObjectURL(this.previewUrl);
-      this.previewUrl = URL.createObjectURL(file);
-      event.target.value = '';
-    } else {
-      this.dataService.showNotify('Error', 'The file is not valid', 'error', true, true, false);
-      event.target.value = '';
+    const files = event.target.files;
+    if (files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file && file.type.startsWith('image/') && file.size < 2 * 1024 * 1024) {
+          this.addImage(file);
+        } else {
+          this.dataService.showNotify('Error', `File ${file.name} is not valid`, 'error', true, true, false);
+        }
+      }
     }
+    event.target.value = '';
+  }
+
+  addImage(file: File) {
+    this.pendingImages.push(file);
+    const previewUrl = URL.createObjectURL(file);
+    this.pendingImageUrls.push(previewUrl);
+  }
+
+  removeImage(index: number) {
+    if (this.pendingImageUrls[index]) {
+      URL.revokeObjectURL(this.pendingImageUrls[index]);
+    }
+    this.pendingImages.splice(index, 1);
+    this.pendingImageUrls.splice(index, 1);
   }
 
   createProduct() {
-    if (this.productForm.valid && this.pendingImage && !this.isUploading) {
+    if (this.productForm.valid && this.pendingImages.length > 0 && !this.isUploading) {
       this.isUploading = true;
       const formData = this.productForm.value;
       const sizeArray = formData.size ? formData.size.split(',').map((s: any) => s.trim()).filter((s: any) => s) : [];
 
-      this.auth.uploadImage(this.pendingImage).subscribe(
-        (res: { url: string }) => {
-          if (this.previewUrl) URL.revokeObjectURL(this.previewUrl);
-          this.pendingImage = null;
-          this.submitPayload(sizeArray, formData, res.url);
-        },
-        (err) => {
-          this.dataService.showNotify('Error', 'Failed to upload image', 'error', true, true, false);
-          this.isUploading = false;
-        }
-      );
+      this.uploadAllImages(sizeArray, formData);
     } else {
-      if (!this.pendingImage) {
-        this.dataService.showNotify('Error', 'Please select an image', 'error', true, true, false);
+      if (this.pendingImages.length === 0) {
+        this.dataService.showNotify('Error', 'Please select at least one image', 'error', true, true, false);
       } else if (!this.productForm.valid) {
         this.productForm.markAllAsTouched();
         this.dataService.showNotify('Error', 'Please check the form', 'error', true, true, false);
@@ -122,7 +129,35 @@ export class AdminCreateProductComponent {
     }
   }
 
-  private submitPayload(sizeArray: string[], formData: any, imageUrl: string) {
+  private uploadAllImages(sizeArray: string[], formData: any) {
+    const uploadPromises = this.pendingImages.map((file) => {
+      return new Promise<string>((resolve, reject) => {
+        this.auth.uploadImage(file).subscribe(
+          (res: { url: string }) => {
+            resolve(res.url);
+          },
+          (err) => {
+            reject(err);
+          }
+        );
+      });
+    });
+
+    Promise.all(uploadPromises)
+      .then((imageUrls: string[]) => {
+        // Clean up preview URLs
+        this.pendingImageUrls.forEach(url => URL.revokeObjectURL(url));
+        this.pendingImages = [];
+        this.pendingImageUrls = [];
+        this.submitPayload(sizeArray, formData, imageUrls);
+      })
+      .catch((err) => {
+        this.dataService.showNotify('Error', 'Failed to upload one or more images', 'error', true, true, false);
+        this.isUploading = false;
+      });
+  }
+
+  private submitPayload(sizeArray: string[], formData: any, imageUrls: string[]) {
     const payload = {
       name: formData.productName,
       price: formData.price,
@@ -131,7 +166,7 @@ export class AdminCreateProductComponent {
       quantity: formData.quantity,
       is_best_seller: parseInt(formData.isBestSeller),
       size: sizeArray,
-      image: imageUrl,
+      images: imageUrls,
       description: formData.description || ''
     };
 
