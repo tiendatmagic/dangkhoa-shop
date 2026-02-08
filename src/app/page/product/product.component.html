@@ -35,9 +35,11 @@
         <h1 class="mt-2 text-2xl font-medium">{{ productData.name }}</h1>
 
         <p class="mt-3 text-2xl font-medium">${{ productData.price }}</p>
-        <p class="md:w-4/5 mt-3 text-gray-500">
-          {{ productData.description }}
-        </p>
+        <div
+          class="md:w-4/5 mt-3 text-gray-500 prose prose-sm max-w-none"
+          [innerHTML]="sanitizeHtml(productData.description)"
+          *ngIf="productData.description"
+        ></div>
         <div class="flex flex-col mt-3">
           <p>Select Type</p>
 

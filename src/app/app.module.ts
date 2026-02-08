@@ -47,6 +47,7 @@ import { AdminOverviewComponent } from './page/admin/admin-overview/admin-overvi
 import { AdminCustomizeComponent } from './page/admin/admin-customize/admin-customize.component';
 import { CommonModule } from '@angular/common';
 import { NgApexchartsModule } from 'ng-apexcharts';
+import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
 
 const globalRippleConfig: RippleGlobalOptions = {
   animation: {
@@ -107,6 +108,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     AdminCustomizeComponent,
     FormsModule,
     NgApexchartsModule,
+    CKEditorModule,
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,

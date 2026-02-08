@@ -1,0 +1,11 @@
+/* Increase CKEditor editable area size inside this component */
+:host ::ng-deep .admin-ck-editor .ck-editor__editable_inline {
+  min-height: 150px;
+  max-height: 400px;
+  overflow: auto;
+}
+
+/* Ensure the editor takes full available width */
+:host ::ng-deep .admin-ck-editor .ck-editor__editable {
+  width: 100%;
+}
