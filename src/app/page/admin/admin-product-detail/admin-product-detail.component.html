@@ -17,6 +17,7 @@
       #fileInput
       (change)="onFileSelected($event)"
       accept="image/*"
+      multiple
       hidden
     />
 
@@ -35,7 +36,7 @@
                     <label
                       for="image"
                       class="block mb-2 text-sm font-medium text-gray-900"
-                      >Product image <span class="text-red-500">*</span></label
+                      >Product images <span class="text-red-500">*</span></label
                     >
                     <div
                       class="relative w-full cursor-pointer"
@@ -45,7 +46,7 @@
                         class="aspect-square max-w-48 max-h-48 group relative overflow-hidden rounded-lg"
                       >
                         <img
-                          [src]="previewUrl || urlLink + imageUrl"
+                          [src]="urlLink + imageUrl"
                           alt=""
                           (error)="handleImageError($event)"
                           class="group-hover:scale-110 object-cover w-full h-full transition-transform"
@@ -76,6 +77,115 @@
                           </div>
                         </div>
                       </div>
+                    </div>
+
+                    <!-- Existing images list -->
+                    <div class="mt-4" *ngIf="productImages.length > 0">
+                      <p class="text-sm font-medium mb-2">
+                        Existing images ({{ productImages.length }})
+                      </p>
+                      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <div
+                          *ngFor="let image of productImages; let i = index"
+                          class="w-[24%] sm:w-full sm:mb-3 flex-shrink-0 cursor-pointer border-2 rounded-md border-violet-600 relative group overflow-hidden aspect-square"
+                        >
+                          <img
+                            [src]="urlLink + image"
+                            alt=""
+                            (error)="handleImageError($event)"
+                            class="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            (click)="
+                              removeExistingImage(i); $event.stopPropagation()
+                            "
+                            class="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke-width="1.5"
+                              stroke="currentColor"
+                              class="w-4 h-4"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- New images to upload -->
+                    <div class="mt-4" *ngIf="pendingImageUrls.length > 0">
+                      <p class="text-sm font-medium mb-2">
+                        New images to add ({{ pendingImageUrls.length }})
+                      </p>
+                      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <div
+                          *ngFor="let url of pendingImageUrls; let i = index"
+                          class="w-[24%] sm:w-full sm:mb-3 flex-shrink-0 cursor-pointer border-2 rounded-md border-green-600 relative group overflow-hidden aspect-square"
+                        >
+                          <img
+                            [src]="url"
+                            alt=""
+                            class="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            (click)="removeImage(i); $event.stopPropagation()"
+                            class="absolute top-0 right-0 bg-orange-500 hover:bg-orange-600 text-white p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke-width="1.5"
+                              stroke="currentColor"
+                              class="w-4 h-4"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Add more images section -->
+                    <div class="mt-4">
+                      <button
+                        type="button"
+                        (click)="onImageClick()"
+                        class="w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors duration-200"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="w-5 h-5 inline-block mr-2"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M12 4.5v15m7.5-7.5h-15"
+                          />
+                        </svg>
+                        Add More Images
+                      </button>
+                      <p class="text-xs text-gray-500 mt-2">
+                        Click to select multiple images (optional)
+                      </p>
                     </div>
                   </div>
                 </div>

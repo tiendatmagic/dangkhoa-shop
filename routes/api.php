@@ -89,6 +89,7 @@ Route::group([
     Route::post('upload-image', [AdminController::class, 'upload']);
     Route::post('create-product', [AdminController::class, 'createProduct']);
     Route::post('delete-product', [AdminController::class, 'deleteProduct']);
+    Route::post('delete-product-image', [AdminController::class, 'deleteProductImage']);
 });
 
 Route::group(

@@ -283,6 +283,8 @@ class AdminController extends BaseController
             'is_best_seller' => 'required|in:0,1',
             'size' => 'nullable|array',
             'image' => 'nullable|string',
+            'images' => 'nullable|array',
+            'images.*' => 'string',
             'description' => ['nullable', 'string', 'max:50000', 'not_regex:/<\s*script\b/i'],
         ]);
 
@@ -318,9 +320,25 @@ class AdminController extends BaseController
         }
 
         $product->price = $price;
-        if ($request->image) {
-            $product->image = json_encode([$request->image]);
+
+        // Handle images - support both single image (legacy) and multiple images (new)
+        if ($request->images && is_array($request->images) && count($request->images) > 0) {
+            // If multiple images provided, use them
+            $product->image = json_encode($request->images);
+        } elseif ($request->image) {
+            // Get existing images or start with empty array
+            $existingImages = json_decode($product->image, true) ?? [];
+            if (!is_array($existingImages)) {
+                $existingImages = [$existingImages];
+            }
+
+            // Add new image if not already present
+            if (!in_array($request->image, $existingImages)) {
+                $existingImages[] = $request->image;
+            }
+            $product->image = json_encode($existingImages);
         }
+
         $product->save();
 
         $product->image = json_decode($product->image);
@@ -366,12 +384,20 @@ class AdminController extends BaseController
             'is_best_seller' => 'required|in:0,1',
             'quantity' => 'nullable|numeric|min:0',
             'size' => 'required|array',
-            'image' => 'required|string',
+            'image' => 'nullable|string',
+            'images' => 'nullable|array',
+            'images.*' => 'string',
             'description' => ['nullable', 'string', 'max:50000', 'not_regex:/<\s*script\b/i'],
         ]);
 
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 422);
+        }
+
+        // At least one image is required for create
+        $hasImages = ($request->image || ($request->images && is_array($request->images) && count($request->images) > 0));
+        if (!$hasImages) {
+            return response()->json(['error' => ['image' => ['At least one image is required']]], 422);
         }
 
         $productType = $request->product_type ?? 'none';
@@ -400,7 +426,14 @@ class AdminController extends BaseController
         $product->is_best_seller = $request->is_best_seller;
         $product->quantity = $quantity;
         $product->size = json_encode($request->size);
-        $product->image = json_encode([$request->image]);
+
+        // Handle images - support both single image (legacy) and multiple images (new)
+        if ($request->images && is_array($request->images) && count($request->images) > 0) {
+            $product->image = json_encode($request->images);
+        } elseif ($request->image) {
+            $product->image = json_encode([$request->image]);
+        }
+
         $product->description = $request->description ?? '';
         $product->save();
 
@@ -409,6 +442,46 @@ class AdminController extends BaseController
 
         return response()->json([
             'message' => 'Product created successfully',
+            'product' => $product,
+        ]);
+    }
+
+    public function deleteProductImage(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|exists:products,id',
+            'image_url' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
+        }
+
+        $product = Products::find($request->id);
+        $images = json_decode($product->image, true) ?? [];
+
+        if (!is_array($images)) {
+            $images = [$images];
+        }
+
+        // Remove the image URL from the array
+        $images = array_filter($images, function ($img) use ($request) {
+            return $img !== $request->image_url;
+        });
+
+        // At least one image must remain
+        if (empty($images)) {
+            return response()->json(['error' => 'Product must have at least one image'], 422);
+        }
+
+        $product->image = json_encode(array_values($images));
+        $product->save();
+
+        $product->image = json_decode($product->image);
+        $product->size = json_decode($product->size);
+
+        return response()->json([
+            'message' => 'Image deleted successfully',
             'product' => $product,
         ]);
     }
