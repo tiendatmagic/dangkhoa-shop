@@ -58,7 +58,7 @@ export class AdminCreateProductComponent {
     private http: HttpClient,
     public categoryService: CategoryService
   ) {
-    this.productName = new FormControl('', [Validators.required, Validators.minLength(1), Validators.maxLength(30)]);
+    this.productName = new FormControl('', [Validators.required, Validators.minLength(1), Validators.maxLength(60)]);
     this.price = new FormControl(0, [Validators.required, Validators.min(0)]);
     this.quantity = new FormControl('', [Validators.min(0)]);
     this.productType = new FormControl('');
