@@ -55,7 +55,7 @@ export class AdminProductDetailComponent {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   constructor(private route: ActivatedRoute, private fb: FormBuilder, private router: Router, private http: HttpClient, private auth: AuthService, private dataService: DataService, public categoryService: CategoryService) {
-    this.productName = new FormControl('', [Validators.required, Validators.minLength(1), Validators.maxLength(30)]);
+    this.productName = new FormControl('', [Validators.required, Validators.minLength(1), Validators.maxLength(60)]);
     this.price = new FormControl('', [Validators.required, Validators.min(0)]);
     this.quantity = new FormControl('', [Validators.min(0)]);
     this.productType = new FormControl('');

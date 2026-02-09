@@ -88,7 +88,7 @@
                     </div>
                     <!-- Images list -->
                     <div
-                      class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3"
+                      class="sm:grid-cols-3 grid grid-cols-2 gap-3 mt-4"
                       *ngIf="pendingImageUrls.length > 0"
                     >
                       <div
@@ -98,12 +98,12 @@
                         <img
                           [src]="url"
                           alt=""
-                          class="w-full h-full object-cover"
+                          class="object-cover w-full h-full"
                         />
                         <button
                           type="button"
                           (click)="removeImage(i); $event.stopPropagation()"
-                          class="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          class="hover:bg-red-600 group-hover:opacity-100 absolute top-0 right-0 p-1 text-white transition-opacity bg-red-500 opacity-0"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -125,13 +125,13 @@
                     <p class="mt-2 text-sm text-gray-600">
                       {{ pendingImageUrls.length }} image(s) selected
                     </p>
-                    
+
                     <!-- Add more images button -->
                     <div class="mt-4">
                       <button
                         type="button"
                         (click)="onImageClick()"
-                        class="w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors duration-200"
+                        class="hover:bg-blue-600 w-full px-4 py-2 font-medium text-white transition-colors duration-200 bg-blue-500 rounded-lg"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -139,7 +139,7 @@
                           viewBox="0 0 24 24"
                           stroke-width="1.5"
                           stroke="currentColor"
-                          class="w-5 h-5 inline-block mr-2"
+                          class="inline-block w-5 h-5 mr-2"
                         >
                           <path
                             stroke-linecap="round"
@@ -147,9 +147,13 @@
                             d="M12 4.5v15m7.5-7.5h-15"
                           />
                         </svg>
-                        {{ pendingImageUrls.length > 0 ? 'Add More Images' : 'Select Images' }}
+                        {{
+                          pendingImageUrls.length > 0
+                            ? "Add More Images"
+                            : "Select Images"
+                        }}
                       </button>
-                      <p class="text-xs text-gray-500 mt-2">
+                      <p class="mt-2 text-xs text-gray-500">
                         Click to select multiple images (required)
                       </p>
                     </div>
@@ -174,7 +178,7 @@
                       placeholder="Enter product name"
                       [formControl]="productName"
                       minlength="1"
-                      maxlength="30"
+                      maxlength="60"
                       required
                     />
                   </div>
@@ -362,7 +366,9 @@
               class="btn-primary w-full"
               matRipple
               matRippleColor="#ffffff66"
-              [disabled]="isUploading || !productForm.valid || pendingImages.length === 0"
+              [disabled]="
+                isUploading || !productForm.valid || pendingImages.length === 0
+              "
             >
               {{ isUploading ? "Uploading..." : "Create" }}
             </button>
