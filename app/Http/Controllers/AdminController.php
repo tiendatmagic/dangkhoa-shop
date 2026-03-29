@@ -354,7 +354,7 @@ class AdminController extends BaseController
     {
         try {
             $request->validate([
-                'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             ]);
 
             $file = $request->file('image');
@@ -537,22 +537,18 @@ class AdminController extends BaseController
     // Get admin customization (latest)
     public function getCustomization()
     {
-        $cacheKey = 'customization_public';
-        $data = Cache::remember($cacheKey, now()->addMinutes(5), function () {
-            $custom = Customization::orderBy('id', 'desc')->first();
-            if (!$custom) {
-                return ['slides' => [], 'collections' => [], 'banner' => '', 'about_content' => '', 'contact_content' => ''];
-            }
-            return [
-                'slides' => $custom->slides ?? [],
-                'collections' => $custom->collections ?? [],
-                'banner' => $custom->banner ?? '',
-                'about_content' => (string) ($custom->about_content ?? ''),
-                'contact_content' => (string) ($custom->contact_content ?? ''),
-            ];
-        });
+        $custom = Customization::orderBy('id', 'desc')->first();
+        if (!$custom) {
+            return response()->json(['slides' => [], 'collections' => [], 'banner' => '', 'about_content' => '', 'contact_content' => ''], 200);
+        }
 
-        return response()->json($data, 200);
+        return response()->json([
+            'slides' => $custom->slides ?? [],
+            'collections' => $custom->collections ?? [],
+            'banner' => $custom->banner ?? '',
+            'about_content' => (string) ($custom->about_content ?? ''),
+            'contact_content' => (string) ($custom->contact_content ?? ''),
+        ], 200);
     }
 
     // Save customization (create or update latest)
@@ -597,16 +593,6 @@ class AdminController extends BaseController
                 'about_content' => $data['about_content'] ?? '',
                 'contact_content' => $data['contact_content'] ?? '',
             ]);
-
-            // Refresh cache so public endpoint returns latest immediately
-            $cacheKey = 'customization_public';
-            Cache::put($cacheKey, [
-                'slides' => $custom->slides ?? [],
-                'collections' => $custom->collections ?? [],
-                'banner' => $custom->banner ?? '',
-                'about_content' => (string) ($custom->about_content ?? ''),
-                'contact_content' => (string) ($custom->contact_content ?? ''),
-            ], now()->addMinutes(5));
 
             return response()->json(['message' => 'Customization saved', 'data' => $custom], 200);
         } catch (\Exception $e) {
