@@ -21,6 +21,10 @@ use App\Http\Controllers\RegisterController;
 
 
 
+Route::get('login', function() {
+    return response()->json(['error' => 'Unauthorized', 'message' => 'Please login'], 401);
+})->name('login');
+
 Route::group([
     'middleware' => 'api',
     'prefix' => 'auth'

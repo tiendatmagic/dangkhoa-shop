@@ -7,11 +7,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Services\DynamicPriceService;
 use Carbon\Carbon;
 use Illuminate\Routing\Controller as BaseController;
 
 class HomeController extends BaseController
 {
+    protected $priceService;
+ 
+    public function __construct(DynamicPriceService $priceService)
+    {
+        $this->priceService = $priceService;
+    }
     /**
      * Lấy sản phẩm cho trang Home
      */
@@ -250,8 +257,8 @@ class HomeController extends BaseController
             if ($cachedPrice !== null) continue;
 
             try {
-                $dynamicPrice = $this->calculateDynamicPriceWithTimeout($productType, $quantity);
-                if ($dynamicPrice !== null) {
+                $dynamicPrice = $this->priceService->getPrice($productType, $quantity);
+                if ($dynamicPrice !== null && $dynamicPrice > 0) {
                     Cache::put($cacheKey, $dynamicPrice, $cacheDuration);
                 }
             } catch (\Exception $e) {
@@ -292,73 +299,5 @@ class HomeController extends BaseController
         }
     }
 
-    /**
-     * Wrapper gọi hàm tính giá
-     */
-    private function calculateDynamicPriceWithTimeout($productType, $quantity)
-    {
-        return $this->calculateDynamicPrice($productType, $quantity);
-    }
 
-    /**
-     * Hàm tính giá động theo loại sản phẩm
-     */
-    private function calculateDynamicPrice($productType, $quantity)
-    {
-        $apiKey = env('GOLDAPI_KEY');
-
-        if ($productType === 'xag') {
-            $response = Http::withHeaders(['x-access-token' => $apiKey])->timeout(5)->get("https://www.goldapi.io/api/XAG/USD");
-            $price = $response->successful() ? $response->json()['price'] : null;
-            return $price ? round($price * $quantity) : null;
-        }
-
-        if ($productType === 'silver') {
-            $response = Http::withHeaders(['x-access-token' => $apiKey])->timeout(5)->get("https://www.goldapi.io/api/XAG/USD");
-            $price = $response->successful() ? $response->json()['price'] : null;
-            return $price ? round($price * $quantity) : null;
-        }
-
-        if ($productType === 'gold' || $productType === 'paxg') {
-            $response = Http::withHeaders(['x-access-token' => $apiKey])->timeout(5)->get("https://www.goldapi.io/api/XAU/USD");
-            $price = $response->successful() ? $response->json()['price'] / 10 : null;
-            return $price ? round($price * $quantity) : null;
-        }
-
-        $symbolMap = [
-            'eth' => 'ETHUSDT',
-            'bnb' => 'BNBUSDT',
-            'sol' => 'SOLUSDT',
-            'pol' => 'POLUSDT',
-            'btc' => 'BTCUSDT',
-            'xrp' => 'XRPUSDT',
-            'trx' => 'TRXUSDT',
-            'sui' => 'SUIUSDT',
-            'shib' => 'SHIBUSDT',
-            'doge' => 'DOGEUSDT',
-            'near' => 'NEARUSDT',
-            'fil' => 'FILUSDT',
-            'etc' => 'ETCUSDT',
-            'ena' => 'ENAUSDT',
-            'ondo' => 'ONDOUSDT',
-            'link' => 'LINKUSDT',
-            'ada' => 'ADAUSDT',
-            'tao' => 'TAOUSDT',
-            'arb' => 'ARBUSDT',
-            'apt' => 'APTUSDT',
-            'aave' => 'AAVEUSDT',
-            'ltc' => 'LTCUSDT',
-            'usdt' => 'USDT',
-            'usdc' => 'USDC'
-        ];
-
-        if (in_array($productType, ['usdt', 'usdc'])) return $quantity * 1;
-
-        if (!isset($symbolMap[$productType])) return null;
-
-        $response = Http::timeout(5)->get("https://api.binance.com/api/v3/ticker/price", ['symbol' => $symbolMap[$productType]]);
-        $spotPrice = $response->successful() ? (float)$response->json()['price'] : null;
-
-        return $spotPrice ? $quantity * $spotPrice : null;
-    }
 }
