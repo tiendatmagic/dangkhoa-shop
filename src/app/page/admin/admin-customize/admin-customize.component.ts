@@ -60,11 +60,6 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
   isLoading = new Map<string, boolean>();
   private customizationSub: any = null;
 
-  getNormalizedId(id: string | undefined, name: string | undefined): string {
-    const rawId = id || String(name || '');
-    return String(rawId).toLowerCase().replace(/[^a-z0-9]+/g, '_');
-  }
-
   constructor(private auth: AuthService, private data: DataService, private apiCache: ApiCacheService, private adminTab: AdminTabService, private categoryService: CategoryService) { }
 
   ngOnInit(): void {
@@ -76,8 +71,8 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
         if (tab === 'customize') {
           this.isLoading.set('customize', true);
           return forkJoin({
-            customization: this.apiCache.getCached('customization', this.auth.getCustomization().pipe(catchError(() => of({ slides: [], collections: [] })))),
-            collections: this.apiCache.getCached('collections', this.auth.getCollections().pipe(catchError(() => of([]))))
+            customization: this.auth.getCustomization().pipe(catchError(() => of({ slides: [], collections: [] }))),
+            collections: this.auth.getCollections().pipe(catchError(() => of([])))
           });
         }
         return of(null);
@@ -95,7 +90,7 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
         this.contactContent = customization.contact_content || '';
         if (Array.isArray(customization.collections)) {
           customization.collections.forEach((c: any) => {
-            const cat = this.categories.find(x => x.id === this.getNormalizedId(c.id, c.name));
+            const cat = this.categories.find(x => x.id === (c.id || String(c.name).toLowerCase().replace(/[^a-z0-9]+/g, '_')));
             if (cat) {
               if (c.image) {
                 cat.image = c.image;
@@ -137,6 +132,8 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
       }
     }, (err) => {
       console.error('Slide upload error', err);
+      const msg = err?.error?.error || err?.error?.message || 'Failed to upload slide image';
+      this.data.showNotify('Error', msg, 'error');
     });
   }
 
@@ -147,18 +144,16 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
     this.auth.uploadImage(file).pipe(takeUntil(this.destroy$), finalize(() => { this.uploading = false; })).subscribe((r: any) => {
       if (r && r.url) {
         category.image = r.url;
-        // Automatically check the category if an image is uploaded
+        // Automatically select the category if it has an image and not selected
         if (!this.isSelected(category)) {
           this.toggleCollection(category);
-        } else {
-          // If already selected, just call save
-          this.save();
         }
+        this.save();
       }
     }, (err) => {
       console.error('Category upload error', err);
-      const msg = err?.error?.error || err?.error?.message || 'Upload failed. Please check file size and type.';
-      this.data.showNotify('Upload Error', msg, 'error');
+      const msg = err?.error?.error || err?.error?.message || 'Failed to upload category image';
+      this.data.showNotify('Error', msg, 'error');
     });
   }
 
@@ -173,6 +168,8 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
       }
     }, (err) => {
       console.error('Banner upload error', err);
+      const msg = err?.error?.error || err?.error?.message || 'Failed to upload banner image';
+      this.data.showNotify('Error', msg, 'error');
     });
   }
 
@@ -195,19 +192,16 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
   }
 
   toggleCollection(col: any) {
-    const normalizedId = this.getNormalizedId(col.id, col.name);
-    const found = this.selectedCollections.find((c: any) => this.getNormalizedId(c.id, c.name) === normalizedId);
+    const found = this.selectedCollections.find((c: any) => c.id === col.id);
     if (found) {
-      this.selectedCollections = this.selectedCollections.filter((c: any) => this.getNormalizedId(c.id, c.name) !== normalizedId);
+      this.selectedCollections = this.selectedCollections.filter((c: any) => c.id !== col.id);
     } else {
       this.selectedCollections.push({ id: col.id, name: col.name, image: col.image });
     }
   }
 
   isSelected(col: any): boolean {
-    if (!this.selectedCollections) return false;
-    const normalizedId = this.getNormalizedId(col.id, col.name);
-    return this.selectedCollections.some((c: any) => this.getNormalizedId(c.id, c.name) === normalizedId);
+    return !!this.selectedCollections && this.selectedCollections.some((c: any) => c.id === col.id);
   }
 
   toFullUrl(path: string | undefined): string {
@@ -221,16 +215,18 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
   save() {
     if (this.saving) return;
     this.saving = true;
-    // include selected collections and any category images (Shop By Category)
-    const collectionsPayload: any[] = this.selectedCollections.map(c => {
+    const collectionsPayload: any[] = (this.selectedCollections || []).map(c => {
       const payload: any = { id: c.id, name: c.name };
-      // Add image and customName from the fixed categories if they exist
-      const cat = this.categories.find(x => x.id === this.getNormalizedId(c.id, c.name));
+      // Build payload primarily from the latest data in categories array (Shop By Category)
+      const cat = this.categories.find(x => x.id === c.id);
       if (cat) {
         if (cat.image) payload.image = cat.image;
         if (cat.customName) payload.customName = cat.customName;
+      } else {
+        // Fallback for collections not in the fixed categories list
+        if (c.image) payload.image = c.image;
+        if (c.customName) payload.customName = c.customName;
       }
-      if (c.image) payload.image = c.image;
       return payload;
     });
 
@@ -272,8 +268,8 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
     }
     this.isLoading.set('customize', true);
     this.customizationSub = forkJoin({
-      customization: this.apiCache.getCached('customization', this.auth.getCustomization().pipe(catchError(() => of({ slides: [], collections: [] })))),
-      collections: this.apiCache.getCached('collections', this.auth.getCollections().pipe(catchError(() => of([]))))
+      customization: this.auth.getCustomization().pipe(catchError(() => of({ slides: [], collections: [] }))),
+      collections: this.auth.getCollections().pipe(catchError(() => of([])))
     }).pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
       if (!res) return;
       const { customization, collections } = res;
@@ -286,7 +282,7 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
         this.contactContent = customization.contact_content || '';
         if (Array.isArray(customization.collections)) {
           customization.collections.forEach((c: any) => {
-            const cat = this.categories.find(x => x.id === this.getNormalizedId(c.id, c.name));
+            const cat = this.categories.find(x => x.id === (c.id || String(c.name).toLowerCase().replace(/[^a-z0-9]+/g, '_')));
             if (cat) {
               if (c.image) {
                 cat.image = c.image;
