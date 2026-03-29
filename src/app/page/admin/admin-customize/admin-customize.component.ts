@@ -61,8 +61,8 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
   private customizationSub: any = null;
 
   getNormalizedId(id: string | undefined, name: string | undefined): string {
-    const rawId = id || String(name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_');
-    return String(rawId).toLowerCase();
+    const rawId = id || String(name || '');
+    return String(rawId).toLowerCase().replace(/[^a-z0-9]+/g, '_');
   }
 
   constructor(private auth: AuthService, private data: DataService, private apiCache: ApiCacheService, private adminTab: AdminTabService, private categoryService: CategoryService) { }
@@ -147,7 +147,13 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
     this.auth.uploadImage(file).pipe(takeUntil(this.destroy$), finalize(() => { this.uploading = false; })).subscribe((r: any) => {
       if (r && r.url) {
         category.image = r.url;
-        this.save();
+        // Automatically check the category if an image is uploaded
+        if (!this.isSelected(category)) {
+          this.toggleCollection(category);
+        } else {
+          // If already selected, just call save
+          this.save();
+        }
       }
     }, (err) => {
       console.error('Category upload error', err);
