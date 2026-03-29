@@ -60,6 +60,11 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
   isLoading = new Map<string, boolean>();
   private customizationSub: any = null;
 
+  getNormalizedId(id: string | undefined, name: string | undefined): string {
+    const rawId = id || String(name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_');
+    return String(rawId).toLowerCase();
+  }
+
   constructor(private auth: AuthService, private data: DataService, private apiCache: ApiCacheService, private adminTab: AdminTabService, private categoryService: CategoryService) { }
 
   ngOnInit(): void {
@@ -90,7 +95,7 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
         this.contactContent = customization.contact_content || '';
         if (Array.isArray(customization.collections)) {
           customization.collections.forEach((c: any) => {
-            const cat = this.categories.find(x => x.id === (c.id || String(c.name).toLowerCase().replace(/[^a-z0-9]+/g, '_')));
+            const cat = this.categories.find(x => x.id === this.getNormalizedId(c.id, c.name));
             if (cat) {
               if (c.image) {
                 cat.image = c.image;
@@ -146,6 +151,8 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
       }
     }, (err) => {
       console.error('Category upload error', err);
+      const msg = err?.error?.error || err?.error?.message || 'Upload failed. Please check file size and type.';
+      this.data.showNotify('Upload Error', msg, 'error');
     });
   }
 
@@ -182,16 +189,19 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
   }
 
   toggleCollection(col: any) {
-    const found = this.selectedCollections.find((c: any) => c.id === col.id);
+    const normalizedId = this.getNormalizedId(col.id, col.name);
+    const found = this.selectedCollections.find((c: any) => this.getNormalizedId(c.id, c.name) === normalizedId);
     if (found) {
-      this.selectedCollections = this.selectedCollections.filter((c: any) => c.id !== col.id);
+      this.selectedCollections = this.selectedCollections.filter((c: any) => this.getNormalizedId(c.id, c.name) !== normalizedId);
     } else {
       this.selectedCollections.push({ id: col.id, name: col.name, image: col.image });
     }
   }
 
   isSelected(col: any): boolean {
-    return !!this.selectedCollections && this.selectedCollections.some((c: any) => c.id === col.id);
+    if (!this.selectedCollections) return false;
+    const normalizedId = this.getNormalizedId(col.id, col.name);
+    return this.selectedCollections.some((c: any) => this.getNormalizedId(c.id, c.name) === normalizedId);
   }
 
   toFullUrl(path: string | undefined): string {
@@ -209,7 +219,7 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
     const collectionsPayload: any[] = this.selectedCollections.map(c => {
       const payload: any = { id: c.id, name: c.name };
       // Add image and customName from the fixed categories if they exist
-      const cat = this.categories.find(x => x.id === c.id);
+      const cat = this.categories.find(x => x.id === this.getNormalizedId(c.id, c.name));
       if (cat) {
         if (cat.image) payload.image = cat.image;
         if (cat.customName) payload.customName = cat.customName;
@@ -270,7 +280,7 @@ export class AdminCustomizeComponent implements OnInit, OnDestroy {
         this.contactContent = customization.contact_content || '';
         if (Array.isArray(customization.collections)) {
           customization.collections.forEach((c: any) => {
-            const cat = this.categories.find(x => x.id === (c.id || String(c.name).toLowerCase().replace(/[^a-z0-9]+/g, '_')));
+            const cat = this.categories.find(x => x.id === this.getNormalizedId(c.id, c.name));
             if (cat) {
               if (c.image) {
                 cat.image = c.image;
