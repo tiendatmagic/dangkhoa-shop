@@ -25,13 +25,17 @@ use SWeb3\SWeb3;
 use SWeb3\SWeb3_Contract;
 use SWeb3\Utils;
 use App\Models\Customization;
+use App\Services\DynamicPriceService;
 
 class AdminController extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, Sharable, ValidatesRequests;
 
-    public function __construct()
+    protected $priceService;
+ 
+    public function __construct(DynamicPriceService $priceService)
     {
+        $this->priceService = $priceService;
         $this->middleware('auth:api', ['except' => ['login', 'refresh', 'getCustomization']]);
     }
 
@@ -147,7 +151,7 @@ class AdminController extends BaseController
                 $cacheKey = "admin_product_price_{$product->product_type}_{$product->quantity}";
                 $cachedPrice = Cache::get($cacheKey);
 
-                if ($cachedPrice !== null) {
+                if ($cachedPrice !== null && $cachedPrice > 0) {
                     $product->price = $cachedPrice;
                 } else {
                     try {
@@ -155,8 +159,12 @@ class AdminController extends BaseController
                             $product->product_type,
                             $product->quantity ?? 1
                         );
-                        $product->price = $dynamicPrice ?? $product->price ?? 0;
-                        Cache::put($cacheKey, $product->price, now()->addMinutes(1));
+                        if ($dynamicPrice !== null && $dynamicPrice > 0) {
+                            $product->price = $dynamicPrice;
+                            Cache::put($cacheKey, $dynamicPrice, now()->addMinutes(1));
+                        } else {
+                            $product->price = $product->price ?? 0;
+                        }
                     } catch (\Exception $e) {
                         Log::error("Failed to fetch price for {$product->product_type}: " . $e->getMessage());
                         $product->price = $product->price ?? 0;
@@ -187,88 +195,7 @@ class AdminController extends BaseController
 
     private function calculateDynamicPrice($productType, $quantity)
     {
-        $apiKey = env('GOLDAPI_KEY', 'goldapi-bjhc1smldvh897-io');
-
-        if ($productType === 'xag') {
-            $response = Http::withHeaders(['x-access-token' => $apiKey])->get('https://www.goldapi.io/api/XAG/USD');
-            if (! $response->successful()) {
-                throw new \Exception('Failed to fetch silver price');
-            }
-            $data = $response->json();
-            $spotPrice = $data['price'];
-
-            return round($quantity * $spotPrice);
-        } elseif ($productType === 'silver') {
-            $response = Http::withHeaders(['x-access-token' => $apiKey])->get('https://www.goldapi.io/api/XAG/USD');
-            if (! $response->successful()) {
-                throw new \Exception('Failed to fetch silver price');
-            }
-            $data = $response->json();
-            $spotPrice = $data['price'];
-
-            return round($quantity * $spotPrice);
-        } elseif ($productType === 'gold' || $productType === 'paxg') {
-            $response = Http::withHeaders(['x-access-token' => $apiKey])->get('https://www.goldapi.io/api/XAU/USD');
-            if (! $response->successful()) {
-                throw new \Exception('Failed to fetch gold price');
-            }
-            $data = $response->json();
-            $spotPrice = $data['price'];
-            $spotPricePerTenth = $spotPrice / 10;
-
-            return round($quantity * $spotPricePerTenth);
-        }
-
-        if (in_array($productType, ['usdt', 'usdc'])) {
-            return round($quantity * 1, 6);
-        }
-
-        $symbolMap = [
-            'eth' => 'ETHUSDT',
-            'bnb' => 'BNBUSDT',
-            'paxg' => 'PAXGUSDT',
-            'pol' => 'POLUSDT',
-            'sol' => 'SOLUSDT',
-            'ondo' => 'ONDOUSDT',
-            'ton' => 'TONUSDT',
-            'avax' => 'AVAXUSDT',
-            'btc' => 'BTCUSDT',
-            'xrp' => 'XRPUSDT',
-            'trx' => 'TRXUSDT',
-            'sui' => 'SUIUSDT',
-            'shib' => 'SHIBUSDT',
-            'doge' => 'DOGEUSDT',
-            'near' => 'NEARUSDT',
-            'fil' => 'FILUSDT',
-            'etc' => 'ETCUSDT',
-            'ena' => 'ENAUSDT',
-            'link' => 'LINKUSDT',
-            'ada' => 'ADAUSDT',
-            'tao' => 'TAOUSDT',
-            'arb' => 'ARBUSDT',
-            'apt' => 'APTUSDT',
-            'aave' => 'AAVEUSDT',
-            'ltc' => 'LTCUSDT',
-        ];
-
-        $symbol = $symbolMap[strtolower($productType)] ?? null;
-
-        if (! $symbol) {
-            throw new \Exception('Invalid crypto symbol: ' . $productType);
-        }
-
-        $response = Http::get('https://api.binance.com/api/v3/ticker/price', [
-            'symbol' => strtoupper($symbol),
-        ]);
-
-        if (! $response->successful()) {
-            throw new \Exception('Failed to fetch crypto price');
-        }
-
-        $data = $response->json();
-        $spotPrice = (float) $data['price'];
-
-        return $quantity * $spotPrice;
+        return $this->priceService->getPrice($productType, $quantity);
     }
 
     public function updateProduct(Request $request)
@@ -296,26 +223,29 @@ class AdminController extends BaseController
         $product->name = $request->name;
         $product->category = $request->category ?? $product->category;
         $product->product_type = $request->product_type ?? $product->product_type;
-        $product->quantity = $request->quantity ?? $product->quantity;
+        $product->quantity = $request->quantity ?? $product->quantity ?? 1;
         $product->is_best_seller = $request->is_best_seller;
         $product->size = json_encode($request->size ?? json_decode($product->size, true));
         $product->description = $request->description ?? $product->description;
 
         $price = $request->price ?? $product->price;
         $productType = $request->product_type ?? $product->product_type;
-        $quantity = $request->quantity ?? $product->quantity;
+        $quantity = $product->quantity;
 
         if ($productType !== '' && $productType !== 'none') {
             try {
                 $dynamicPrice = $this->calculateDynamicPrice($productType, $quantity);
-                if ($dynamicPrice !== null) {
+                if ($dynamicPrice !== null && $dynamicPrice > 0) {
                     $price = $dynamicPrice;
+                    
+                    // Xóa cache để các trang (Homepage, Collection, Admin) cập nhật ngay lập tức
+                    Cache::forget("dynamic_price_type_{$productType}_{$quantity}");
+                    Cache::forget("admin_product_price_{$productType}_{$quantity}");
+                    Cache::forget("update_all_prices_{$productType}_{$quantity}");
+                    Log::info("Admin: Cleared price cache for {$productType} (qty: {$quantity}) after update.");
                 }
             } catch (\Exception $e) {
-                $typeKey = in_array($productType, ['gold', 'silver']) ? $productType : 'crypto';
-                Log::error("{$typeKey} price fetch error: " . $e->getMessage());
-
-                return response()->json(['error' => "Failed to fetch realtime {$typeKey} price"], 500);
+                Log::error("Admin price fetch error for {$productType}: " . $e->getMessage());
             }
         }
 
@@ -424,8 +354,15 @@ class AdminController extends BaseController
         $product->category = $request->category ?? '';
         $product->product_type = $productType;
         $product->is_best_seller = $request->is_best_seller;
-        $product->quantity = $quantity;
+        $product->quantity = $quantity ?: 1;
         $product->size = json_encode($request->size);
+
+        if ($product->product_type && $product->product_type !== 'none') {
+             Cache::forget("dynamic_price_type_{$product->product_type}_{$product->quantity}");
+             Cache::forget("admin_product_price_{$product->product_type}_{$product->quantity}");
+             Cache::forget("update_all_prices_{$product->product_type}_{$product->quantity}");
+             Log::info("Admin: Cleared price cache for {$product->product_type} after creation.");
+        }
 
         // Handle images - support both single image (legacy) and multiple images (new)
         if ($request->images && is_array($request->images) && count($request->images) > 0) {
